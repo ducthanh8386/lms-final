@@ -1,0 +1,58 @@
+# 🔒 Ignore dependencies
+
+node_modules/
+dist/
+build/
+
+# 🔒 Environment variables (QUAN TRỌNG NHẤT)
+
+.env
+.env.local
+.env.development
+.env.production
+
+# 🔒 Supabase local config (nếu có)
+
+.supabase/
+
+# 🔒 Logs
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 🔒 OS files
+
+.DS_Store
+Thumbs.db
+
+# 🔒 Editor files
+
+.vscode/
+.idea/
+
+# 🔒 Cache
+
+.cache/
+*.cache
+
+# 🔒 Vercel
+
+.vercel/
+
+# 🔒 Testing
+
+coverage/
+
+# 🔒 Temporary files
+
+*.tmp
+*.temp
+
+# 🔒 Secrets (custom)
+
+secrets.json
+config.private.js
+project_context.md
+project_memory.md
+project_web.md
