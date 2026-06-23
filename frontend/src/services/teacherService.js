@@ -86,5 +86,15 @@ export const teacherService = {
       .update({ status: 'rejected' })
       .eq('id', orderId)
     return { data, error }
+  },
+
+  // Lấy danh sách học viên đăng ký các khóa học của giáo viên
+  async getEnrolledStudents(teacherId) {
+    const { data, error } = await supabase
+      .from('enrollments')
+      .select('id, enrolled_at, course_id, courses!inner(title, teacher_id), profiles:user_id(name, email)')
+      .eq('courses.teacher_id', teacherId)
+      .order('enrolled_at', { ascending: false })
+    return { data, error }
   }
 }

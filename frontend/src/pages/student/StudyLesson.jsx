@@ -140,31 +140,6 @@ const StudyLesson = () => {
     }
   }
 
-  const handleMockSubmitAssignment = async () => {
-    if (!user || activeItem.type !== 'assignment' || !activeItem.data) return
-    setUploading(true)
-    try {
-      const mockFile = new File(["Nội dung bài nộp thử nghiệm"], "mock_submission.txt", { type: "text/plain" })
-      const { data: filePath } = await assignmentService.uploadSubmissionFile(courseId, activeItem.data.id, mockFile)
-      if (filePath) {
-        await assignmentService.submitAssignment({
-          assignment_id: activeItem.data.id,
-          student_id: user.id,
-          file_url: filePath
-        })
-        
-        // Refresh submission
-        const { data } = await assignmentService.getStudentSubmission(activeItem.data.id, user.id)
-        setSubmission(data)
-        toast.success("Nộp bài thành công (Mock file)!")
-      }
-    } catch (err) {
-      console.error(err)
-      toast.error("Có lỗi xảy ra khi nộp bài mock")
-    } finally {
-      setUploading(false)
-    }
-  }
 
   const getYoutubeId = (url) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
@@ -181,7 +156,7 @@ const StudyLesson = () => {
     <div className="flex h-[calc(100vh-64px)] w-full flex-col md:flex-row text-left bg-slate-50">
       
       {/* Sidebar: Danh sách bài học */}
-      <div className="w-full border-r bg-white md:w-80 overflow-y-auto shrink-0 flex flex-col">
+      <div className="w-full border-r bg-white md:w-80 overflow-y-auto shrink-0 flex flex-col h-72 md:h-full border-b md:border-b-0">
         <div className="p-4 border-b">
           <Link to="/learning" className="mb-2 block text-xs font-medium text-accent hover:underline">← Về danh sách khóa học</Link>
           <h2 className="font-bold text-slate-900 line-clamp-2">{course.title}</h2>
@@ -364,14 +339,6 @@ const StudyLesson = () => {
                         <button type="submit" disabled={uploading} className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-purple-600 disabled:opacity-50">
                           {uploading ? 'Đang nộp...' : 'Nộp lại'}
                         </button>
-                        <button 
-                          type="button"
-                          onClick={handleMockSubmitAssignment}
-                          disabled={uploading}
-                          className="rounded bg-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-300 disabled:opacity-50"
-                        >
-                          Nộp nhanh (Mock file)
-                        </button>
                       </div>
                     </form>
                   )}
@@ -394,14 +361,6 @@ const StudyLesson = () => {
                       className="rounded bg-accent px-6 py-2 font-medium text-white hover:bg-purple-600 disabled:opacity-50"
                     >
                       {uploading ? 'Đang nộp bài...' : 'Nộp bài'}
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={handleMockSubmitAssignment}
-                      disabled={uploading}
-                      className="rounded bg-slate-200 px-6 py-2 font-medium text-slate-700 hover:bg-slate-300 disabled:opacity-50"
-                    >
-                      Nộp nhanh (Mock file)
                     </button>
                   </div>
                 </form>

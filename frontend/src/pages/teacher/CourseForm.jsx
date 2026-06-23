@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { courseService } from '../../services/courseService'
 import { useAuth } from '../../context/AuthContext'
+import { courseSchema } from '../../schemas'
 
 import { useToast } from '../../context/ToastContext'
 
@@ -80,6 +81,21 @@ const CourseForm = () => {
     setLoading(true)
     setError(null)
 
+    // Zod Validation
+    const validationResult = courseSchema.safeParse({
+      title: formData.title,
+      description: formData.description || undefined,
+      price: formData.is_free ? 0 : Number(formData.price || 0),
+      is_free: formData.is_free,
+      category_id: formData.category_id
+    })
+
+    if (!validationResult.success) {
+      setError(validationResult.error.errors[0].message)
+      setLoading(false)
+      return
+    }
+
     const payload = {
       ...formData,
       price: formData.is_free ? 0 : parseFloat(formData.price),
@@ -102,7 +118,7 @@ const CourseForm = () => {
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-8 text-left">
+    <div className="mx-auto max-w-2xl p-4 sm:p-6 lg:p-8 text-left">
       <h1 className="mb-6 text-2xl font-bold text-slate-900">
         {isEdit ? 'Sửa Khóa Học' : 'Tạo Khóa Học Mới'}
       </h1>

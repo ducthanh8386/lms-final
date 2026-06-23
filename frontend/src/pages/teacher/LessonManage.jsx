@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { courseService } from '../../services/courseService'
+import { lessonSchema } from '../../schemas'
 
 import { useToast } from '../../context/ToastContext'
 import { useConfirm } from '../../context/ConfirmContext'
@@ -37,6 +38,20 @@ const LessonManage = () => {
 
   const handleSaveLesson = async (e) => {
     e.preventDefault()
+    
+    // Zod Validation
+    const validationResult = lessonSchema.safeParse({
+      title: formData.title,
+      content_type: formData.content_type,
+      content: formData.content,
+      order_index: Number(formData.order_index)
+    })
+
+    if (!validationResult.success) {
+      toast.error(validationResult.error.errors[0].message)
+      return
+    }
+
     const payload = { ...formData, course_id: courseId }
     
     if (editingLessonId) {
@@ -86,12 +101,12 @@ const LessonManage = () => {
   }
 
   return (
-    <div className="mx-auto max-w-4xl p-8 text-left">
+    <div className="mx-auto max-w-4xl p-4 sm:p-6 lg:p-8 text-left">
       <div className="mb-6">
         <Link to="/teacher/courses" className="text-sm font-medium text-accent hover:underline">← Quay lại danh sách khóa học</Link>
       </div>
 
-      <header className="mb-8 flex items-center justify-between border-b pb-4">
+      <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
             Bài học: {course?.title || 'Đang tải...'}
@@ -104,7 +119,7 @@ const LessonManage = () => {
             setFormData({ title: '', content_type: 'video', content: '', order_index: lessons.length + 1 })
             setShowForm(true)
           }}
-          className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600"
+          className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600 self-start sm:self-auto"
         >
           + Thêm bài học
         </button>

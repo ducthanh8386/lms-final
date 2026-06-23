@@ -10,15 +10,15 @@ const CourseManage = () => {
   const { courses, loading } = useTeacherCourses(user?.id)
 
   return (
-    <div className="mx-auto max-w-5xl p-8 text-left">
-      <header className="mb-6 flex items-center justify-between">
+    <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8 text-left">
+      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Giảng Viên Dashboard</h1>
           <p className="text-slate-500">Quản lý khóa học, đơn hàng và cài đặt thanh toán.</p>
         </div>
         <Link 
           to="/teacher/courses/new" 
-          className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600"
+          className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600 self-start sm:self-auto"
         >
           + Tạo khóa học mới
         </Link>

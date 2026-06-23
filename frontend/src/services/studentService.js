@@ -43,8 +43,45 @@ export const studentService = {
   async checkout(courses, user) {
     if (!courses || courses.length === 0) return { error: { message: "Giỏ hàng trống" } }
 
+    const courseIds = courses.map(c => c.id)
+
+    // Re-verify prices and teacher_ids directly from Database to prevent client-side price tampering
+    const { data: dbCourses, error: dbError } = await supabase
+      .from('courses')
+      .select('id, price, is_free, teacher_id')
+      .in('id', courseIds)
+
+    if (dbError) return { error: dbError }
+    if (!dbCourses || dbCourses.length === 0) {
+      return { error: { message: "Không tìm thấy thông tin khóa học trong hệ thống" } }
+    }
+
+    // Map database values by course ID
+    const dbCourseMap = dbCourses.reduce((acc, c) => {
+      acc[c.id] = c
+      return acc
+    }, {})
+
+    // Rebuild standard courses with verified DB fields
+    const verifiedCourses = []
+    try {
+      for (const c of courses) {
+        const dbC = dbCourseMap[c.id]
+        if (!dbC) {
+          throw new Error(`Khóa học "${c.title}" không tồn tại hoặc đã bị gỡ bỏ`)
+        }
+        verifiedCourses.push({
+          ...c,
+          price: dbC.is_free ? 0 : Number(dbC.price || 0),
+          teacher_id: dbC.teacher_id
+        })
+      }
+    } catch (err) {
+      return { error: { message: err.message } }
+    }
+
     // Group courses by teacher_id
-    const teacherGroups = courses.reduce((acc, course) => {
+    const teacherGroups = verifiedCourses.reduce((acc, course) => {
       const teacherId = course.teacher_id
       if (!acc[teacherId]) acc[teacherId] = []
       acc[teacherId].push(course)
@@ -53,6 +90,9 @@ export const studentService = {
 
     const createdOrders = []
 
+    // NOTE: This inserts multiple orders sequentially without rollback. If any middle insertion fails, 
+    // preceding successful orders will remain in DB. Under standard operations this is acceptable,
+    // but should be refactored to a Database transaction/rpc if rollback is strictly required.
     for (const teacherId in teacherGroups) {
       const teacherCourses = teacherGroups[teacherId]
       const total_price = teacherCourses.reduce((sum, c) => sum + (c.price || 0), 0)

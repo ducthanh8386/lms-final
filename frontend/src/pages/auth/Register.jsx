@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authService } from '../../services/authService'
+import { registerSchema } from '../../schemas'
 
 const Register = () => {
   const [name, setName] = useState('')
@@ -14,6 +15,14 @@ const Register = () => {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    
+    // Zod Validation
+    const validationResult = registerSchema.safeParse({ name, email, password })
+    if (!validationResult.success) {
+      setError(validationResult.error.errors[0].message)
+      setLoading(false)
+      return
+    }
     
     const { error } = await authService.signUp(email, password, name)
     

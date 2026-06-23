@@ -1,16 +1,28 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { useAuth } from './AuthContext'
 
 const CartContext = createContext()
 
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem('cart')
-    return saved ? JSON.parse(saved) : []
-  })
+  const { user } = useAuth()
+  const cartKey = user ? `cart_${user.id}` : 'cart_guest'
 
+  const [cart, setCart] = useState([])
+  const [loadedKey, setLoadedKey] = useState(null)
+
+  // Load cart when cartKey changes
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart))
-  }, [cart])
+    const saved = localStorage.getItem(cartKey)
+    setCart(saved ? JSON.parse(saved) : [])
+    setLoadedKey(cartKey)
+  }, [cartKey])
+
+  // Save cart to the active key whenever it changes, but only if it matches the loaded key
+  useEffect(() => {
+    if (loadedKey === cartKey) {
+      localStorage.setItem(cartKey, JSON.stringify(cart))
+    }
+  }, [cart, cartKey, loadedKey])
 
   const addToCart = (course) => {
     setCart(prev => {

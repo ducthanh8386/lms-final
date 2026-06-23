@@ -82,5 +82,39 @@ export const adminService = {
       .eq('id', courseId)
       .select()
     return { data, error }
+  },
+
+  // Lấy thống kê cho Admin Dashboard
+  async getDashboardStats() {
+    // 1. Tổng user (profiles)
+    const { count: totalUsers, error: usersError } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+
+    // 2. Khóa học chờ duyệt (pending)
+    const { count: pendingCourses, error: pendingError } = await supabase
+      .from('courses')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending')
+
+    // 3. Doanh thu (từ các đơn hàng status = completed)
+    const { data: completedOrders, error: revenueError } = await supabase
+      .from('orders')
+      .select('total_price')
+      .eq('status', 'completed')
+
+    if (usersError || pendingError || revenueError) {
+      return { error: usersError || pendingError || revenueError }
+    }
+
+    const totalRevenue = completedOrders?.reduce((sum, o) => sum + Number(o.total_price || 0), 0) || 0
+
+    return {
+      data: {
+        totalUsers: totalUsers || 0,
+        pendingCourses: pendingCourses || 0,
+        totalRevenue: totalRevenue || 0
+      }
+    }
   }
 }

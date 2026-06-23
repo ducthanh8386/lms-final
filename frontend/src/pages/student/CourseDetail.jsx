@@ -79,7 +79,7 @@ const CourseDetail = () => {
     : 0
 
   return (
-    <div className="mx-auto max-w-5xl p-8 text-left">
+    <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8 text-left">
       <div className="mb-6">
         <Link to="/courses" className="text-sm font-medium text-accent hover:underline">← Quay lại danh sách</Link>
       </div>

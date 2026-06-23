@@ -53,8 +53,8 @@ const OrderManage = () => {
   if (loading) return <div className="p-8">Đang tải danh sách đơn hàng...</div>
 
   return (
-    <div className="mx-auto max-w-5xl p-8 text-left">
-      <header className="mb-6 flex items-center justify-between">
+    <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8 text-left">
+      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Giảng Viên Dashboard</h1>
           <p className="text-slate-500">Quản lý khóa học, đơn hàng và cài đặt thanh toán.</p>
@@ -63,7 +63,8 @@ const OrderManage = () => {
 
       <TeacherTabs />
       
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+      {/* Desktop Table View */}
+      <div className="hidden md:block rounded-xl border bg-white shadow-sm overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-50 border-b">
             <tr>
@@ -135,6 +136,69 @@ const OrderManage = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card List View */}
+      <div className="block md:hidden space-y-4">
+        {orders.map(order => (
+          <div key={order.id} className="rounded-xl border bg-white p-4 shadow-sm space-y-3">
+            <div className="flex justify-between items-start">
+              <div>
+                <div className="font-bold text-slate-900">Đơn: #{order.id.slice(0, 8).toUpperCase()}</div>
+                <div className="text-xs text-slate-500 mt-0.5">{new Date(order.created_at).toLocaleString()}</div>
+              </div>
+              <div className="font-bold text-accent">{order.total_price?.toLocaleString()} đ</div>
+            </div>
+            
+            <div className="border-t border-slate-100 pt-2 text-xs">
+              <span className="font-semibold text-slate-600 block">Học viên:</span>
+              <span className="text-slate-800 font-medium">{order.profiles?.name || 'Khách'}</span> ({order.profiles?.email || 'N/A'})
+            </div>
+
+            <div className="text-xs">
+              <span className="font-semibold text-slate-600 block">Khóa học:</span>
+              <ul className="list-disc pl-4 text-slate-700 space-y-1 mt-1">
+                {order.order_items?.map((item, idx) => (
+                  <li key={idx}>{item.courses?.title}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="flex justify-between items-center border-t border-slate-100 pt-3">
+              <div>
+                {order.receipt_url ? (
+                  <button 
+                    onClick={() => setSelectedReceipt(order.receipt_url)}
+                    className="text-xs font-semibold text-accent hover:underline"
+                  >
+                    Xem ảnh biên lai
+                  </button>
+                ) : (
+                  <span className="text-xs text-slate-400 italic">Chưa tải biên lai</span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleApprove(order.id)}
+                  className="rounded bg-green-500 px-3 py-1 text-xs font-medium text-white hover:bg-green-600"
+                >
+                  Duyệt
+                </button>
+                <button 
+                  onClick={() => handleReject(order.id)}
+                  className="rounded bg-red-500 px-3 py-1 text-xs font-medium text-white hover:bg-red-600"
+                >
+                  Từ chối
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {orders.length === 0 && (
+          <div className="rounded-xl border border-dashed p-8 text-center text-slate-500 text-sm">
+            Không có đơn hàng nào chờ duyệt.
+          </div>
+        )}
       </div>
 
       {/* Modal Xem Biên lai */}

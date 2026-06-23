@@ -16,7 +16,7 @@ const CourseList = () => {
   }, [])
 
   return (
-    <div className="mx-auto max-w-6xl p-8 text-left">
+    <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 text-left">
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900">Khám phá Khóa Học</h1>
         <p className="text-slate-500">Tìm kiếm và đăng ký các khóa học chất lượng cao.</p>

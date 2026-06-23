@@ -56,7 +56,7 @@ const CheckoutDetail = () => {
   if (loading) return <div className="p-8">Đang tải thông tin thanh toán...</div>
 
   return (
-    <div className="mx-auto max-w-4xl p-8 text-left">
+    <div className="mx-auto max-w-4xl p-4 sm:p-6 lg:p-8 text-left">
       <h1 className="mb-2 text-3xl font-bold text-slate-900">Thanh toán Đơn hàng</h1>
       <p className="mb-8 text-slate-600">Vui lòng quét mã QR hoặc chuyển khoản vào các tài khoản dưới đây để hoàn tất.</p>
 
@@ -96,7 +96,7 @@ const CheckoutDetail = () => {
                 </div>
               </div>
 
-              <div className="w-full md:w-64 shrink-0 flex flex-col items-center justify-center border-l pl-8">
+              <div className="w-full md:w-64 shrink-0 flex flex-col items-center justify-center border-t pt-8 md:border-t-0 md:border-l md:pt-0 md:pl-8">
                 <p className="mb-2 text-sm font-medium text-slate-700">Mã QR Thanh toán</p>
                 <div className="h-48 w-48 rounded-xl border bg-slate-50 p-2 overflow-hidden flex items-center justify-center">
                   {teacher.payment_qr_url ? (

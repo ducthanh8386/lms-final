@@ -47,7 +47,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="mx-auto max-w-4xl p-8 text-left">
+    <div className="mx-auto max-w-4xl p-4 sm:p-6 lg:p-8 text-left">
       <h1 className="mb-8 text-3xl font-bold text-slate-900">Giỏ Hàng</h1>
 
       {error && <div className="mb-6 rounded bg-red-50 p-4 text-red-600">{error}</div>}
@@ -94,7 +94,7 @@ const Cart = () => {
               {loading ? 'Đang xử lý...' : 'Thanh toán & Đăng ký'}
             </button>
             <p className="mt-4 text-center text-xs text-slate-500">
-              * Đây là tính năng thanh toán giả lập. Order sẽ tự động được đánh dấu là paid.
+              * Đây là tính năng chuyển khoản thủ công. Đơn hàng sẽ ở trạng thái chờ duyệt (Pending) cho đến khi bạn tải biên lai chuyển khoản lên và được Giảng viên phê duyệt.
             </p>
           </div>
         </div>

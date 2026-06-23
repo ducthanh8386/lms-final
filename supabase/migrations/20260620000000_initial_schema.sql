@@ -1,252 +1,428 @@
--- Initial schema for LMS + Marketplace
+-- Consolidated Initial Schema for LMS + Marketplace (Squashed)
 
--- Set up profiles
-create table public.profiles (
-  id uuid references auth.users(id) on delete cascade primary key,
+-- 1. Setup profiles table
+CREATE TABLE public.profiles (
+  id uuid REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   name text,
-  role text check (role in ('admin','teacher','student')) default 'student',
+  email text,
+  role text CHECK (role IN ('admin','teacher','student')) DEFAULT 'student',
   avatar text,
-  status text check (status in ('active','banned')) default 'active',
-  created_at timestamp default now()
+  status text CHECK (status IN ('active','banned')) DEFAULT 'active',
+  payment_qr_url text,
+  bank_info text,
+  created_at timestamp DEFAULT now()
 );
 
--- Trigger to create profile on signup
-create or replace function public.handle_new_user()
-returns trigger as $$
-begin
-  insert into public.profiles (id, name, role)
-  values (new.id, new.raw_user_meta_data->>'name', 'student');
-  return new;
-end;
-$$ language plpgsql security definer;
+-- 2. Trigger function to sync profile role update to auth.users raw_app_meta_data
+CREATE OR REPLACE FUNCTION public.sync_role_to_auth()
+RETURNS trigger AS $$
+BEGIN
+  UPDATE auth.users
+  SET raw_app_meta_data = COALESCE(raw_app_meta_data, '{}'::jsonb) || jsonb_build_object('userrole', NEW.role)
+  WHERE id = NEW.id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
+CREATE TRIGGER on_profile_role_update
+  AFTER INSERT OR UPDATE OF role ON public.profiles
+  FOR EACH ROW EXECUTE PROCEDURE public.sync_role_to_auth();
 
--- Categories
-create table public.categories (
-  id bigint generated always as identity primary key,
-  name text not null
+-- 3. Trigger function to automatically create profile on signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, name, role, email)
+  VALUES (
+    new.id,
+    COALESCE(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+    'student',
+    new.email
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- 4. Categories table
+CREATE TABLE public.categories (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name text NOT NULL
 );
 
--- Courses
-create table public.courses (
-  id uuid default gen_random_uuid() primary key,
-  title text not null,
+-- 5. Courses table
+CREATE TABLE public.courses (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  title text NOT NULL,
   description text,
-  price numeric(10,2) default 0,
-  is_free boolean default false,
+  price numeric(10,2) DEFAULT 0,
+  is_free boolean DEFAULT false,
   thumbnail text,
-  teacher_id uuid references public.profiles(id) on delete cascade,
-  category_id bigint references public.categories(id),
-  status text check (status in ('pending','approved','rejected')) default 'pending',
-  created_at timestamp default now()
+  teacher_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
+  category_id bigint REFERENCES public.categories(id),
+  status text CHECK (status IN ('pending','approved','rejected')) DEFAULT 'pending',
+  created_at timestamp DEFAULT now()
 );
 
--- Lessons
-create table public.lessons (
-  id uuid default gen_random_uuid() primary key,
-  course_id uuid references public.courses(id) on delete cascade,
-  title text not null,
-  content_type text check (content_type in ('video','text')),
+-- 6. Lessons table
+CREATE TABLE public.lessons (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  course_id uuid REFERENCES public.courses(id) ON DELETE CASCADE,
+  title text NOT NULL,
+  content_type text CHECK (content_type IN ('video','text')),
   content text,           -- text content or video link (YouTube)
-  order_index int default 0,
-  created_at timestamp default now()
+  order_index int DEFAULT 0,
+  created_at timestamp DEFAULT now()
 );
 
--- Lesson Progress
-create table public.lesson_progress (
-  id bigint generated always as identity primary key,
-  user_id uuid references public.profiles(id) on delete cascade,
-  lesson_id uuid references public.lessons(id) on delete cascade,
-  completed_at timestamp default now(),
-  unique(user_id, lesson_id)
+-- 7. Lesson Progress table
+CREATE TABLE public.lesson_progress (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
+  lesson_id uuid REFERENCES public.lessons(id) ON DELETE CASCADE,
+  completed_at timestamp DEFAULT now(),
+  UNIQUE(user_id, lesson_id)
 );
 
--- Enrollments
-create table public.enrollments (
-  id bigint generated always as identity primary key,
-  user_id uuid references public.profiles(id) on delete cascade,
-  course_id uuid references public.courses(id) on delete cascade,
-  enrolled_at timestamp default now(),
-  unique(user_id, course_id)
+-- 8. Enrollments table
+CREATE TABLE public.enrollments (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
+  course_id uuid REFERENCES public.courses(id) ON DELETE CASCADE,
+  enrolled_at timestamp DEFAULT now(),
+  UNIQUE(user_id, course_id)
 );
 
--- Orders
-create table public.orders (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references public.profiles(id) on delete cascade,
+-- 9. Orders table
+CREATE TABLE public.orders (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
   total_price numeric(10,2),
-  status text check (status in ('pending','paid','failed')) default 'pending',
-  created_at timestamp default now()
+  status text CHECK (status IN ('pending','completed','rejected')) DEFAULT 'pending',
+  teacher_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
+  receipt_url text,
+  created_at timestamp DEFAULT now()
 );
 
--- Order Items
-create table public.order_items (
-  id bigint generated always as identity primary key,
-  order_id uuid references public.orders(id) on delete cascade,
-  course_id uuid references public.courses(id) on delete cascade,
+-- 10. Order Items table
+CREATE TABLE public.order_items (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  order_id uuid REFERENCES public.orders(id) ON DELETE CASCADE,
+  course_id uuid REFERENCES public.courses(id) ON DELETE CASCADE,
   price numeric(10,2)
 );
 
--- Assignments
-create table public.assignments (
-  id uuid default gen_random_uuid() primary key,
-  course_id uuid references public.courses(id) on delete cascade,
+-- 11. Assignments table
+CREATE TABLE public.assignments (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  course_id uuid REFERENCES public.courses(id) ON DELETE CASCADE,
   title text,
   description text,
+  file_url text,
   due_date timestamp
 );
 
--- Submissions
-create table public.submissions (
-  id uuid default gen_random_uuid() primary key,
-  assignment_id uuid references public.assignments(id) on delete cascade,
-  student_id uuid references public.profiles(id) on delete cascade,
+-- 12. Submissions table
+CREATE TABLE public.submissions (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  assignment_id uuid REFERENCES public.assignments(id) ON DELETE CASCADE,
+  student_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
   file_url text,
   grade numeric(5,2),
   feedback text,
-  submitted_at timestamp default now()
+  submitted_at timestamp DEFAULT now()
 );
 
--- Reviews
-create table public.reviews (
-  id bigint generated always as identity primary key,
-  user_id uuid references public.profiles(id) on delete cascade,
-  course_id uuid references public.courses(id) on delete cascade,
-  rating int check (rating between 1 and 5),
+-- 13. Reviews table
+CREATE TABLE public.reviews (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
+  course_id uuid REFERENCES public.courses(id) ON DELETE CASCADE,
+  rating int CHECK (rating BETWEEN 1 AND 5),
   comment text,
-  created_at timestamp default now()
+  created_at timestamp DEFAULT now()
 );
+
+-- ==========================================
+-- INDEXES FOR PERFORMANCE
+-- ==========================================
+CREATE INDEX IF NOT EXISTS idx_enrollments_user_course ON public.enrollments(user_id, course_id);
+CREATE INDEX IF NOT EXISTS idx_lessons_course_id ON public.lessons(course_id);
+CREATE INDEX IF NOT EXISTS idx_courses_teacher_id ON public.courses(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_lesson_progress_user_course ON public.lesson_progress(user_id, lesson_id);
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON public.orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON public.order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_submissions_assignment_id ON public.submissions(assignment_id);
 
 -- ==========================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ==========================================
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.lessons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.lesson_progress ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.enrollments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 
-alter table public.profiles enable row level security;
-alter table public.categories enable row level security;
-alter table public.courses enable row level security;
-alter table public.lessons enable row level security;
-alter table public.lesson_progress enable row level security;
-alter table public.enrollments enable row level security;
-alter table public.orders enable row level security;
-alter table public.order_items enable row level security;
-alter table public.assignments enable row level security;
-alter table public.submissions enable row level security;
-alter table public.reviews enable row level security;
+-- --- PROFILES ---
+CREATE POLICY "Public profiles are viewable by everyone." ON public.profiles FOR SELECT USING (true);
 
--- PROFILES
-create policy "Public profiles are viewable by everyone." on public.profiles for select using (true);
-create policy "Users can update own profile." on public.profiles for update using (auth.uid() = id);
-create policy "Admin can update any profile" on public.profiles for update using (
-  (select role from public.profiles where id = auth.uid()) = 'admin'
-);
-
--- CATEGORIES
-create policy "Categories viewable by everyone." on public.categories for select using (true);
--- Only admin can insert/update/delete categories (optional, skipped for brevity, admin can do it if needed via edge func or direct policy)
-create policy "Admin full access categories" on public.categories for all using (
-  exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+CREATE POLICY "Users can update own profile." ON public.profiles FOR UPDATE USING (
+  auth.uid() = id
+) WITH CHECK (
+  auth.uid() = id AND
+  role = (SELECT role FROM public.profiles WHERE id = auth.uid()) AND
+  status = (SELECT status FROM public.profiles WHERE id = auth.uid())
 );
 
--- COURSES
-create policy "Public can view approved courses" on public.courses for select using (status = 'approved');
-create policy "Teacher can view own courses" on public.courses for select using (auth.uid() = teacher_id);
-create policy "Teacher can insert own course" on public.courses for insert with check (auth.uid() = teacher_id);
-create policy "Teacher can update own course" on public.courses for update using (auth.uid() = teacher_id);
-create policy "Admin full access courses" on public.courses for all using (
-  exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+CREATE POLICY "Admin can update any profile" ON public.profiles FOR UPDATE USING (
+  (auth.jwt() -> 'app_metadata' ->> 'userrole') = 'admin'
 );
 
--- LESSONS
-create policy "Public can view lessons of approved courses" on public.lessons for select using (
-  exists (select 1 from public.courses where id = course_id and status = 'approved')
-);
-create policy "Teacher can view own lessons" on public.lessons for select using (
-  exists (select 1 from public.courses where id = course_id and teacher_id = auth.uid())
-);
-create policy "Teacher can insert own lessons" on public.lessons for insert with check (
-  exists (select 1 from public.courses where id = course_id and teacher_id = auth.uid())
-);
-create policy "Teacher can update own lessons" on public.lessons for update using (
-  exists (select 1 from public.courses where id = course_id and teacher_id = auth.uid())
-);
-create policy "Teacher can delete own lessons" on public.lessons for delete using (
-  exists (select 1 from public.courses where id = course_id and teacher_id = auth.uid())
-);
-create policy "Admin full access lessons" on public.lessons for all using (
-  exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+-- --- CATEGORIES ---
+CREATE POLICY "Categories viewable by everyone." ON public.categories FOR SELECT USING (true);
+CREATE POLICY "Admin full access categories" ON public.categories FOR ALL USING (
+  (auth.jwt() -> 'app_metadata' ->> 'userrole') = 'admin'
 );
 
--- LESSON PROGRESS
-create policy "Users can view own progress" on public.lesson_progress for select using (auth.uid() = user_id);
-create policy "Users can insert own progress" on public.lesson_progress for insert with check (auth.uid() = user_id);
--- No update needed, insert is enough.
-create policy "Users can delete own progress" on public.lesson_progress for delete using (auth.uid() = user_id);
-
--- ENROLLMENTS
-create policy "Users can view own enrollments" on public.enrollments for select using (auth.uid() = user_id);
-create policy "Teachers can view enrollments for their courses" on public.enrollments for select using (
-  exists (select 1 from public.courses where id = course_id and teacher_id = auth.uid())
-);
--- Client cannot insert directly. Only Edge Function (using service_role) can insert.
--- We do not add insert policy for students.
-create policy "Admin full access enrollments" on public.enrollments for all using (
-  exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+-- --- COURSES ---
+CREATE POLICY "Public views only approved courses" ON public.courses FOR SELECT USING (
+  status = 'approved' OR 
+  teacher_id = auth.uid() OR 
+  (auth.jwt() -> 'app_metadata' ->> 'userrole' = 'admin')
 );
 
--- ORDERS & ORDER ITEMS
-create policy "Users can view own orders" on public.orders for select using (auth.uid() = user_id);
-create policy "Admin full access orders" on public.orders for all using (
-  exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
-);
-create policy "Users can view own order items" on public.order_items for select using (
-  exists (select 1 from public.orders where id = order_id and user_id = auth.uid())
-);
-create policy "Admin full access order items" on public.order_items for all using (
-  exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+CREATE POLICY "Teachers can insert own courses" ON public.courses FOR INSERT WITH CHECK (
+  (auth.jwt() -> 'app_metadata' ->> 'userrole' IN ('teacher', 'admin')) AND 
+  teacher_id = auth.uid()
 );
 
--- ASSIGNMENTS
-create policy "Enrolled students can view assignments" on public.assignments for select using (
-  exists (select 1 from public.enrollments where course_id = assignments.course_id and user_id = auth.uid())
-);
-create policy "Teacher can view/manage assignments" on public.assignments for all using (
-  exists (select 1 from public.courses where id = course_id and teacher_id = auth.uid())
+CREATE POLICY "Teachers can update own courses" ON public.courses FOR UPDATE USING (
+  teacher_id = auth.uid() OR (auth.jwt() -> 'app_metadata' ->> 'userrole' = 'admin')
+) WITH CHECK (
+  teacher_id = auth.uid() OR (auth.jwt() -> 'app_metadata' ->> 'userrole' = 'admin')
 );
 
--- SUBMISSIONS
-create policy "Students can view own submissions" on public.submissions for select using (student_id = auth.uid());
-create policy "Students can insert own submissions" on public.submissions for insert with check (student_id = auth.uid());
-create policy "Students can update own submissions (before graded)" on public.submissions for update using (student_id = auth.uid() and grade is null);
-create policy "Teachers can view/update submissions for their courses" on public.submissions for select using (
-  exists (
-    select 1 from public.assignments 
-    join public.courses on assignments.course_id = courses.id
-    where assignments.id = assignment_id and courses.teacher_id = auth.uid()
+CREATE POLICY "Teachers can delete own courses" ON public.courses FOR DELETE USING (
+  teacher_id = auth.uid() OR (auth.jwt() -> 'app_metadata' ->> 'userrole' = 'admin')
+);
+
+-- --- LESSONS ---
+CREATE POLICY "Strict access for lessons" ON public.lessons FOR SELECT USING (
+  (auth.jwt() -> 'app_metadata' ->> 'userrole' = 'admin')
+  OR
+  (EXISTS (SELECT 1 FROM public.courses WHERE id = course_id AND teacher_id = auth.uid()))
+  OR
+  (EXISTS (SELECT 1 FROM public.enrollments WHERE course_id = lessons.course_id AND user_id = auth.uid()))
+);
+
+CREATE POLICY "Teachers can insert lessons" ON public.lessons FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM public.courses WHERE id = course_id AND teacher_id = auth.uid())
+);
+
+CREATE POLICY "Teachers can update lessons" ON public.lessons FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM public.courses WHERE id = course_id AND teacher_id = auth.uid())
+) WITH CHECK (
+  EXISTS (SELECT 1 FROM public.courses WHERE id = course_id AND teacher_id = auth.uid())
+);
+
+CREATE POLICY "Teachers can delete lessons" ON public.lessons FOR DELETE USING (
+  EXISTS (SELECT 1 FROM public.courses WHERE id = course_id AND teacher_id = auth.uid())
+);
+
+-- --- LESSON PROGRESS ---
+CREATE POLICY "Users can view own progress" ON public.lesson_progress FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own progress" ON public.lesson_progress FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own progress" ON public.lesson_progress FOR DELETE USING (auth.uid() = user_id);
+
+-- --- ENROLLMENTS ---
+CREATE POLICY "Strict view for enrollments" ON public.enrollments FOR SELECT USING (
+  user_id = auth.uid() OR
+  EXISTS (SELECT 1 FROM public.courses WHERE id = course_id AND teacher_id = auth.uid()) OR
+  (auth.jwt() -> 'app_metadata' ->> 'userrole' = 'admin')
+);
+
+CREATE POLICY "Teachers can insert enrollments" ON public.enrollments FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM public.courses WHERE id = course_id AND teacher_id = auth.uid())
+);
+
+CREATE POLICY "Students can enroll if order completed" ON public.enrollments FOR INSERT WITH CHECK (
+  auth.uid() = user_id AND 
+  EXISTS (
+    SELECT 1 FROM public.orders o 
+    JOIN public.order_items oi ON o.id = oi.order_id 
+    WHERE o.user_id = auth.uid() AND o.status = 'completed' AND oi.course_id = enrollments.course_id
   )
 );
-create policy "Teachers can grade submissions" on public.submissions for update using (
-  exists (
-    select 1 from public.assignments 
-    join public.courses on assignments.course_id = courses.id
-    where assignments.id = assignment_id and courses.teacher_id = auth.uid()
+-- Note: Enrollments can be inserted by student (if order completed) or by teacher (when approving orders).
+
+-- --- ORDERS & ORDER ITEMS ---
+CREATE POLICY "Users can view own orders" ON public.orders FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own orders" ON public.orders FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Teacher can view their orders" ON public.orders FOR SELECT USING (auth.uid() = teacher_id);
+CREATE POLICY "Teacher can update their orders" ON public.orders FOR UPDATE USING (auth.uid() = teacher_id);
+
+CREATE POLICY "Admin full access orders" ON public.orders FOR ALL USING (
+  (auth.jwt() -> 'app_metadata' ->> 'userrole') = 'admin'
+);
+
+CREATE POLICY "Users can view own order items" ON public.order_items FOR SELECT USING (
+  EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_id AND o.user_id = auth.uid())
+);
+
+CREATE POLICY "Users can insert own order items" ON public.order_items FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_items.order_id AND o.user_id = auth.uid())
+);
+
+CREATE POLICY "Teacher can view their order items" ON public.order_items FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM public.orders o 
+    WHERE o.id = order_items.order_id AND o.teacher_id = auth.uid()
   )
 );
 
--- REVIEWS
-create policy "Public can view reviews" on public.reviews for select using (true);
-create policy "Enrolled students can insert reviews" on public.reviews for insert with check (
-  auth.uid() = user_id and 
-  exists (select 1 from public.enrollments where user_id = auth.uid() and course_id = reviews.course_id)
+CREATE POLICY "Admin full access order items" ON public.order_items FOR ALL USING (
+  (auth.jwt() -> 'app_metadata' ->> 'userrole') = 'admin'
 );
-create policy "Users can update own reviews." on public.reviews for update using (auth.uid() = user_id);
-create policy "Users can delete own reviews." on public.reviews for delete using (auth.uid() = user_id);
 
--- STORAGE BUCKETS
-insert into storage.buckets (id, name, public) values ('course-thumbnails', 'course-thumbnails', true) on conflict do nothing;
+-- --- ASSIGNMENTS ---
+CREATE POLICY "Enrolled students can view assignments" ON public.assignments FOR SELECT USING (
+  EXISTS (SELECT 1 FROM public.enrollments WHERE course_id = assignments.course_id AND user_id = auth.uid())
+);
 
-create policy "Public Access to Thumbnails" on storage.objects for select using ( bucket_id = 'course-thumbnails' );
-create policy "Authenticated users can upload thumbnails" on storage.objects for insert with check ( bucket_id = 'course-thumbnails' and auth.role() = 'authenticated' );
-create policy "Users can update own thumbnails" on storage.objects for update using ( bucket_id = 'course-thumbnails' and auth.role() = 'authenticated' );
+CREATE POLICY "Teacher can view/manage assignments" ON public.assignments FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.courses WHERE id = course_id AND teacher_id = auth.uid())
+);
+
+-- --- SUBMISSIONS ---
+CREATE POLICY "Students can view own submissions" ON public.submissions FOR SELECT USING (student_id = auth.uid());
+CREATE POLICY "Students can insert own submissions" ON public.submissions FOR INSERT WITH CHECK (student_id = auth.uid());
+CREATE POLICY "Students can update own submissions (before graded)" ON public.submissions FOR UPDATE USING (student_id = auth.uid() AND grade IS NULL);
+
+CREATE POLICY "Teachers can view/update submissions for their courses" ON public.submissions FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM public.assignments 
+    JOIN public.courses ON assignments.course_id = courses.id
+    WHERE assignments.id = assignment_id AND courses.teacher_id = auth.uid()
+  )
+);
+
+CREATE POLICY "Teachers can grade submissions" ON public.submissions FOR UPDATE USING (
+  EXISTS (
+    SELECT 1 FROM public.assignments 
+    JOIN public.courses ON assignments.course_id = courses.id
+    WHERE assignments.id = assignment_id AND courses.teacher_id = auth.uid()
+  )
+);
+
+-- --- REVIEWS ---
+CREATE POLICY "Public can view reviews" ON public.reviews FOR SELECT USING (true);
+
+CREATE POLICY "Enrolled students can insert reviews" ON public.reviews FOR INSERT WITH CHECK (
+  auth.uid() = user_id AND 
+  EXISTS (SELECT 1 FROM public.enrollments WHERE user_id = auth.uid() AND course_id = reviews.course_id)
+);
+
+CREATE POLICY "Users can update own reviews." ON public.reviews FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own reviews." ON public.reviews FOR DELETE USING (auth.uid() = user_id);
+
+-- ==========================================
+-- STORAGE BUCKETS CONFIGURATION
+-- ==========================================
+INSERT INTO storage.buckets (id, name, public) VALUES ('course-thumbnails', 'course-thumbnails', true) ON CONFLICT DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('receipts', 'receipts', true) ON CONFLICT DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('assignment-files', 'assignment-files', false) ON CONFLICT DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('submission-files', 'submission-files', false) ON CONFLICT DO NOTHING;
+
+-- --- course-thumbnails storage policies ---
+CREATE POLICY "Public Access to Thumbnails" ON storage.objects FOR SELECT USING ( bucket_id = 'course-thumbnails' );
+CREATE POLICY "Authenticated users can upload thumbnails" ON storage.objects FOR INSERT WITH CHECK ( bucket_id = 'course-thumbnails' AND auth.role() = 'authenticated' );
+CREATE POLICY "Users can update own thumbnails" ON storage.objects FOR UPDATE USING ( bucket_id = 'course-thumbnails' AND auth.role() = 'authenticated' );
+
+-- --- receipts storage policies ---
+CREATE POLICY "Public Access to Receipts" ON storage.objects FOR SELECT USING ( bucket_id = 'receipts' );
+CREATE POLICY "Authenticated users can upload receipts" ON storage.objects FOR INSERT WITH CHECK ( bucket_id = 'receipts' AND auth.role() = 'authenticated' );
+
+-- --- assignment-files storage policies ---
+CREATE POLICY "Enrolled students and teacher can view assignment files" ON storage.objects FOR SELECT USING (
+  bucket_id = 'assignment-files' AND (
+    EXISTS (
+      SELECT 1 FROM public.courses 
+      WHERE id = (storage.foldername(name))[1]::uuid 
+      AND teacher_id = auth.uid()
+    )
+    OR
+    EXISTS (
+      SELECT 1 FROM public.enrollments 
+      WHERE course_id = (storage.foldername(name))[1]::uuid 
+      AND user_id = auth.uid()
+    )
+  )
+);
+
+CREATE POLICY "Teacher can insert assignment files" ON storage.objects FOR INSERT WITH CHECK (
+  bucket_id = 'assignment-files' AND auth.role() = 'authenticated' AND
+  EXISTS (
+    SELECT 1 FROM public.courses 
+    WHERE id = (storage.foldername(name))[1]::uuid 
+    AND teacher_id = auth.uid()
+  )
+);
+
+CREATE POLICY "Teacher can update assignment files" ON storage.objects FOR UPDATE USING (
+  bucket_id = 'assignment-files' AND auth.role() = 'authenticated' AND
+  EXISTS (
+    SELECT 1 FROM public.courses 
+    WHERE id = (storage.foldername(name))[1]::uuid 
+    AND teacher_id = auth.uid()
+  )
+);
+
+CREATE POLICY "Teacher can delete assignment files" ON storage.objects FOR DELETE USING (
+  bucket_id = 'assignment-files' AND auth.role() = 'authenticated' AND
+  EXISTS (
+    SELECT 1 FROM public.courses 
+    WHERE id = (storage.foldername(name))[1]::uuid 
+    AND teacher_id = auth.uid()
+  )
+);
+
+-- --- submission-files storage policies ---
+CREATE POLICY "Teacher or Student can view submission files" ON storage.objects FOR SELECT USING (
+  bucket_id = 'submission-files' AND (
+    auth.uid() = owner
+    OR
+    EXISTS (
+      SELECT 1 FROM public.courses 
+      WHERE id = (storage.foldername(name))[1]::uuid 
+      AND teacher_id = auth.uid()
+    )
+  )
+);
+
+CREATE POLICY "Enrolled students can insert submission files" ON storage.objects FOR INSERT WITH CHECK (
+  bucket_id = 'submission-files' AND auth.role() = 'authenticated' AND
+  EXISTS (
+    SELECT 1 FROM public.enrollments 
+    WHERE course_id = (storage.foldername(name))[1]::uuid 
+    AND user_id = auth.uid()
+  )
+);
+
+CREATE POLICY "Enrolled students can update submission files" ON storage.objects FOR UPDATE USING (
+  bucket_id = 'submission-files' AND auth.role() = 'authenticated' AND
+  auth.uid() = owner
+);
+
+CREATE POLICY "Enrolled students can delete submission files" ON storage.objects FOR DELETE USING (
+  bucket_id = 'submission-files' AND auth.role() = 'authenticated' AND
+  auth.uid() = owner
+);

@@ -4,6 +4,7 @@ import { assignmentService } from '../../services/assignmentService'
 import { supabase } from '../../lib/supabaseClient'
 import { useToast } from '../../context/ToastContext'
 import { useConfirm } from '../../context/ConfirmContext'
+import { assignmentSchema } from '../../schemas'
 
 const AssignmentManage = () => {
   const { id: courseId } = useParams()
@@ -39,6 +40,19 @@ const AssignmentManage = () => {
 
   const handleSave = async (e) => {
     e.preventDefault()
+    
+    // Zod Validation
+    const validationResult = assignmentSchema.safeParse({
+      title: formData.title,
+      description: formData.description || undefined,
+      due_date: formData.due_date || undefined
+    })
+
+    if (!validationResult.success) {
+      toast.error(validationResult.error.errors[0].message)
+      return
+    }
+
     setUploading(true)
     
     let fileUrl = null
@@ -107,8 +121,8 @@ const AssignmentManage = () => {
   }
 
   return (
-    <div className="mx-auto max-w-4xl p-8 text-left">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="mx-auto max-w-4xl p-4 sm:p-6 lg:p-8 text-left">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link to="/teacher/courses" className="text-sm font-medium text-slate-500 hover:text-accent">
             &larr; Quay lại danh sách
@@ -123,7 +137,7 @@ const AssignmentManage = () => {
             setEditingId(null)
             setFormData({ title: '', description: '', due_date: '' })
           }}
-          className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600"
+          className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600 self-start sm:self-auto"
         >
           + Thêm Bài Tập
         </button>

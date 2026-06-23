@@ -15,6 +15,7 @@ import CourseForm from './pages/teacher/CourseForm'
 import LessonManage from './pages/teacher/LessonManage'
 import OrderManage from './pages/teacher/OrderManage'
 import TeacherSettings from './pages/teacher/TeacherSettings'
+import Students from './pages/teacher/Students'
 
 import AdminDashboard from './pages/admin/AdminDashboard'
 import UserManage from './pages/admin/UserManage'
@@ -59,6 +60,7 @@ function App() {
           <Route path="/teacher/courses/:id/assignments" element={<AssignmentManage />} />
           <Route path="/teacher/assignments/:id/submissions" element={<GradingManage />} />
           <Route path="/teacher/orders" element={<OrderManage />} />
+          <Route path="/teacher/students" element={<Students />} />
           <Route path="/teacher/settings" element={<TeacherSettings />} />
         </Route>
 

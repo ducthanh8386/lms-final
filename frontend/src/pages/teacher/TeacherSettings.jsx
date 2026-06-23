@@ -63,8 +63,8 @@ const TeacherSettings = () => {
   if (loading) return <div className="p-8">Đang tải...</div>
 
   return (
-    <div className="mx-auto max-w-5xl p-8 text-left">
-      <header className="mb-6 flex items-center justify-between">
+    <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8 text-left">
+      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Giảng Viên Dashboard</h1>
           <p className="text-slate-500">Quản lý khóa học, đơn hàng và cài đặt thanh toán.</p>
@@ -88,7 +88,7 @@ const TeacherSettings = () => {
 
         <div>
           <label className="mb-2 block text-sm font-medium text-slate-700">Mã QR Thanh toán</label>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
             <div className="h-32 w-32 shrink-0 rounded bg-slate-200 overflow-hidden border border-dashed border-slate-400">
               {formData.payment_qr_url ? (
                 <img src={formData.payment_qr_url} alt="QR Code" className="h-full w-full object-cover" />
@@ -96,7 +96,7 @@ const TeacherSettings = () => {
                 <div className="flex h-full items-center justify-center text-xs text-slate-500 text-center p-2">Chưa có QR</div>
               )}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 w-full">
               <input 
                 type="file" 
                 accept="image/*"

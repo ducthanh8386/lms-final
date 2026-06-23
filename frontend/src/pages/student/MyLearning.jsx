@@ -20,7 +20,7 @@ const MyLearning = () => {
   }, [user])
 
   return (
-    <div className="mx-auto max-w-6xl p-8 text-left">
+    <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 text-left">
       <h1 className="mb-8 text-3xl font-bold text-slate-900">Khóa học của tôi</h1>
 
       {loading ? (

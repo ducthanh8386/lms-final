@@ -1,27 +1,63 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { adminService } from '../../services/adminService'
+import { useToast } from '../../context/ToastContext'
 
 const AdminDashboard = () => {
+  const toast = useToast()
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    pendingCourses: 0,
+    totalRevenue: 0
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoading(true)
+      const { data, error } = await adminService.getDashboardStats()
+      if (error) {
+        toast.error("Lỗi tải thông tin thống kê: " + error.message)
+      } else if (data) {
+        setStats(data)
+      }
+      setLoading(false)
+    }
+    fetchStats()
+  }, [toast])
+
   return (
-    <div className="mx-auto max-w-6xl p-8 text-left">
+    <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 text-left">
       <h1 className="mb-8 text-3xl font-bold text-slate-900">Admin Dashboard</h1>
 
       {/* Stats Section */}
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-success">
+        <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-success animate-fadeIn">
           <h3 className="text-sm font-medium text-slate-500 uppercase">Tổng Doanh Thu</h3>
-          <p className="mt-2 text-3xl font-bold text-slate-900">12,500,000đ</p>
-          <p className="mt-1 text-xs text-success font-medium">+15% so với tháng trước</p>
+          {loading ? (
+            <div className="mt-2 h-9 w-28 animate-pulse rounded bg-slate-100"></div>
+          ) : (
+            <p className="mt-2 text-3xl font-bold text-slate-900">{stats.totalRevenue.toLocaleString('vi-VN')}đ</p>
+          )}
+          <p className="mt-1 text-xs text-success font-medium">Doanh thu đơn hàng đã duyệt</p>
         </div>
-        <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-warning">
+        <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-warning animate-fadeIn">
           <h3 className="text-sm font-medium text-slate-500 uppercase">Khóa Học Chờ Duyệt</h3>
-          <p className="mt-2 text-3xl font-bold text-slate-900">12</p>
-          <p className="mt-1 text-xs text-slate-500 font-medium">Cần xử lý trong ngày</p>
+          {loading ? (
+            <div className="mt-2 h-9 w-12 animate-pulse rounded bg-slate-100"></div>
+          ) : (
+            <p className="mt-2 text-3xl font-bold text-slate-900">{stats.pendingCourses}</p>
+          )}
+          <p className="mt-1 text-xs text-slate-500 font-medium">Cần phê duyệt trong ngày</p>
         </div>
-        <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-accent">
-          <h3 className="text-sm font-medium text-slate-500 uppercase">Tổng Học Viên</h3>
-          <p className="mt-2 text-3xl font-bold text-slate-900">1,248</p>
-          <p className="mt-1 text-xs text-success font-medium">+24 học viên mới tuần này</p>
+        <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-accent animate-fadeIn">
+          <h3 className="text-sm font-medium text-slate-500 uppercase">Tổng Người Dùng</h3>
+          {loading ? (
+            <div className="mt-2 h-9 w-16 animate-pulse rounded bg-slate-100"></div>
+          ) : (
+            <p className="mt-2 text-3xl font-bold text-slate-900">{stats.totalUsers}</p>
+          )}
+          <p className="mt-1 text-xs text-success font-medium">Thành viên đăng ký hệ thống</p>
         </div>
       </div>
 
