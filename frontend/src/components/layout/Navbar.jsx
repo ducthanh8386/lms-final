@@ -1,13 +1,20 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { authService } from '../../services/authService'
 import { useCart } from '../../context/CartContext'
+import NotificationBell from '../ui/NotificationBell'
 
 const Navbar = () => {
   const { user, profile, loading } = useAuth()
   const { totalCount } = useCart()
   const [isOpen, setIsOpen] = useState(false)
+  const location = useLocation()
+
+  // Đóng menu khi chuyển trang
+  useEffect(() => {
+    setIsOpen(false)
+  }, [location.pathname])
 
   return (
     <header className="relative bg-white shadow-sm z-50">
@@ -23,13 +30,12 @@ const Navbar = () => {
             className="block md:hidden text-slate-600 hover:text-accent focus:outline-none"
             aria-label="Toggle navigation menu"
           >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {isOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
+            {/* Hamburger Icon with 3 divs */}
+            <div className="space-y-1.5 cursor-pointer">
+              <div className={`h-0.5 w-6 bg-slate-600 transition-transform duration-300 ${isOpen ? 'rotate-45 translate-y-2' : ''}`}></div>
+              <div className={`h-0.5 w-6 bg-slate-600 transition-opacity duration-300 ${isOpen ? 'opacity-0' : ''}`}></div>
+              <div className={`h-0.5 w-6 bg-slate-600 transition-transform duration-300 ${isOpen ? '-rotate-45 -translate-y-2' : ''}`}></div>
+            </div>
           </button>
         )}
 
@@ -49,6 +55,8 @@ const Navbar = () => {
               {profile?.role === 'student' && (
                 <>
                   <Link to="/courses" className="text-sm font-medium text-slate-600 hover:text-accent">Khóa học</Link>
+                  <Link to="/my-schedule" className="text-sm font-medium text-slate-600 hover:text-accent">Lịch học</Link>
+                  <Link to="/my-classes" className="text-sm font-medium text-slate-600 hover:text-accent">Lớp học</Link>
                   <Link to="/learning" className="text-sm font-medium text-slate-600 hover:text-accent">Đang học</Link>
                   
                   <Link to="/cart" className="relative text-sm font-medium text-slate-600 hover:text-accent">
@@ -69,6 +77,8 @@ const Navbar = () => {
               {profile?.role === 'admin' && (
                 <Link to="/admin" className="text-sm font-medium text-slate-600 hover:text-accent">Admin</Link>
               )}
+
+              {user && <NotificationBell />}
 
               <button 
                 onClick={() => authService.signOut()}
@@ -91,30 +101,44 @@ const Navbar = () => {
         <div className="absolute top-16 left-0 w-full border-t border-slate-100 bg-white px-8 py-4 shadow-md md:hidden flex flex-col gap-4 animate-fadeIn z-50">
           {user ? (
             <>
-              <div className="border-b border-slate-100 pb-2">
-                <div className="text-sm font-semibold text-slate-800">{profile?.name || user.email}</div>
-                <div className="text-xs text-slate-500 mt-0.5 capitalize">Vai trò: {profile?.role}</div>
+              <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                <div>
+                  <div className="text-sm font-semibold text-slate-800">{profile?.name || user.email}</div>
+                  <div className="text-xs text-slate-500 mt-0.5 capitalize">Vai trò: {profile?.role}</div>
+                </div>
+                <div>
+                  <NotificationBell />
+                </div>
               </div>
               
               {profile?.role === 'student' && (
                 <>
                   <Link 
                     to="/courses" 
-                    onClick={() => setIsOpen(false)}
                     className="text-sm font-medium text-slate-600 hover:text-accent py-1"
                   >
                     Khóa học
                   </Link>
                   <Link 
+                    to="/my-schedule" 
+                    className="text-sm font-medium text-slate-600 hover:text-accent py-1"
+                  >
+                    Lịch học
+                  </Link>
+                  <Link 
+                    to="/my-classes" 
+                    className="text-sm font-medium text-slate-600 hover:text-accent py-1"
+                  >
+                    Lớp học
+                  </Link>
+                  <Link 
                     to="/learning" 
-                    onClick={() => setIsOpen(false)}
                     className="text-sm font-medium text-slate-600 hover:text-accent py-1"
                   >
                     Đang học
                   </Link>
                   <Link 
                     to="/cart" 
-                    onClick={() => setIsOpen(false)}
                     className="flex items-center justify-between text-sm font-medium text-slate-600 hover:text-accent py-1"
                   >
                     <span>Giỏ hàng</span>
@@ -130,7 +154,6 @@ const Navbar = () => {
               {profile?.role === 'teacher' && (
                 <Link 
                   to="/teacher/courses" 
-                  onClick={() => setIsOpen(false)}
                   className="text-sm font-medium text-slate-600 hover:text-accent py-1"
                 >
                   Dành cho GV
@@ -140,7 +163,6 @@ const Navbar = () => {
               {profile?.role === 'admin' && (
                 <Link 
                   to="/admin" 
-                  onClick={() => setIsOpen(false)}
                   className="text-sm font-medium text-slate-600 hover:text-accent py-1"
                 >
                   Admin
@@ -161,14 +183,12 @@ const Navbar = () => {
             <div className="flex flex-col gap-2">
               <Link 
                 to="/login" 
-                onClick={() => setIsOpen(false)}
                 className="w-full rounded bg-accent py-2 text-center text-sm font-medium text-white hover:bg-purple-600 transition"
               >
                 Đăng nhập
               </Link>
               <Link 
                 to="/register" 
-                onClick={() => setIsOpen(false)}
                 className="w-full rounded bg-slate-200 py-2 text-center text-sm font-medium hover:bg-slate-300 transition"
               >
                 Đăng ký

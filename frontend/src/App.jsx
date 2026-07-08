@@ -30,6 +30,18 @@ import StudyLesson from './pages/student/StudyLesson'
 
 import MainLayout from './components/layout/MainLayout'
 
+// Teacher pages mới
+import ClassManage from './pages/teacher/ClassManage'
+import ClassDetail from './pages/teacher/ClassDetail'
+import ScheduleManage from './pages/teacher/ScheduleManage'
+import QuizManage from './pages/teacher/QuizManage'
+
+// Student pages mới
+import MySchedule from './pages/student/MySchedule'
+import MyClasses from './pages/student/MyClasses'
+import JoinClass from './pages/student/JoinClass'
+import QuizPage from './pages/student/QuizPage'
+
 function App() {
   return (
     <Routes>
@@ -49,6 +61,12 @@ function App() {
           <Route path="/checkout/detail" element={<CheckoutDetail />} />
           <Route path="/learning" element={<MyLearning />} />
           <Route path="/learning/:id" element={<StudyLesson />} />
+          
+          {/* Student Routes mới */}
+          <Route path="/my-schedule" element={<MySchedule />} />
+          <Route path="/my-classes" element={<MyClasses />} />
+          <Route path="/join/:inviteCode?" element={<JoinClass />} />
+          <Route path="/learning/:courseId/quiz/:quizId" element={<QuizPage />} />
         </Route>
 
         {/* Teacher Routes */}
@@ -62,6 +80,12 @@ function App() {
           <Route path="/teacher/orders" element={<OrderManage />} />
           <Route path="/teacher/students" element={<Students />} />
           <Route path="/teacher/settings" element={<TeacherSettings />} />
+          
+          {/* Teacher Routes mới */}
+          <Route path="/teacher/classes" element={<ClassManage />} />
+          <Route path="/teacher/classes/:classId" element={<ClassDetail />} />
+          <Route path="/teacher/schedule" element={<ScheduleManage />} />
+          <Route path="/teacher/courses/:courseId/quizzes" element={<QuizManage />} />
         </Route>
 
         {/* Admin Routes */}

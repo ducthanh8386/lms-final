@@ -7,6 +7,8 @@ const TeacherTabs = () => {
 
   const tabs = [
     { path: '/teacher/courses', label: 'Khóa học' },
+    { path: '/teacher/classes', label: 'Lớp học' },
+    { path: '/teacher/schedule', label: 'Lịch dạy' },
     { path: '/teacher/orders', label: 'Đơn hàng' },
     { path: '/teacher/students', label: 'Học viên' },
     { path: '/teacher/settings', label: 'Cài đặt Thanh toán' },

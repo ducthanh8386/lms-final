@@ -81,7 +81,7 @@ const GradingManage = () => {
         <>
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto rounded-xl border bg-white shadow-sm">
-            <table className="w-full text-left text-sm">
+            <table className="w-full min-w-[600px] text-left text-sm">
               <thead className="bg-slate-50 border-b">
                 <tr>
                   <th className="p-4 font-semibold text-slate-900">Học viên</th>

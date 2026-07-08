@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient'
+import { notificationService } from './notificationService'
 
 export const teacherService = {
   // Lấy các đơn hàng đang pending của giáo viên
@@ -75,6 +76,20 @@ export const teacherService = {
         const { error: enrollError } = await supabase.from('enrollments').insert(newEnrollments)
         if (enrollError) return { error: enrollError }
       }
+    }
+
+    // Gửi thông báo cho student
+    try {
+      await notificationService.createNotification(
+        order.user_id,
+        'order_approved',
+        'Đơn hàng đã được duyệt',
+        `Đơn hàng #${orderId.slice(0, 8).toUpperCase()} của bạn đã được giáo viên phê duyệt. Hãy vào học ngay!`,
+        orderId,
+        'order'
+      )
+    } catch (err) {
+      console.error("Gửi thông báo duyệt đơn hàng lỗi:", err)
     }
 
     return { success: true }

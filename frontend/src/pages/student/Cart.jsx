@@ -94,7 +94,7 @@ const Cart = () => {
               {loading ? 'Đang xử lý...' : 'Thanh toán & Đăng ký'}
             </button>
             <p className="mt-4 text-center text-xs text-slate-500">
-              * Đây là tính năng chuyển khoản thủ công. Đơn hàng sẽ ở trạng thái chờ duyệt (Pending) cho đến khi bạn tải biên lai chuyển khoản lên và được Giảng viên phê duyệt.
+              * Sau khi đặt hàng, bạn sẽ nhận thông tin chuyển khoản. Đơn hàng sẽ được kích hoạt sau khi giáo viên xác nhận thanh toán.
             </p>
           </div>
         </div>

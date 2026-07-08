@@ -181,46 +181,50 @@ const CourseForm = () => {
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700">Danh mục</label>
-          <select
-            name="category_id"
-            className="mt-1 block w-full rounded-md border p-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-            value={formData.category_id}
-            onChange={handleChange}
-          >
-            <option value="">-- Chọn danh mục --</option>
-            {categories.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            name="is_free"
-            id="is_free"
-            checked={formData.is_free}
-            onChange={handleChange}
-            className="rounded text-accent focus:ring-accent"
-          />
-          <label htmlFor="is_free" className="text-sm text-slate-700">Khóa học miễn phí</label>
-        </div>
-
-        {!formData.is_free && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-slate-700">Giá (VNĐ)</label>
-            <input
-              type="number"
-              name="price"
-              min="0"
+            <label className="block text-sm font-medium text-slate-700">Danh mục</label>
+            <select
+              name="category_id"
               className="mt-1 block w-full rounded-md border p-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-              value={formData.price}
+              value={formData.category_id}
               onChange={handleChange}
-            />
+            >
+              <option value="">-- Chọn danh mục --</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
           </div>
-        )}
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pt-6">
+              <input
+                type="checkbox"
+                name="is_free"
+                id="is_free"
+                checked={formData.is_free}
+                onChange={handleChange}
+                className="rounded text-accent focus:ring-accent"
+              />
+              <label htmlFor="is_free" className="text-sm text-slate-700 font-medium">Khóa học miễn phí</label>
+            </div>
+
+            {!formData.is_free && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700">Giá (VNĐ)</label>
+                <input
+                  type="number"
+                  name="price"
+                  min="0"
+                  className="mt-1 block w-full rounded-md border p-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                  value={formData.price}
+                  onChange={handleChange}
+                />
+              </div>
+            )}
+          </div>
+        </div>
 
         <div className="flex justify-end gap-4 pt-4 border-t">
           <button

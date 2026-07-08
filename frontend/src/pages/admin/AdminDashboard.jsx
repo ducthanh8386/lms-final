@@ -6,9 +6,11 @@ import { useToast } from '../../context/ToastContext'
 const AdminDashboard = () => {
   const toast = useToast()
   const [stats, setStats] = useState({
-    totalUsers: 0,
-    pendingCourses: 0,
-    totalRevenue: 0
+    totalRevenue: 0,
+    totalStudents: 0,
+    totalTeachers: 0,
+    totalCourses: 0,
+    pendingCourses: 0
   })
   const [loading, setLoading] = useState(true)
 
@@ -31,33 +33,55 @@ const AdminDashboard = () => {
       <h1 className="mb-8 text-3xl font-bold text-slate-900">Admin Dashboard</h1>
 
       {/* Stats Section */}
-      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
         <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-success animate-fadeIn">
-          <h3 className="text-sm font-medium text-slate-500 uppercase">Tổng Doanh Thu</h3>
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng Doanh Thu</h3>
           {loading ? (
             <div className="mt-2 h-9 w-28 animate-pulse rounded bg-slate-100"></div>
           ) : (
-            <p className="mt-2 text-3xl font-bold text-slate-900">{stats.totalRevenue.toLocaleString('vi-VN')}đ</p>
+            <p className="mt-2 text-2xl font-bold text-slate-900">{stats.totalRevenue.toLocaleString('vi-VN')}đ</p>
           )}
-          <p className="mt-1 text-xs text-success font-medium">Doanh thu đơn hàng đã duyệt</p>
+          <p className="mt-1 text-[11px] text-success font-medium">Đơn hàng hoàn tất</p>
         </div>
-        <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-warning animate-fadeIn">
-          <h3 className="text-sm font-medium text-slate-500 uppercase">Khóa Học Chờ Duyệt</h3>
-          {loading ? (
-            <div className="mt-2 h-9 w-12 animate-pulse rounded bg-slate-100"></div>
-          ) : (
-            <p className="mt-2 text-3xl font-bold text-slate-900">{stats.pendingCourses}</p>
-          )}
-          <p className="mt-1 text-xs text-slate-500 font-medium">Cần phê duyệt trong ngày</p>
-        </div>
+        
         <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-accent animate-fadeIn">
-          <h3 className="text-sm font-medium text-slate-500 uppercase">Tổng Người Dùng</h3>
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng Học Viên</h3>
           {loading ? (
             <div className="mt-2 h-9 w-16 animate-pulse rounded bg-slate-100"></div>
           ) : (
-            <p className="mt-2 text-3xl font-bold text-slate-900">{stats.totalUsers}</p>
+            <p className="mt-2 text-2xl font-bold text-slate-900">{stats.totalStudents}</p>
           )}
-          <p className="mt-1 text-xs text-success font-medium">Thành viên đăng ký hệ thống</p>
+          <p className="mt-1 text-[11px] text-slate-500 font-medium">Học viên đăng ký</p>
+        </div>
+
+        <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-purple-500 animate-fadeIn">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng Giáo Viên</h3>
+          {loading ? (
+            <div className="mt-2 h-9 w-16 animate-pulse rounded bg-slate-100"></div>
+          ) : (
+            <p className="mt-2 text-2xl font-bold text-slate-900">{stats.totalTeachers}</p>
+          )}
+          <p className="mt-1 text-[11px] text-slate-500 font-medium">Giảng viên đứng lớp</p>
+        </div>
+
+        <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-blue-500 animate-fadeIn">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng Khóa Học</h3>
+          {loading ? (
+            <div className="mt-2 h-9 w-16 animate-pulse rounded bg-slate-100"></div>
+          ) : (
+            <p className="mt-2 text-2xl font-bold text-slate-900">{stats.totalCourses}</p>
+          )}
+          <p className="mt-1 text-[11px] text-slate-500 font-medium">Khóa học đã duyệt</p>
+        </div>
+
+        <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-warning animate-fadeIn">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Chờ Duyệt</h3>
+          {loading ? (
+            <div className="mt-2 h-9 w-12 animate-pulse rounded bg-slate-100"></div>
+          ) : (
+            <p className="mt-2 text-2xl font-bold text-slate-900">{stats.pendingCourses}</p>
+          )}
+          <p className="mt-1 text-[11px] text-warning font-medium">Khóa học chờ duyệt</p>
         </div>
       </div>
 

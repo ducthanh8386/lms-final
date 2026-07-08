@@ -86,34 +86,49 @@ export const adminService = {
 
   // Lấy thống kê cho Admin Dashboard
   async getDashboardStats() {
-    // 1. Tổng user (profiles)
-    const { count: totalUsers, error: usersError } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-
-    // 2. Khóa học chờ duyệt (pending)
-    const { count: pendingCourses, error: pendingError } = await supabase
-      .from('courses')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'pending')
-
-    // 3. Doanh thu (từ các đơn hàng status = completed)
+    // 1. Tổng doanh thu (từ các đơn hàng status = completed)
     const { data: completedOrders, error: revenueError } = await supabase
       .from('orders')
       .select('total_price')
       .eq('status', 'completed')
 
-    if (usersError || pendingError || revenueError) {
-      return { error: usersError || pendingError || revenueError }
+    // 2. Tổng học viên (role = student)
+    const { count: totalStudents, error: studentsError } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'student')
+
+    // 3. Tổng giáo viên (role = teacher)
+    const { count: totalTeachers, error: teachersError } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'teacher')
+
+    // 4. Tổng khóa học đã được duyệt (approved)
+    const { count: totalCourses, error: coursesError } = await supabase
+      .from('courses')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'approved')
+
+    // 5. Khóa học chờ duyệt (pending)
+    const { count: pendingCourses, error: pendingError } = await supabase
+      .from('courses')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending')
+
+    if (revenueError || studentsError || teachersError || coursesError || pendingError) {
+      return { error: revenueError || studentsError || teachersError || coursesError || pendingError }
     }
 
     const totalRevenue = completedOrders?.reduce((sum, o) => sum + Number(o.total_price || 0), 0) || 0
 
     return {
       data: {
-        totalUsers: totalUsers || 0,
-        pendingCourses: pendingCourses || 0,
-        totalRevenue: totalRevenue || 0
+        totalRevenue: totalRevenue || 0,
+        totalStudents: totalStudents || 0,
+        totalTeachers: totalTeachers || 0,
+        totalCourses: totalCourses || 0,
+        pendingCourses: pendingCourses || 0
       }
     }
   }

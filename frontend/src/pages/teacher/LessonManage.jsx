@@ -113,16 +113,24 @@ const LessonManage = () => {
           </h1>
           <p className="text-slate-500">Quản lý nội dung bài học trong khóa này.</p>
         </div>
-        <button 
-          onClick={() => {
-            setEditingLessonId(null)
-            setFormData({ title: '', content_type: 'video', content: '', order_index: lessons.length + 1 })
-            setShowForm(true)
-          }}
-          className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600 self-start sm:self-auto"
-        >
-          + Thêm bài học
-        </button>
+        <div className="flex gap-2 self-start sm:self-auto">
+          <Link 
+            to={`/teacher/courses/${courseId}/quizzes`}
+            className="rounded-md border border-slate-200 bg-white px-4 py-2 font-medium text-slate-700 hover:bg-slate-50 text-center text-sm"
+          >
+            Quản lý trắc nghiệm
+          </Link>
+          <button 
+            onClick={() => {
+              setEditingLessonId(null)
+              setFormData({ title: '', content_type: 'video', content: '', order_index: lessons.length + 1 })
+              setShowForm(true)
+            }}
+            className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600 text-sm"
+          >
+            + Thêm bài học
+          </button>
+        </div>
       </header>
 
       {showForm && (

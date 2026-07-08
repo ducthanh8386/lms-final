@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient'
+import { notificationService } from './notificationService'
 
 export const assignmentService = {
   // Lấy danh sách bài tập của 1 khóa học
@@ -132,7 +133,24 @@ export const assignmentService = {
       .from('submissions')
       .update({ grade, feedback })
       .eq('id', submissionId)
-      .select()
+      .select('student_id, assignment_id, assignments(title)')
+      .single()
+
+    if (data && !error) {
+      try {
+        await notificationService.createNotification(
+          data.student_id,
+          'grade_posted',
+          'Đã có điểm bài tập mới',
+          `Bài tập "${data.assignments?.title || 'Bài tập'}" của bạn đã được giáo viên chấm điểm. Điểm số: ${grade}.`,
+          data.assignment_id,
+          'assignment'
+        )
+      } catch (err) {
+        console.error("Gửi thông báo chấm bài lỗi:", err)
+      }
+    }
+
     return { data, error }
   }
 }

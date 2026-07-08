@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { courseService } from '../../services/courseService'
 import { studentService } from '../../services/studentService'
 import { assignmentService } from '../../services/assignmentService'
+import { quizService } from '../../services/quizService'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import DOMPurify from 'dompurify'
@@ -15,15 +16,22 @@ const StudyLesson = () => {
   
   const [lessons, setLessons] = useState([])
   const [assignments, setAssignments] = useState([])
+  const [quizzes, setQuizzes] = useState([])
   
   const [activeItem, setActiveItem] = useState({ type: 'lesson', data: null }) // { type: 'lesson' | 'assignment', data: object }
   const [completedIds, setCompletedIds] = useState([])
   const [loading, setLoading] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Assignment states
   const [submission, setSubmission] = useState(null)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef(null)
+
+  // Close sidebar on mobile when active lesson/assignment changes
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [activeItem])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,6 +57,12 @@ const StudyLesson = () => {
             return { type: 'assignment', data: aData[0] }
           })
         }
+      }
+
+      // Fetch published quizzes of the course
+      const { data: qzData } = await quizService.getQuizzesByCourse(courseId)
+      if (qzData) {
+        setQuizzes(qzData.filter(q => q.is_published))
       }
 
       if (user) {
@@ -156,7 +170,7 @@ const StudyLesson = () => {
     <div className="flex h-[calc(100vh-64px)] w-full flex-col md:flex-row text-left bg-slate-50">
       
       {/* Sidebar: Danh sách bài học */}
-      <div className="w-full border-r bg-white md:w-80 overflow-y-auto shrink-0 flex flex-col h-72 md:h-full border-b md:border-b-0">
+      <div className={`${sidebarOpen ? 'flex' : 'hidden'} md:flex w-full border-r bg-white md:w-80 overflow-y-auto shrink-0 flex-col h-72 md:h-full border-b md:border-b-0`}>
         <div className="p-4 border-b">
           <Link to="/learning" className="mb-2 block text-xs font-medium text-accent hover:underline">← Về danh sách khóa học</Link>
           <h2 className="font-bold text-slate-900 line-clamp-2">{course.title}</h2>
@@ -221,11 +235,43 @@ const StudyLesson = () => {
               </button>
             )
           })}
+
+          {/* Quizzes */}
+          {quizzes.length > 0 && (
+            <div className="px-4 py-2 mt-2 text-xs font-bold uppercase text-slate-400 bg-slate-50 border-t">Trắc nghiệm</div>
+          )}
+          {quizzes.map((quizItem, idx) => {
+            return (
+              <Link
+                key={quizItem.id}
+                to={`/learning/${courseId}/quiz/${quizItem.id}`}
+                className="flex w-full items-center gap-3 border-b p-4 text-left hover:bg-slate-50 transition border-l-4 border-l-transparent text-slate-700"
+              >
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-orange-200 bg-orange-50 text-orange-600 text-xs">
+                  💡
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-medium leading-relaxed">{quizItem.title}</div>
+                  <div className="text-xs text-slate-400 font-semibold">{quizItem.time_limit_minutes ? `${quizItem.time_limit_minutes} phút` : 'Tự do'}</div>
+                </div>
+              </Link>
+            )
+          })}
         </div>
       </div>
 
       {/* Nội dung chính */}
       <div className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div className="md:hidden mb-4 flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm">
+          <button 
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="flex items-center gap-2 rounded bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+          >
+            {sidebarOpen ? '✕ Ẩn bài học' : '☰ Hiện danh sách bài học'}
+          </button>
+          <span className="text-xs font-bold text-slate-500">{progressPercent}% Hoàn thành</span>
+        </div>
+
         {activeItem.type === 'lesson' && activeItem.data ? (
           <div className="mx-auto max-w-4xl">
             <h1 className="mb-6 text-2xl font-bold text-slate-900">{activeItem.data.title}</h1>

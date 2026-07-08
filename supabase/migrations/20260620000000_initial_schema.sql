@@ -222,6 +222,8 @@ CREATE POLICY "Strict access for lessons" ON public.lessons FOR SELECT USING (
   (EXISTS (SELECT 1 FROM public.courses WHERE id = course_id AND teacher_id = auth.uid()))
   OR
   (EXISTS (SELECT 1 FROM public.enrollments WHERE course_id = lessons.course_id AND user_id = auth.uid()))
+  OR
+  (EXISTS (SELECT 1 FROM public.courses WHERE id = course_id AND status = 'approved'))
 );
 
 CREATE POLICY "Teachers can insert lessons" ON public.lessons FOR INSERT WITH CHECK (
