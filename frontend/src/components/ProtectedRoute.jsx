@@ -18,6 +18,11 @@ const ProtectedRoute = ({ allowedRoles }) => {
     return <Navigate to="/login" replace />
   }
 
+  // Check if user is banned
+  if (profile && profile.status === 'banned') {
+    return <Navigate to="/login" replace />
+  }
+
   // Role checking
   if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
     // Redirect to appropriate dashboard/home based on role, or unauth page

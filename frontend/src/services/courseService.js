@@ -104,22 +104,50 @@ export const courseService = {
 
   // === CHO STUDENT / PUBLIC ===
   
-  // Lấy danh sách khóa học public (status = approved)
-  async getPublicCourses() {
-    const { data, error } = await supabase
-      .from('courses')
-      .select('*, profiles(name), categories(name)')
-      .eq('status', 'approved')
+  // Lấy danh sách khóa học public với tìm kiếm, phân trang, lọc danh mục
+  async getPublicCourses(filters = {}) {
+    const { search, category_id, page = 1, limit = 8 } = filters
+    const offset = (page - 1) * limit
+    
+    let query = supabase
+      .from('courses_public')
+      .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
-    return { data, error }
+
+    if (category_id) {
+      query = query.eq('category_id', category_id)
+    }
+
+    if (search) {
+      query = query.ilike('title', `%${search}%`)
+    }
+
+    query = query.range(offset, offset + limit - 1)
+
+    const { data, error, count } = await query
+    
+    // Map to preserve backward compatibility with frontend: profiles.name, categories.name
+    const mappedData = data?.map(c => ({
+      ...c,
+      profiles: { name: c.teacher_name },
+      categories: { name: c.category_name }
+    }))
+
+    return { data: mappedData, error, count }
   },
   
   async getCourseDetail(courseId) {
     const { data, error } = await supabase
-      .from('courses')
-      .select('*, profiles(name), categories(name)')
+      .from('courses_public')
+      .select('*')
       .eq('id', courseId)
       .single()
+
+    if (data) {
+      data.profiles = { name: data.teacher_name }
+      data.categories = { name: data.category_name }
+    }
+
     return { data, error }
   }
 }

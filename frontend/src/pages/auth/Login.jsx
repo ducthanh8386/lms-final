@@ -23,13 +23,21 @@ const Login = () => {
       return
     }
     
-    const { error: signInError } = await authService.signIn(email, password)
+    const { data: signInData, error: signInError } = await authService.signIn(email, password)
     
     if (signInError) {
       setError(signInError.message)
       setLoading(false)
     } else {
-      navigate('/')
+      // Kiểm tra xem tài khoản có bị khóa không
+      const { data: userProfile } = await authService.getProfile(signInData.user.id)
+      if (userProfile && userProfile.status === 'banned') {
+        setError("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.")
+        await authService.signOut()
+        setLoading(false)
+      } else {
+        navigate('/')
+      }
     }
   }
 
@@ -49,8 +57,9 @@ const Login = () => {
           )}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700">Email</label>
+              <label htmlFor="login-email" className="block text-sm font-medium text-slate-700">Email</label>
               <input
+                id="login-email"
                 type="email"
                 required
                 className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 placeholder-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm"
@@ -59,8 +68,9 @@ const Login = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700">Mật khẩu</label>
+              <label htmlFor="login-password" className="block text-sm font-medium text-slate-700">Mật khẩu</label>
               <input
+                id="login-password"
                 type="password"
                 required
                 className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 placeholder-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm"

@@ -196,8 +196,9 @@ const ClassManage = () => {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Tên lớp học *</label>
+                <label htmlFor="class-name" className="block text-sm font-medium text-slate-700 mb-1">Tên lớp học *</label>
                 <input 
+                  id="class-name"
                   type="text" 
                   required 
                   value={formData.name}
@@ -208,8 +209,9 @@ const ClassManage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Mô tả ngắn</label>
+                <label htmlFor="class-description" className="block text-sm font-medium text-slate-700 mb-1">Mô tả ngắn</label>
                 <textarea 
+                  id="class-description"
                   value={formData.description}
                   onChange={e => setFormData({...formData, description: e.target.value})}
                   rows="3"
@@ -220,8 +222,9 @@ const ClassManage = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Học sinh tối đa</label>
+                  <label htmlFor="class-max-students" className="block text-sm font-medium text-slate-700 mb-1">Học sinh tối đa</label>
                   <input 
+                    id="class-max-students"
                     type="number" 
                     min="1" 
                     max="200"
@@ -232,8 +235,9 @@ const ClassManage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Liên kết Khóa học</label>
+                  <label htmlFor="class-course" className="block text-sm font-medium text-slate-700 mb-1">Liên kết Khóa học</label>
                   <select 
+                    id="class-course"
                     value={formData.course_id}
                     onChange={e => setFormData({...formData, course_id: e.target.value})}
                     className="w-full rounded-md border p-2.5 bg-white focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent text-sm"

@@ -367,7 +367,7 @@ const QuizManage = () => {
           {loading ? (
             <div className="h-44 w-full bg-white border rounded-xl animate-pulse" />
           ) : quizzes.length > 0 ? (
-            <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border shadow-sm overflow-x-auto w-full">
               <table className="w-full min-w-[600px] text-left text-sm">
                 <thead className="bg-slate-50 border-b">
                   <tr>
@@ -443,8 +443,9 @@ const QuizManage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Tiêu đề đề thi *</label>
+              <label htmlFor="quiz-title" className="block text-sm font-medium text-slate-700 mb-1">Tiêu đề đề thi *</label>
               <input
+                id="quiz-title"
                 type="text"
                 required
                 value={quizForm.title}
@@ -454,8 +455,9 @@ const QuizManage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Thời gian làm bài (Phút)</label>
+              <label htmlFor="quiz-time-limit" className="block text-sm font-medium text-slate-700 mb-1">Thời gian làm bài (Phút)</label>
               <input
+                id="quiz-time-limit"
                 type="number"
                 min="1"
                 placeholder="Để trống = Không giới hạn"
@@ -467,8 +469,9 @@ const QuizManage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Mô tả chi tiết</label>
+            <label htmlFor="quiz-description" className="block text-sm font-medium text-slate-700 mb-1">Mô tả chi tiết</label>
             <textarea
+              id="quiz-description"
               value={quizForm.description}
               onChange={e => setQuizForm({...quizForm, description: e.target.value})}
               rows="3"
@@ -479,8 +482,9 @@ const QuizManage = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Số lượt thi tối đa</label>
+              <label htmlFor="quiz-max-attempts" className="block text-sm font-medium text-slate-700 mb-1">Số lượt thi tối đa</label>
               <input
+                id="quiz-max-attempts"
                 type="number"
                 min="1"
                 required
@@ -490,8 +494,9 @@ const QuizManage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Điểm tối thiểu đạt (%)</label>
+              <label htmlFor="quiz-passing-score" className="block text-sm font-medium text-slate-700 mb-1">Điểm tối thiểu đạt (%)</label>
               <input
+                id="quiz-passing-score"
                 type="number"
                 min="0"
                 max="100"
@@ -748,7 +753,7 @@ const QuizManage = () => {
           {loadingResults ? (
             <div className="h-44 w-full bg-white border rounded-xl animate-pulse" />
           ) : selectedResults.length > 0 ? (
-            <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border shadow-sm overflow-x-auto w-full">
               <table className="w-full min-w-[500px] text-left text-sm">
                 <thead className="bg-slate-50 border-b">
                   <tr>

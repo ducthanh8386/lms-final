@@ -75,9 +75,10 @@ const TeacherSettings = () => {
       
       <form onSubmit={handleSubmit} className="space-y-6 rounded-xl border bg-white p-6 shadow-sm max-w-2xl">
         <div>
-          <label className="block text-sm font-medium text-slate-700">Thông tin Ngân hàng</label>
+          <label htmlFor="settings-bank-info" className="block text-sm font-medium text-slate-700">Thông tin Ngân hàng</label>
           <p className="mb-2 text-xs text-slate-500">Ví dụ: Vietcombank - 123456789 - NGUYEN VAN A</p>
           <textarea
+            id="settings-bank-info"
             rows="3"
             className="w-full rounded-md border p-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             value={formData.bank_info}
@@ -87,7 +88,7 @@ const TeacherSettings = () => {
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-700">Mã QR Thanh toán</label>
+          <label htmlFor="settings-qr-file" className="mb-2 block text-sm font-medium text-slate-700">Mã QR Thanh toán</label>
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
             <div className="h-32 w-32 shrink-0 rounded bg-slate-200 overflow-hidden border border-dashed border-slate-400">
               {formData.payment_qr_url ? (
@@ -98,6 +99,7 @@ const TeacherSettings = () => {
             </div>
             <div className="flex-1 w-full">
               <input 
+                id="settings-qr-file"
                 type="file" 
                 accept="image/*"
                 onChange={handleQRUpload}
@@ -105,8 +107,9 @@ const TeacherSettings = () => {
                 className="w-full text-sm text-slate-500 file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-purple-600 disabled:opacity-50"
               />
               {uploadingQR && <div className="mt-2 text-sm text-accent">Đang tải ảnh lên...</div>}
-              <div className="mt-2 text-xs text-slate-500">Hoặc dán URL ảnh QR:</div>
+              <label htmlFor="settings-qr-url" className="mt-2 text-xs text-slate-500 block">Hoặc dán URL ảnh QR:</label>
               <input
+                id="settings-qr-url"
                 type="url"
                 placeholder="https://..."
                 className="mt-1 w-full rounded-md border border-slate-300 p-2 text-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"

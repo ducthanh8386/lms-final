@@ -253,8 +253,9 @@ const ScheduleManage = () => {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Tiêu đề buổi học *</label>
+                <label htmlFor="schedule-title" className="block text-sm font-medium text-slate-700 mb-1">Tiêu đề buổi học *</label>
                 <input 
+                  id="schedule-title"
                   type="text" 
                   required 
                   value={formData.title}
@@ -266,8 +267,9 @@ const ScheduleManage = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Gán vào Lớp học</label>
+                  <label htmlFor="schedule-class" className="block text-sm font-medium text-slate-700 mb-1">Gán vào Lớp học</label>
                   <select 
+                    id="schedule-class"
                     value={formData.class_id}
                     onChange={e => setFormData({...formData, class_id: e.target.value})}
                     className="w-full rounded-md border p-2 bg-white focus:border-accent focus:outline-none text-sm text-slate-700"
@@ -296,8 +298,9 @@ const ScheduleManage = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Giờ bắt đầu *</label>
+                  <label htmlFor="schedule-start" className="block text-sm font-medium text-slate-700 mb-1">Giờ bắt đầu *</label>
                   <input 
+                    id="schedule-start"
                     type="datetime-local" 
                     required 
                     value={formData.start_time}
@@ -306,8 +309,9 @@ const ScheduleManage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Giờ kết thúc *</label>
+                  <label htmlFor="schedule-end" className="block text-sm font-medium text-slate-700 mb-1">Giờ kết thúc *</label>
                   <input 
+                    id="schedule-end"
                     type="datetime-local" 
                     required 
                     value={formData.end_time}
@@ -319,8 +323,9 @@ const ScheduleManage = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Zoom / Google Meet URL</label>
+                  <label htmlFor="schedule-meeting" className="block text-sm font-medium text-slate-700 mb-1">Zoom / Google Meet URL</label>
                   <input 
+                    id="schedule-meeting"
                     type="url" 
                     value={formData.meeting_url}
                     onChange={e => setFormData({...formData, meeting_url: e.target.value})}
@@ -329,8 +334,9 @@ const ScheduleManage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Địa điểm / Phòng học</label>
+                  <label htmlFor="schedule-location" className="block text-sm font-medium text-slate-700 mb-1">Địa điểm / Phòng học</label>
                   <input 
+                    id="schedule-location"
                     type="text" 
                     value={formData.location}
                     onChange={e => setFormData({...formData, location: e.target.value})}

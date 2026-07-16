@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://lms-final-snowy.vercel.app',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, DELETE, OPTIONS'
 }
@@ -22,7 +22,7 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization')!
     const token = authHeader.replace('Bearer ', '')
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token)
-    
+
     if (userError || !user) throw new Error('Unauthorized')
 
     const { data: profile } = await supabaseClient
@@ -39,7 +39,7 @@ serve(async (req) => {
     if (req.method === 'POST') {
       // TẠO USER MỚI
       const { email, password, name, role } = await req.json()
-      
+
       const { data: newUser, error: createError } = await supabaseClient.auth.admin.createUser({
         email,
         password,
@@ -55,14 +55,14 @@ serve(async (req) => {
           .from('profiles')
           .update({ role })
           .eq('id', newUser.user.id)
-          
+
         if (updateRoleError) console.error("Error updating role:", updateRoleError)
       }
 
       return new Response(JSON.stringify({ success: true, user: newUser.user }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
-    } 
+    }
     else if (req.method === 'DELETE') {
       // XÓA USER
       const { id } = await req.json()

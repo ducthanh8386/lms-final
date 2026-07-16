@@ -2,19 +2,28 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authService } from '../../services/authService'
 import { registerSchema } from '../../schemas'
+import { useToast } from '../../context/ToastContext'
 
 const Register = () => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const toast = useToast()
 
   const handleRegister = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
+
+    if (password !== confirmPassword) {
+      setError("Mật khẩu nhập lại không khớp.")
+      setLoading(false)
+      return
+    }
     
     // Zod Validation
     const validationResult = registerSchema.safeParse({ name, email, password })
@@ -24,14 +33,16 @@ const Register = () => {
       return
     }
     
-    const { error } = await authService.signUp(email, password, name)
+    const { data, error } = await authService.signUp(email, password, name)
     
     if (error) {
       setError(error.message)
       setLoading(false)
+    } else if (!data?.session) {
+      toast.success("Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản trước khi đăng nhập.")
+      navigate('/login')
     } else {
-      // Signup success, usually Supabase will auto login if email confirmation is disabled.
-      // If email confirmation is enabled, you might need to show a message to check email.
+      toast.success("Đăng ký tài khoản thành công!")
       navigate('/')
     }
   }
@@ -52,8 +63,9 @@ const Register = () => {
           )}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700">Họ và tên</label>
+              <label htmlFor="register-name" className="block text-sm font-medium text-slate-700">Họ và tên</label>
               <input
+                id="register-name"
                 type="text"
                 required
                 className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 placeholder-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm"
@@ -62,8 +74,9 @@ const Register = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700">Email</label>
+              <label htmlFor="register-email" className="block text-sm font-medium text-slate-700">Email</label>
               <input
+                id="register-email"
                 type="email"
                 required
                 className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 placeholder-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm"
@@ -72,14 +85,27 @@ const Register = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700">Mật khẩu</label>
+              <label htmlFor="register-password" className="block text-sm font-medium text-slate-700">Mật khẩu</label>
               <input
+                id="register-password"
                 type="password"
                 required
-                minLength="6"
+                minLength="8"
                 className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 placeholder-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="register-confirm-password" className="block text-sm font-medium text-slate-700">Nhập lại mật khẩu</label>
+              <input
+                id="register-confirm-password"
+                type="password"
+                required
+                minLength="8"
+                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 placeholder-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:text-sm"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </div>
           </div>

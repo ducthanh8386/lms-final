@@ -127,8 +127,9 @@ const CourseForm = () => {
         {error && <div className="rounded bg-red-50 p-3 text-red-600">{error}</div>}
         
         <div>
-          <label className="block text-sm font-medium text-slate-700">Tên khóa học *</label>
+          <label htmlFor="course-title" className="block text-sm font-medium text-slate-700">Tên khóa học *</label>
           <input
+            id="course-title"
             type="text"
             name="title"
             required
@@ -139,8 +140,9 @@ const CourseForm = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700">Mô tả ngắn</label>
+          <label htmlFor="course-description" className="block text-sm font-medium text-slate-700">Mô tả ngắn</label>
           <textarea
+            id="course-description"
             name="description"
             rows="3"
             className="mt-1 block w-full rounded-md border p-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
@@ -151,7 +153,7 @@ const CourseForm = () => {
 
         {/* Ảnh thu nhỏ */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-slate-700">Ảnh thu nhỏ (Thumbnail)</label>
+          <label htmlFor="course-thumbnail-file" className="mb-2 block text-sm font-medium text-slate-700">Ảnh thu nhỏ (Thumbnail)</label>
           <div className="flex items-center gap-4">
             <div className="h-24 w-32 shrink-0 rounded bg-slate-200 overflow-hidden border border-dashed border-slate-400">
               {formData.thumbnail ? (
@@ -162,6 +164,7 @@ const CourseForm = () => {
             </div>
             <div className="flex-1">
               <input 
+                id="course-thumbnail-file"
                 type="file" 
                 accept="image/*"
                 onChange={handleImageUpload}
@@ -169,8 +172,9 @@ const CourseForm = () => {
                 className="w-full text-sm text-slate-500 file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-purple-600 disabled:opacity-50"
               />
               {uploadingImage && <div className="mt-2 text-sm text-accent">Đang tải ảnh lên...</div>}
-              <div className="mt-2 text-xs text-slate-500">Hoặc dán URL:</div>
+              <label htmlFor="course-thumbnail-url" className="mt-2 text-xs text-slate-500 block">Hoặc dán URL:</label>
               <input
+                id="course-thumbnail-url"
                 type="url"
                 placeholder="https://..."
                 className="mt-1 w-full rounded-md border border-slate-300 p-2 text-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
@@ -183,8 +187,9 @@ const CourseForm = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-slate-700">Danh mục</label>
+            <label htmlFor="course-category" className="block text-sm font-medium text-slate-700">Danh mục</label>
             <select
+              id="course-category"
               name="category_id"
               className="mt-1 block w-full rounded-md border p-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               value={formData.category_id}
@@ -212,8 +217,9 @@ const CourseForm = () => {
 
             {!formData.is_free && (
               <div>
-                <label className="block text-sm font-medium text-slate-700">Giá (VNĐ)</label>
+                <label htmlFor="course-price" className="block text-sm font-medium text-slate-700">Giá (VNĐ)</label>
                 <input
+                  id="course-price"
                   type="number"
                   name="price"
                   min="0"

@@ -1,18 +1,80 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
 import { studentService } from '../../services/studentService'
-
+import { supabase } from '../../lib/supabaseClient'
 import { useToast } from '../../context/ToastContext'
 
 const Cart = () => {
-  const { cart, removeFromCart, clearCart, totalPrice } = useCart()
+  const { cart, setCart, removeFromCart, clearCart, totalPrice } = useCart()
   const { user } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [warnings, setWarnings] = useState([])
+  const [verifying, setVerifying] = useState(false)
+
+  useEffect(() => {
+    if (cart.length === 0 || verifying) return
+
+    const verifyPrices = async () => {
+      setVerifying(true)
+      const courseIds = cart.map(item => item.id)
+      const { data: dbCourses, error: dbErr } = await supabase
+        .from('courses')
+        .select('id, title, price, is_free, status')
+        .in('id', courseIds)
+
+      if (dbErr || !dbCourses) {
+        setVerifying(false)
+        return
+      }
+
+      const dbMap = dbCourses.reduce((acc, c) => {
+        acc[c.id] = c
+        return acc
+      }, {})
+
+      const newWarnings = []
+      let cartUpdated = false
+      const updatedCart = []
+
+      for (const item of cart) {
+        const dbItem = dbMap[item.id]
+        if (!dbItem || dbItem.status !== 'approved') {
+          newWarnings.push(`Khóa học "${item.title}" không còn khả dụng và đã được xóa khỏi giỏ hàng.`)
+          cartUpdated = true
+        } else {
+          const dbPrice = dbItem.is_free ? 0 : Number(dbItem.price || 0)
+          const cartPrice = item.is_free ? 0 : Number(item.price || 0)
+
+          if (dbPrice !== cartPrice) {
+            newWarnings.push(`Giá khóa học "${item.title}" đã thay đổi từ ${cartPrice.toLocaleString()}đ thành ${dbPrice.toLocaleString()}đ.`)
+            updatedCart.push({
+              ...item,
+              price: dbItem.price,
+              is_free: dbItem.is_free
+            })
+            cartUpdated = true
+          } else {
+            updatedCart.push(item)
+          }
+        }
+      }
+
+      if (cartUpdated) {
+        setCart(updatedCart)
+      }
+      if (newWarnings.length > 0) {
+        setWarnings(newWarnings)
+      }
+      setVerifying(false)
+    }
+
+    verifyPrices()
+  }, [cart.length])
 
   const handleCheckout = async () => {
     if (!user) {
@@ -36,8 +98,9 @@ const Cart = () => {
         toast.success("Đăng ký thành công! Bạn có thể bắt đầu học.")
         navigate('/learning')
       } else {
-        // Chuyển sang trang thanh toán chi tiết
-        navigate('/checkout/detail', { state: { orders: data } })
+        // Chuyển sang trang thanh toán chi tiết, truyền IDs vào query params để F5 không mất
+        const orderIds = data.map(o => o.id).join(',')
+        navigate(`/checkout/detail?ids=${orderIds}`, { state: { orders: data } })
       }
     } catch (err) {
       setError(err.message)
@@ -51,6 +114,14 @@ const Cart = () => {
       <h1 className="mb-8 text-3xl font-bold text-slate-900">Giỏ Hàng</h1>
 
       {error && <div className="mb-6 rounded bg-red-50 p-4 text-red-600">{error}</div>}
+
+      {warnings.length > 0 && (
+        <div className="mb-6 rounded-lg bg-yellow-50 border border-yellow-200 p-4 text-sm text-yellow-800 space-y-1">
+          {warnings.map((w, idx) => (
+            <p key={idx}>⚠️ {w}</p>
+          ))}
+        </div>
+      )}
 
       {cart.length > 0 ? (
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">

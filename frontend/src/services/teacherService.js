@@ -8,7 +8,7 @@ export const teacherService = {
       .from('orders')
       .select('*, profiles:user_id(name, email), order_items(price, courses(title))')
       .eq('teacher_id', teacherId)
-      .eq('status', 'pending')
+      .in('status', ['pending', 'awaiting_confirmation'])
       .order('created_at', { ascending: false })
     return { data, error }
   },

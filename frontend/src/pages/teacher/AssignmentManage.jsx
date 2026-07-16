@@ -149,8 +149,9 @@ const AssignmentManage = () => {
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700">Tên bài tập *</label>
+              <label htmlFor="assignment-title" className="block text-sm font-medium text-slate-700">Tên bài tập *</label>
               <input
+                id="assignment-title"
                 type="text" required
                 className="mt-1 block w-full rounded-md border p-2"
                 value={formData.title}
@@ -159,8 +160,9 @@ const AssignmentManage = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-slate-700">Mô tả / Đề bài</label>
+              <label htmlFor="assignment-description" className="block text-sm font-medium text-slate-700">Mô tả / Đề bài</label>
               <textarea
+                id="assignment-description"
                 rows="3"
                 className="mt-1 block w-full rounded-md border p-2"
                 value={formData.description}
@@ -169,8 +171,9 @@ const AssignmentManage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700">Hạn nộp (Không bắt buộc)</label>
+              <label htmlFor="assignment-due" className="block text-sm font-medium text-slate-700">Hạn nộp (Không bắt buộc)</label>
               <input
+                id="assignment-due"
                 type="datetime-local"
                 className="mt-1 block w-full rounded-md border p-2"
                 value={formData.due_date}
@@ -179,8 +182,9 @@ const AssignmentManage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700">Đính kèm file (PDF, Docx...)</label>
+              <label htmlFor="assignment-file" className="block text-sm font-medium text-slate-700">Đính kèm file (PDF, Docx...)</label>
               <input
+                id="assignment-file"
                 type="file"
                 ref={fileInputRef}
                 className="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:rounded-md file:border-0 file:bg-slate-200 file:px-4 file:py-2 file:text-sm file:font-medium hover:file:bg-slate-300"
@@ -209,42 +213,71 @@ const AssignmentManage = () => {
       {loading ? (
         <p>Đang tải...</p>
       ) : assignments.length > 0 ? (
-        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 border-b">
-              <tr>
-                <th className="p-4 font-semibold text-slate-900">Tên bài tập</th>
-                <th className="p-4 font-semibold text-slate-900">Hạn nộp</th>
-                <th className="p-4 font-semibold text-slate-900 text-right">Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {assignments.map(item => (
-                <tr key={item.id} className="border-b last:border-0 hover:bg-slate-50">
-                  <td className="p-4">
-                    <div className="font-medium text-slate-900">{item.title}</div>
-                    {item.file_url && <span className="text-xs text-accent">Có đính kèm file</span>}
-                  </td>
-                  <td className="p-4 text-slate-600">
-                    {item.due_date ? new Date(item.due_date).toLocaleString() : 'Không có'}
-                  </td>
-                  <td className="p-4 text-right">
-                    <div className="flex justify-end gap-3">
-                      <Link 
-                        to={`/teacher/assignments/${item.id}/submissions`}
-                        className="font-medium text-green-600 hover:underline"
-                      >
-                        Chấm bài
-                      </Link>
-                      <button onClick={() => handleEdit(item)} className="font-medium text-blue-600 hover:underline">Sửa</button>
-                      <button onClick={() => handleDelete(item.id)} className="font-medium text-red-600 hover:underline">Xóa</button>
-                    </div>
-                  </td>
+        <>
+          {/* Desktop Table View */}
+          <div className="overflow-x-auto w-full rounded-xl border bg-white shadow-sm hidden md:block">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 border-b">
+                <tr>
+                  <th className="p-4 font-semibold text-slate-900">Tên bài tập</th>
+                  <th className="p-4 font-semibold text-slate-900">Hạn nộp</th>
+                  <th className="p-4 font-semibold text-slate-900 text-right">Hành động</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {assignments.map(item => (
+                  <tr key={item.id} className="border-b last:border-0 hover:bg-slate-50">
+                    <td className="p-4">
+                      <div className="font-medium text-slate-900">{item.title}</div>
+                      {item.file_url && <span className="text-xs text-accent font-medium">Có đính kèm file</span>}
+                    </td>
+                    <td className="p-4 text-slate-600">
+                      {item.due_date ? new Date(item.due_date).toLocaleString() : 'Không có'}
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex justify-end gap-3">
+                        <Link 
+                          to={`/teacher/assignments/${item.id}/submissions`}
+                          className="font-medium text-green-600 hover:underline"
+                        >
+                          Chấm bài
+                        </Link>
+                        <button onClick={() => handleEdit(item)} className="font-medium text-blue-600 hover:underline">Sửa</button>
+                        <button onClick={() => handleDelete(item.id)} className="font-medium text-red-600 hover:underline">Xóa</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card List View */}
+          <div className="block md:hidden space-y-4">
+            {assignments.map(item => (
+              <div key={item.id} className="rounded-xl border bg-white p-4 shadow-sm space-y-2">
+                <div>
+                  <div className="font-bold text-slate-900">{item.title}</div>
+                  {item.file_url && <span className="rounded bg-purple-50 border border-purple-100 text-[10px] font-bold text-accent px-1.5 py-0.5 mt-1.5 inline-block">Có đính kèm file</span>}
+                </div>
+                <div className="text-xs text-slate-500">
+                  <span className="font-semibold text-slate-600">Hạn nộp: </span>
+                  {item.due_date ? new Date(item.due_date).toLocaleString() : 'Không có'}
+                </div>
+                <div className="flex justify-end gap-3 pt-2 border-t border-slate-100 text-sm">
+                  <Link 
+                    to={`/teacher/assignments/${item.id}/submissions`}
+                    className="font-semibold text-green-600 hover:underline"
+                  >
+                    Chấm bài
+                  </Link>
+                  <button onClick={() => handleEdit(item)} className="font-semibold text-blue-600 hover:underline">Sửa</button>
+                  <button onClick={() => handleDelete(item.id)} className="font-semibold text-red-600 hover:underline">Xóa</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
         <div className="rounded-xl border border-dashed p-10 text-center text-slate-500">
           Chưa có bài tập nào. Hãy thêm bài tập đầu tiên!

@@ -31,6 +31,35 @@ const Students = () => {
     return studentName.includes(term) || studentEmail.includes(term) || courseTitle.includes(term)
   })
 
+  // Xuất danh sách học viên ra CSV
+  const handleExportCSV = () => {
+    if (filteredEnrollments.length === 0) return
+    const headers = ['Học viên', 'Email', 'Khóa học đăng ký', 'Ngày tham gia']
+    const rows = filteredEnrollments.map(e => [
+      e.profiles?.name || 'Khách',
+      e.profiles?.email || 'N/A',
+      e.courses?.title || 'N/A',
+      e.enrolled_at ? new Date(e.enrolled_at).toLocaleDateString('vi-VN') : 'N/A'
+    ])
+    
+    let csvContent = '\uFEFF' // BOM giúp Excel hiển thị đúng font Tiếng Việt
+    csvContent += headers.join(',') + '\n'
+    rows.forEach(row => {
+      const escapedRow = row.map(val => `"${String(val).replace(/"/g, '""')}"`)
+      csvContent += escapedRow.join(',') + '\n'
+    })
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `danh_sach_hoc_vien_${new Date().toISOString().slice(0, 10)}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8 text-left">
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -44,7 +73,7 @@ const Students = () => {
 
       {/* Control bar */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="w-full sm:max-w-md">
+        <div className="w-full sm:max-w-md flex gap-2">
           <input
             type="text"
             placeholder="Tìm kiếm theo tên, email hoặc khóa học..."
@@ -52,6 +81,13 @@ const Students = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
           />
+          <button
+            onClick={handleExportCSV}
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-purple-600 shrink-0 cursor-pointer"
+            title="Xuất danh sách học viên ra file CSV"
+          >
+            Xuất CSV
+          </button>
         </div>
         <div className="text-sm text-slate-500">
           Tổng số học viên: <span className="font-semibold text-slate-800">{filteredEnrollments.length}</span>

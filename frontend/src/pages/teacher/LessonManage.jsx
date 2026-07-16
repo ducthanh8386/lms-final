@@ -7,6 +7,13 @@ import { lessonSchema } from '../../schemas'
 import { useToast } from '../../context/ToastContext'
 import { useConfirm } from '../../context/ConfirmContext'
 
+const getYoutubeId = (url) => {
+  if (!url) return null
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+  const match = url.match(regExp)
+  return (match && match[2].length === 11) ? match[2] : null
+}
+
 const LessonManage = () => {
   const { id: courseId } = useParams()
   const toast = useToast()
@@ -140,8 +147,9 @@ const LessonManage = () => {
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-slate-700">Tên bài học *</label>
+              <label htmlFor="lesson-title" className="block text-sm font-medium text-slate-700">Tên bài học *</label>
               <input
+                id="lesson-title"
                 type="text" required
                 className="mt-1 w-full rounded border p-2"
                 value={formData.title}
@@ -149,8 +157,9 @@ const LessonManage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700">Thứ tự</label>
+              <label htmlFor="lesson-order" className="block text-sm font-medium text-slate-700">Thứ tự</label>
               <input
+                id="lesson-order"
                 type="number"
                 className="mt-1 w-full rounded border p-2"
                 value={formData.order_index}
@@ -158,8 +167,9 @@ const LessonManage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700">Loại nội dung</label>
+              <label htmlFor="lesson-type" className="block text-sm font-medium text-slate-700">Loại nội dung</label>
               <select
+                id="lesson-type"
                 className="mt-1 w-full rounded border p-2"
                 value={formData.content_type}
                 onChange={e => setFormData({...formData, content_type: e.target.value})}
@@ -169,8 +179,9 @@ const LessonManage = () => {
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700">Nội dung (Link Youtube hoặc Text) *</label>
+              <label htmlFor="lesson-content" className="block text-sm font-medium text-slate-700">Nội dung (Link Youtube hoặc Text) *</label>
               <textarea
+                id="lesson-content"
                 required rows="3"
                 className="mt-1 w-full rounded border p-2"
                 value={formData.content}
@@ -178,6 +189,19 @@ const LessonManage = () => {
                 placeholder={formData.content_type === 'video' ? 'https://youtube.com/watch?v=...' : 'Nhập nội dung bài học...'}
               />
             </div>
+            {formData.content_type === 'video' && getYoutubeId(formData.content) && (
+              <div className="mt-4 md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">Xem trước Video</label>
+                <div className="aspect-video w-full max-w-md rounded-lg overflow-hidden border bg-black">
+                  <iframe
+                    className="h-full w-full"
+                    src={`https://www.youtube.com/embed/${getYoutubeId(formData.content)}`}
+                    title="Video Preview"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            )}
           </div>
           <div className="mt-4 flex justify-end gap-2">
             <button 

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { teacherService } from '../../services/teacherService'
+import { supabase } from '../../lib/supabaseClient'
 
 import TeacherTabs from '../../components/teacher/TeacherTabs'
 
@@ -16,6 +17,23 @@ const OrderManage = () => {
 
   // Modal xem ảnh
   const [selectedReceipt, setSelectedReceipt] = useState(null)
+
+  const handleViewReceipt = async (url) => {
+    if (!url) return
+    try {
+      const parts = url.split('/receipts/')
+      const fileName = parts[parts.length - 1]
+      const { data, error } = await supabase.storage
+        .from('receipts')
+        .createSignedUrl(fileName, 3600)
+      if (error) throw error
+      if (data?.signedUrl) {
+        setSelectedReceipt(data.signedUrl)
+      }
+    } catch (err) {
+      toast.error("Không thể xem biên lai: " + err.message)
+    }
+  }
 
   const fetchOrders = useCallback(async () => {
     if (!user) return
@@ -79,36 +97,43 @@ const OrderManage = () => {
           <tbody className="divide-y">
             {orders.map(order => (
               <tr key={order.id} className="hover:bg-slate-50">
-                <td className="p-4">
-                  <div className="font-medium text-slate-900">{order.id.slice(0, 8).toUpperCase()}</div>
+                 <td className="p-4">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-slate-900">{order.id.slice(0, 8).toUpperCase()}</span>
+                    {order.status === 'awaiting_confirmation' ? (
+                      <span className="rounded-full bg-yellow-100 px-2.5 py-0.5 text-[10px] font-bold text-yellow-800">Chờ xác nhận</span>
+                    ) : (
+                      <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-800">Chờ thanh toán</span>
+                    )}
+                  </div>
                   <div className="text-xs text-slate-500">{new Date(order.created_at).toLocaleString()}</div>
-                </td>
-                <td className="p-4">
-                  <div className="font-medium">{order.profiles?.name || 'Khách'}</div>
-                  <div className="text-xs text-slate-500">{order.profiles?.email}</div>
-                </td>
-                <td className="p-4">
-                  <ul className="list-disc pl-4 text-xs text-slate-600 space-y-1">
-                    {order.order_items?.map((item, idx) => (
-                      <li key={idx}>{item.courses?.title}</li>
-                    ))}
-                  </ul>
-                </td>
-                <td className="p-4 font-bold text-slate-900">
-                  {order.total_price?.toLocaleString()} đ
-                </td>
-                <td className="p-4">
-                  {order.receipt_url ? (
-                    <button 
-                      onClick={() => setSelectedReceipt(order.receipt_url)}
-                      className="text-accent hover:underline font-medium"
-                    >
-                      Xem ảnh
-                    </button>
-                  ) : (
-                    <span className="text-slate-400 italic">Chưa tải lên</span>
-                  )}
-                </td>
+                 </td>
+                 <td className="p-4">
+                   <div className="font-medium">{order.profiles?.name || 'Khách'}</div>
+                   <div className="text-xs text-slate-500">{order.profiles?.email}</div>
+                 </td>
+                 <td className="p-4">
+                   <ul className="list-disc pl-4 text-xs text-slate-600 space-y-1">
+                     {order.order_items?.map((item, idx) => (
+                       <li key={idx}>{item.courses?.title}</li>
+                     ))}
+                   </ul>
+                 </td>
+                 <td className="p-4 font-bold text-slate-900">
+                   {order.total_price?.toLocaleString()} đ
+                 </td>
+                 <td className="p-4">
+                   {order.receipt_url ? (
+                     <button 
+                       onClick={() => handleViewReceipt(order.receipt_url)}
+                       className="text-accent hover:underline font-medium"
+                     >
+                       Xem ảnh
+                     </button>
+                   ) : (
+                     <span className="text-slate-400 italic">Chưa tải lên</span>
+                   )}
+                 </td>
                 <td className="p-4">
                   <div className="flex gap-2">
                     <button 
@@ -144,7 +169,14 @@ const OrderManage = () => {
           <div key={order.id} className="rounded-xl border bg-white p-4 shadow-sm space-y-3">
             <div className="flex justify-between items-start">
               <div>
-                <div className="font-bold text-slate-900">Đơn: #{order.id.slice(0, 8).toUpperCase()}</div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-slate-900">Đơn: #{order.id.slice(0, 8).toUpperCase()}</span>
+                  {order.status === 'awaiting_confirmation' ? (
+                    <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-[10px] font-bold text-yellow-800">Chờ xác nhận</span>
+                  ) : (
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-800">Chờ thanh toán</span>
+                  )}
+                </div>
                 <div className="text-xs text-slate-500 mt-0.5">{new Date(order.created_at).toLocaleString()}</div>
               </div>
               <div className="font-bold text-accent">{order.total_price?.toLocaleString()} đ</div>
@@ -168,7 +200,7 @@ const OrderManage = () => {
               <div>
                 {order.receipt_url ? (
                   <button 
-                    onClick={() => setSelectedReceipt(order.receipt_url)}
+                    onClick={() => handleViewReceipt(order.receipt_url)}
                     className="text-xs font-semibold text-accent hover:underline"
                   >
                     Xem ảnh biên lai
