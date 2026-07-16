@@ -11,20 +11,14 @@
   --fw-semi: 600;
   --fw-bold: 700;
 
-  /* Letter spacing */
-  --ls-tight: -0.025em;
-  --ls-normal: 0;
-  --ls-wide: 0.05em;
-  --ls-wider: 0.1em;
-
   /* Spacing Scale */
-  --sp-1: 0.25rem; /* 4px */
-  --sp-2: 0.5rem;  /* 8px */
-  --sp-3: 0.75rem; /* 12px */
-  --sp-4: 1rem;    /* 16px */
-  --sp-5: 1.25rem; /* 20px */
-  --sp-6: 1.5rem;  /* 24px */
-  --sp-8: 2rem;    /* 32px */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
 
   /* Border Radius */
   --r-sm: 0.25rem;
@@ -32,7 +26,7 @@
   --r-lg: 0.75rem;
   --r-full: 9999px;
 
-  /* Light Theme Colors (Default) */
+  /* Light Theme Defaults */
   --clr-gray-100: #f8fafc;
   --clr-gray-200: #e2e8f0;
   --clr-gray-300: #cbd5e1;
@@ -48,29 +42,9 @@
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-/* ── Dark Mode (Tự động theo OS) ── */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --clr-gray-100: #0f172a; /* Background trang */
-    --clr-gray-200: #1e293b; /* Card background */
-    --clr-gray-300: #334155; /* Border */
-    --clr-white: #1e293b;    /* Component background */
-    --clr-dark: #f1f5f9;     /* Text chính */
-    --clr-gray-700: #cbd5e1;  /* Text phụ */
-    --clr-gray-500: #94a3b8;  /* Text placeholder */
-
-    --clr-primary: #6366f1;
-    --clr-primary-bg: rgba(99, 102, 241, 0.15);
-
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
-  }
-}
-
-/* ── Toggle Dark Mode Thủ Công via class html.dark ── */
+/* ── Explicit Dark Theme Override (Triggered via html.dark) ── */
 html.dark {
   --clr-gray-100: #0f172a;
   --clr-gray-200: #1e293b;
@@ -81,4 +55,7 @@ html.dark {
   --clr-gray-500: #94a3b8;
   --clr-primary: #6366f1;
   --clr-primary-bg: rgba(99, 102, 241, 0.15);
+
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
 }

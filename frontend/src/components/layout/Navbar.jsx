@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { authService } from '../../services/authService'
 import { useCart } from '../../context/CartContext'
@@ -12,26 +12,35 @@ const Navbar = () => {
   const [dark, toggleDarkMode] = useDarkMode()
   const [isOpen, setIsOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
 
   // Đóng menu khi chuyển trang
   useEffect(() => {
     setIsOpen(false)
   }, [location.pathname])
 
+  const handleSignOut = async () => {
+    setIsOpen(false)
+    await authService.signOut()
+    navigate('/')
+  }
+
   return (
     <header className="relative bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm z-50 transition-colors">
-      <div className="flex h-16 items-center justify-between px-8">
+      <div className="flex h-16 items-center justify-between px-6 md:px-8">
         <div>
-          <Link to="/" className="text-2xl font-bold text-slate-900 dark:text-white">LMS Marketplace</Link>
+          <Link to="/" className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white transition-colors">
+            LMS Marketplace
+          </Link>
         </div>
-        
+
         {/* Hamburger Mobile Menu Toggle Button */}
         {!loading && (
           <div className="flex items-center gap-2 md:hidden">
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-              title="Toggle Dark Mode"
+              className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              title={dark ? "Chuyển giao diện sáng" : "Chuyển giao diện tối"}
               aria-label="Toggle Dark Mode"
             >
               {dark ? '☀️' : '🌙'}
@@ -55,11 +64,11 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-4">
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition border border-slate-200 dark:border-slate-700"
-            title={dark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition"
+            title={dark ? "Chuyển về giao diện sáng" : "Chuyển về giao diện tối"}
             aria-label="Toggle theme mode"
           >
-            {dark ? '☀️ Thắt sáng' : '🌙 Chế độ tối'}
+            <span>{dark ? '☀️ Giao diện sáng' : '🌙 Giao diện tối'}</span>
           </button>
 
           {loading ? (
@@ -69,18 +78,18 @@ const Navbar = () => {
             </div>
           ) : user ? (
             <>
-              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                 Xin chào, {profile?.name || user.email} ({profile?.role})
               </span>
               
               {profile?.role === 'student' && (
                 <>
-                  <Link to="/courses" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent">Khóa học</Link>
-                  <Link to="/my-schedule" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent">Lịch học</Link>
-                  <Link to="/my-classes" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent">Lớp học</Link>
-                  <Link to="/learning" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent">Đang học</Link>
+                  <Link to="/courses" className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">Khóa học</Link>
+                  <Link to="/my-schedule" className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">Lịch học</Link>
+                  <Link to="/my-classes" className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">Lớp học</Link>
+                  <Link to="/learning" className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">Đang học</Link>
                   
-                  <Link to="/cart" className="relative text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent">
+                  <Link to="/cart" className="relative text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">
                     Giỏ hàng
                     {totalCount > 0 && (
                       <span className="absolute -top-2 -right-3 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
@@ -92,18 +101,18 @@ const Navbar = () => {
               )}
 
               {profile?.role === 'teacher' && (
-                <Link to="/teacher/courses" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent">Dành cho GV</Link>
+                <Link to="/teacher/courses" className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">Dành cho GV</Link>
               )}
 
               {profile?.role === 'admin' && (
-                <Link to="/admin" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent">Admin</Link>
+                <Link to="/admin" className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">Admin</Link>
               )}
 
               {user && <NotificationBell />}
 
               <button 
-                onClick={() => authService.signOut()}
-                className="rounded bg-slate-200 dark:bg-slate-700 dark:text-white px-4 py-2 text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition"
+                onClick={handleSignOut}
+                className="rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition"
               >
                 Đăng xuất
               </button>
@@ -111,7 +120,7 @@ const Navbar = () => {
           ) : (
             <div className="flex gap-4">
               <Link to="/login" className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-purple-600 transition">Đăng nhập</Link>
-              <Link to="/register" className="rounded bg-slate-200 dark:bg-slate-700 dark:text-white px-4 py-2 text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition">Đăng ký</Link>
+              <Link to="/register" className="rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition">Đăng ký</Link>
             </div>
           )}
         </div>
@@ -119,7 +128,7 @@ const Navbar = () => {
 
       {/* Mobile/Tablet Drawer Collapsible Dropdown Menu */}
       {isOpen && !loading && (
-        <div className="absolute top-16 left-0 w-full border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-8 py-4 shadow-md md:hidden flex flex-col gap-4 animate-fadeIn z-50">
+        <div className="absolute top-16 left-0 w-full border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-4 shadow-md md:hidden flex flex-col gap-4 animate-fadeIn z-50">
           {user ? (
             <>
               <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2">
@@ -136,31 +145,31 @@ const Navbar = () => {
                 <>
                   <Link 
                     to="/courses" 
-                    className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent py-1"
+                    className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
                   >
                     Khóa học
                   </Link>
                   <Link 
                     to="/my-schedule" 
-                    className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent py-1"
+                    className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
                   >
                     Lịch học
                   </Link>
                   <Link 
                     to="/my-classes" 
-                    className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent py-1"
+                    className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
                   >
                     Lớp học
                   </Link>
                   <Link 
                     to="/learning" 
-                    className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent py-1"
+                    className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
                   >
                     Đang học
                   </Link>
                   <Link 
                     to="/cart" 
-                    className="flex items-center justify-between text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent py-1"
+                    className="flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
                   >
                     <span>Giỏ hàng</span>
                     {totalCount > 0 && (
@@ -175,7 +184,7 @@ const Navbar = () => {
               {profile?.role === 'teacher' && (
                 <Link 
                   to="/teacher/courses" 
-                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent py-1"
+                  className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
                 >
                   Dành cho GV
                 </Link>
@@ -184,17 +193,14 @@ const Navbar = () => {
               {profile?.role === 'admin' && (
                 <Link 
                   to="/admin" 
-                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-accent py-1"
+                  className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
                 >
                   Admin
                 </Link>
               )}
 
               <button 
-                onClick={() => {
-                  setIsOpen(false)
-                  authService.signOut()
-                }}
+                onClick={handleSignOut}
                 className="w-full rounded bg-red-50 dark:bg-red-950/40 py-2 text-center text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition"
               >
                 Đăng xuất
@@ -210,7 +216,7 @@ const Navbar = () => {
               </Link>
               <Link 
                 to="/register" 
-                className="w-full rounded bg-slate-200 dark:bg-slate-700 dark:text-white py-2 text-center text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition"
+                className="w-full rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-2 text-center text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition"
               >
                 Đăng ký
               </Link>

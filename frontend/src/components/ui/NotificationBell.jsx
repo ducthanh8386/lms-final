@@ -126,16 +126,16 @@ const NotificationBell = () => {
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative inline-block" ref={dropdownRef}>
       {/* Icon chuông và badge số lượng */}
       <button
         onClick={() => setShowDropdown(!showDropdown)}
-        className="relative rounded-full p-2 text-slate-600 hover:bg-slate-100 hover:text-accent focus:outline-none transition"
+        className="relative rounded-full p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-accent focus:outline-none transition"
         aria-label="Xem thông báo"
       >
         <span className="text-xl">🔔</span>
         {unreadCount > 0 && (
-          <span className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+          <span className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white dark:ring-slate-900">
             {unreadCount}
           </span>
         )}
@@ -143,9 +143,9 @@ const NotificationBell = () => {
 
       {/* Dropdown danh sách thông báo */}
       {showDropdown && (
-        <div className="absolute right-0 mt-2 w-80 rounded-xl border bg-white py-2 shadow-xl z-50 animate-fadeIn text-left">
-          <div className="flex items-center justify-between border-b pb-2 px-4 mb-1">
-            <span className="font-extrabold text-slate-900 text-sm">Thông báo</span>
+        <div className="absolute right-0 mt-2 w-80 min-w-[320px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2 shadow-2xl z-[100] animate-fadeIn text-left">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 px-4 mb-1">
+            <span className="font-extrabold text-slate-900 dark:text-white text-sm">Thông báo</span>
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
@@ -156,23 +156,23 @@ const NotificationBell = () => {
             )}
           </div>
 
-          <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 scrollbar-thin">
+          <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 scrollbar-thin">
             {notifications.length > 0 ? (
               notifications.slice(0, 10).map(item => (
                 <div
                   key={item.id}
                   onClick={() => handleMarkAsRead(item)}
-                  className={`flex gap-3 p-3.5 cursor-pointer transition hover:bg-slate-50 ${!item.is_read ? 'bg-slate-50/70 border-l-2 border-accent' : ''}`}
+                  className={`flex gap-3 p-3.5 cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-800/60 ${!item.is_read ? 'bg-slate-50/70 dark:bg-slate-800/40 border-l-2 border-accent' : ''}`}
                 >
                   <div className="text-xl self-start">{getTypeIcon(item.type)}</div>
                   <div className="flex-1 min-w-0">
-                    <div className={`text-xs ${!item.is_read ? 'font-bold text-slate-950' : 'text-slate-800'} truncate`}>
+                    <div className={`text-xs ${!item.is_read ? 'font-bold text-slate-950 dark:text-white' : 'text-slate-700 dark:text-slate-300'} truncate`}>
                       {item.title}
                     </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
                       {item.body}
                     </div>
-                    <div className="text-[9px] text-slate-400 mt-1 font-medium">
+                    <div className="text-[9px] text-slate-400 dark:text-slate-500 mt-1 font-medium">
                       {formatTimeAgo(item.created_at)}
                     </div>
                   </div>
@@ -182,14 +182,14 @@ const NotificationBell = () => {
                 </div>
               ))
             ) : (
-              <div className="py-8 text-center text-slate-400 text-xs italic">
+              <div className="py-8 text-center text-slate-400 dark:text-slate-500 text-xs italic">
                 Bạn chưa có thông báo nào.
               </div>
             )}
           </div>
           
-          <div className="border-t pt-2 text-center">
-            <span className="text-[10px] text-slate-400">
+          <div className="border-t border-slate-100 dark:border-slate-800 pt-2 text-center">
+            <span className="text-[10px] text-slate-400 dark:text-slate-500">
               Chỉ hiển thị tối đa 10 thông báo mới nhất
             </span>
           </div>
