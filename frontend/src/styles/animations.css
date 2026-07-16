@@ -1,0 +1,154 @@
+/* ════════════════════════════════════════════════
+ KEYFRAME ANIMATIONS & MICRO-INTERACTIONS
+ ════════════════════════════════════════════════ */
+
+/* Fade in từ dưới lên — dùng khi mount component */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade in đơn giản — dùng cho modal overlay */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Scale từ nhỏ ra — dùng cho dialog, dropdown */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.93); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Trượt từ phải vào — Toast notification */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(110%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Trượt từ trên xuống — Dropdown menu */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Xoay vòng — Loading spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Nhấp nháy skeleton — Loading placeholder */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+/* ════════════════════════════════════════════════
+ UTILITY CLASSES
+ ════════════════════════════════════════════════ */
+.animate-fade-up { animation: fadeUp .3s ease both; }
+.animate-fade-in { animation: fadeIn .2s ease both; }
+.animate-scale-in { animation: scaleIn .2s ease both; }
+.animate-slide-in { animation: slideInRight .25s ease both; }
+.animate-slide-down { animation: slideDown .2s ease both; }
+
+/* Delay utilities (dùng để stagger list items) */
+.delay-1 { animation-delay: .05s; }
+.delay-2 { animation-delay: .1s; }
+.delay-3 { animation-delay: .15s; }
+.delay-4 { animation-delay: .2s; }
+.delay-5 { animation-delay: .25s; }
+
+/* ════════════════════════════════════════════════
+ SKELETON LOADING
+ ════════════════════════════════════════════════ */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--clr-gray-200) 25%,
+    var(--clr-gray-100) 37%,
+    var(--clr-gray-200) 63%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.8s infinite;
+  border-radius: var(--r-sm);
+}
+
+.skeleton-text { height: 1em; margin-bottom: .5em; border-radius: var(--r-full); }
+.skeleton-title { height: 1.5em; width: 60%; border-radius: var(--r-full); }
+.skeleton-img { height: 200px; border-radius: var(--r-md); }
+.skeleton-btn { height: 38px; width: 100px; border-radius: var(--r-md); }
+
+/* ════════════════════════════════════════════════
+ MICRO-INTERACTIONS
+ ════════════════════════════════════════════════ */
+/* Nút bấm: nâng lên khi hover, nhấn xuống khi active */
+.btn {
+  position: relative;
+  transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
+  will-change: transform; /* GPU acceleration */
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,.15);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+/* Card: nổi lên khi hover */
+.card {
+  transition: transform .2s ease, box-shadow .2s ease;
+  will-change: transform;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,.12);
+}
+
+/* Link: underline animation từ trái sang phải */
+.link-animated {
+  position: relative;
+  text-decoration: none;
+}
+
+.link-animated::after {
+  content: "";
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 0; height: 2px;
+  background: currentColor;
+  transition: width .25s ease;
+}
+
+.link-animated:hover::after { width: 100%; }
+
+/* Input focus: đường viền phát sáng */
+.form-control {
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--clr-primary-l);
+  box-shadow: 0 0 0 4px rgba(79,70,229,.12);
+}
+
+/* Table row highlight mượt */
+.table tbody tr { transition: background-color .15s ease; }
+
+/* Spinner */
+.spinner {
+  width: 24px; height: 24px;
+  border: 3px solid var(--clr-gray-200);
+  border-top-color: var(--clr-primary);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: inline-block;
+}
+
+.spinner-lg { width: 48px; height: 48px; border-width: 5px; }

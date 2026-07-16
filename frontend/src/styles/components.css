@@ -1,0 +1,52 @@
+/* ════════════════════════════════════════════════
+ COMPONENT SURFACES & REUSABLE UTILITIES
+ ════════════════════════════════════════════════ */
+
+/* Responsive table wrapper */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--r-md);
+  border: 1px solid var(--clr-gray-200);
+  background-color: var(--clr-white);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  background-color: var(--clr-gray-100);
+  color: var(--clr-gray-700);
+  font-weight: var(--fw-bold);
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wide);
+  border-bottom: 2px solid var(--clr-gray-200);
+}
+
+.table td {
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--clr-gray-200);
+  color: var(--clr-dark);
+  font-size: var(--text-sm);
+}
+
+/* Badge styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--r-full);
+  font-size: 0.75rem;
+  font-weight: var(--fw-semi);
+}
+
+.badge-success { background-color: rgba(16, 185, 129, 0.15); color: #059669; }
+.badge-warning { background-color: rgba(245, 158, 11, 0.15); color: #d97706; }
+.badge-danger { background-color: rgba(239, 68, 68, 0.15); color: #dc2626; }
+.badge-info { background-color: rgba(79, 70, 229, 0.15); color: #4f46e5; }

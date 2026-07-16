@@ -1,0 +1,96 @@
+/* ════════════════════════════════════════════════
+ GRID SYSTEM — Advanced Layout & Responsive Breakdown
+ ════════════════════════════════════════════════ */
+
+/* Auto-fit grid: tự động điều chỉnh số cột */
+.grid-auto { display: grid; gap: var(--sp-4); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.grid-auto-sm { display: grid; gap: var(--sp-3); grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.grid-2 { display: grid; gap: var(--sp-4); grid-template-columns: repeat(2, 1fr); }
+.grid-3 { display: grid; gap: var(--sp-4); grid-template-columns: repeat(3, 1fr); }
+.grid-4 { display: grid; gap: var(--sp-4); grid-template-columns: repeat(4, 1fr); }
+
+/* Flexbox utilities */
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-col { flex-direction: column; }
+.flex-1 { flex: 1; }
+.gap-2 { gap: var(--sp-2); }
+.gap-3 { gap: var(--sp-3); }
+.gap-4 { gap: var(--sp-4); }
+
+/* ════════════════════════════════════════════════
+ RESPONSIVE BREAKPOINTS
+ xs: < 480px (điện thoại nhỏ)
+ sm: 480-768px (điện thoại lớn)
+ md: 768-1024px (tablet)
+ lg: 1024-1280px (laptop)
+ xl: > 1280px (desktop)
+ ════════════════════════════════════════════════ */
+
+/* Ẩn/hiện theo màn hình */
+.hide-xs { } /* hiển thị mặc định */
+.hide-sm { } /* hiển thị mặc định */
+
+@media (max-width: 1024px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  .hide-sm { display: none !important; }
+  .flex-between { flex-wrap: wrap; gap: var(--sp-2); }
+
+  /* Sidebar thu nhỏ trên mobile */
+  :root { --sidebar-w: 0px; }
+  .sidebar { position: fixed; transform: translateX(-100%); z-index: 200; width: 260px; }
+  .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-xl); }
+  .main-content { margin-left: 0 !important; }
+}
+
+@media (max-width: 480px) {
+  .hide-xs { display: none !important; }
+  .grid-auto { grid-template-columns: 1fr; }
+  /* Font nhỏ hơn trên mobile */
+  :root { font-size: 15px; }
+  .card { padding: var(--sp-4); }
+}
+
+/* ════════════════════════════════════════════════
+ EMPTY STATE
+ ════════════════════════════════════════════════ */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--clr-gray-500);
+}
+.empty-state .icon { font-size: 64px; margin-bottom: 16px; }
+.empty-state h3 { font-size: 1.25rem; margin-bottom: 8px; color: var(--clr-gray-700); }
+.empty-state p { font-size: .9rem; }
+
+/* ════════════════════════════════════════════════
+ PAGE HEADER (tiêu đề trang + nút action)
+ ════════════════════════════════════════════════ */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-6);
+  padding-bottom: var(--sp-4);
+  border-bottom: 2px solid var(--clr-gray-200);
+}
+.page-header h2 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--clr-dark);
+  margin: 0;
+}
+.page-header .breadcrumb {
+  font-size: var(--text-sm);
+  color: var(--clr-gray-500);
+  margin-top: 4px;
+}
+.page-header-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
