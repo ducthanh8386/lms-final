@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://lms-final-snowy.vercel.app',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, DELETE, OPTIONS'
 }
@@ -19,7 +19,9 @@ serve(async (req) => {
     )
 
     // Xác thực người gọi có phải admin không
-    const authHeader = req.headers.get('Authorization')!
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) throw new Error('Missing Authorization header')
+    
     const token = authHeader.replace('Bearer ', '')
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token)
 
@@ -40,6 +42,10 @@ serve(async (req) => {
       // TẠO USER MỚI
       const { email, password, name, role } = await req.json()
 
+      if (!email || !password) {
+        throw new Error('Email và mật khẩu không được để trống')
+      }
+
       const { data: newUser, error: createError } = await supabaseClient.auth.admin.createUser({
         email,
         password,
@@ -50,7 +56,7 @@ serve(async (req) => {
       if (createError) throw createError
 
       // Update role (vì trigger tự tạo profile với role = student)
-      if (role && role !== 'student') {
+      if (role && role !== 'student' && newUser.user) {
         const { error: updateRoleError } = await supabaseClient
           .from('profiles')
           .update({ role })
