@@ -38,7 +38,20 @@ const tabs = [
       </svg>
     ),
   },
+  {
+    to: '/faq',
+    label: 'Hỏi đáp',
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1.5 1-1.5 2.2V14" />
+        <path d="M12 17h.01" />
+      </svg>
+    ),
+  },
 ]
+
+const tabLabelClass = 'text-[10px] font-medium leading-tight'
 
 const MobileBottomNav = () => {
   const { user, profile } = useAuth()
@@ -165,20 +178,20 @@ const MobileBottomNav = () => {
               end={tab.end}
               onMouseEnter={() => preloadRoute(tab.to)}
               className={({ isActive }) =>
-                `flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors ${
+                `flex flex-1 flex-col items-center justify-center gap-0.5 transition-colors ${
                   isActive ? 'text-primary' : 'text-[#666]'
                 }`
               }
             >
               {tab.icon}
-              <span>{tab.label}</span>
+              <span className={tabLabelClass}>{tab.label}</span>
             </NavLink>
           ))}
 
           <button
             type="button"
             onClick={handleAccount}
-            className={`flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors ${
+            className={`flex flex-1 flex-col items-center justify-center gap-0.5 bg-transparent transition-colors ${
               accountOpen ? 'text-primary' : 'text-[#666]'
             }`}
           >
@@ -186,7 +199,7 @@ const MobileBottomNav = () => {
               <circle cx="12" cy="8" r="3.5" />
               <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
             </svg>
-            <span>Tài khoản</span>
+            <span className={tabLabelClass}>Tài khoản</span>
           </button>
         </div>
       </nav>
