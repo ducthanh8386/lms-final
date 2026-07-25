@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 
 const ConfirmDialog = ({ title, message, onConfirm, onCancel }) => {
   return (
@@ -17,7 +17,7 @@ const ConfirmDialog = ({ title, message, onConfirm, onCancel }) => {
           </button>
           <button
             onClick={onConfirm}
-            className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-purple-600"
+            className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-brand-orangeHover"
           >
             Xác nhận
           </button>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { courseService } from '../../services/courseService'
@@ -133,7 +133,7 @@ const LessonManage = () => {
               setFormData({ title: '', content_type: 'video', content: '', order_index: lessons.length + 1 })
               setShowForm(true)
             }}
-            className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600 text-sm"
+            className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-brand-orangeHover text-sm"
           >
             + Thêm bài học
           </button>
@@ -214,7 +214,7 @@ const LessonManage = () => {
             >
               Hủy
             </button>
-            <button type="submit" className="rounded bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600">
+            <button type="submit" className="rounded bg-accent px-4 py-2 font-medium text-white hover:bg-brand-orangeHover">
               Lưu
             </button>
           </div>

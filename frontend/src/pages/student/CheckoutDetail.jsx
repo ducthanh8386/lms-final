@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+﻿import { useEffect, useState, useMemo } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { studentService } from '../../services/studentService'
@@ -124,7 +124,7 @@ const CheckoutDetail = () => {
         <div className="flex flex-col gap-2 pt-4">
           <Link 
             to="/learning"
-            className="rounded-lg bg-accent px-6 py-2.5 font-bold text-white hover:bg-purple-600 transition block text-center"
+            className="rounded-lg bg-accent px-6 py-2.5 font-bold text-white hover:bg-brand-orangeHover transition block text-center"
           >
             Vào trang học tập
           </Link>
@@ -200,7 +200,7 @@ const CheckoutDetail = () => {
         <button
           onClick={handleConfirmTransfer}
           disabled={confirming}
-          className="rounded-lg bg-accent px-8 py-3 font-bold text-white hover:bg-purple-600 disabled:opacity-50"
+          className="rounded-lg bg-accent px-8 py-3 font-bold text-white hover:bg-brand-orangeHover disabled:opacity-50"
         >
           {confirming ? 'Đang xác nhận...' : 'Tôi đã chuyển khoản xong'}
         </button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+﻿import React, { useEffect, useState, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { classService } from '../../services/classService'
 import { useToast } from '../../context/ToastContext'
@@ -159,7 +159,7 @@ const ClassDetail = () => {
               </div>
 
               <div className="flex gap-2 justify-end pt-2">
-                <button type="submit" disabled={saving} className="rounded bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-purple-600 transition">
+                <button type="submit" disabled={saving} className="rounded bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-brand-orangeHover transition">
                   {saving ? 'Đang lưu...' : 'Lưu lại'}
                 </button>
               </div>
@@ -237,7 +237,7 @@ const ClassDetail = () => {
             <div className="space-y-2">
               <button 
                 onClick={handleCopyLink}
-                className="w-full text-center rounded-lg bg-accent py-2.5 text-sm font-semibold text-white hover:bg-purple-600 transition shadow-sm"
+                className="w-full text-center rounded-lg bg-accent py-2.5 text-sm font-semibold text-white hover:bg-brand-orangeHover transition shadow-sm"
               >
                 Sao chép link mời học viên
               </button>

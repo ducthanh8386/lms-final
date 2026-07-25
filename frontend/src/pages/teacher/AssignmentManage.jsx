@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+﻿import { useEffect, useState, useRef, useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { assignmentService } from '../../services/assignmentService'
 import { supabase } from '../../lib/supabaseClient'
@@ -137,7 +137,7 @@ const AssignmentManage = () => {
             setEditingId(null)
             setFormData({ title: '', description: '', due_date: '' })
           }}
-          className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600 self-start sm:self-auto"
+          className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-brand-orangeHover self-start sm:self-auto"
         >
           + Thêm Bài Tập
         </button>
@@ -202,7 +202,7 @@ const AssignmentManage = () => {
             </button>
             <button
               type="submit" disabled={uploading}
-              className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600 disabled:opacity-50"
+              className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-brand-orangeHover disabled:opacity-50"
             >
               {uploading ? 'Đang lưu...' : 'Lưu lại'}
             </button>
@@ -258,7 +258,7 @@ const AssignmentManage = () => {
               <div key={item.id} className="rounded-xl border bg-white p-4 shadow-sm space-y-2">
                 <div>
                   <div className="font-bold text-slate-900">{item.title}</div>
-                  {item.file_url && <span className="rounded bg-purple-50 border border-purple-100 text-[10px] font-bold text-accent px-1.5 py-0.5 mt-1.5 inline-block">Có đính kèm file</span>}
+                  {item.file_url && <span className="rounded bg-primary-container border border-primary-container text-[10px] font-bold text-accent px-1.5 py-0.5 mt-1.5 inline-block">Có đính kèm file</span>}
                 </div>
                 <div className="text-xs text-slate-500">
                   <span className="font-semibold text-slate-600">Hạn nộp: </span>

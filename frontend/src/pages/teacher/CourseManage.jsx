@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useTeacherCourses } from '../../hooks/useCourses'
@@ -18,7 +18,7 @@ const CourseManage = () => {
         </div>
         <Link 
           to="/teacher/courses/new" 
-          className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600 self-start sm:self-auto"
+          className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-brand-orangeHover self-start sm:self-auto"
         >
           + Tạo khóa học mới
         </Link>

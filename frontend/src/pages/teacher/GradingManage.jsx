@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+﻿import { useEffect, useState, useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { assignmentService } from '../../services/assignmentService'
 import { supabase } from '../../lib/supabaseClient'
@@ -149,7 +149,7 @@ const GradingManage = () => {
                           ) : (
                             <>
                               <div className="mb-2 text-yellow-600 font-medium">Chưa chấm</div>
-                              <button onClick={() => openGradingForm(sub)} className="rounded bg-accent px-3 py-1 text-xs font-medium text-white hover:bg-purple-600">Chấm ngay</button>
+                              <button onClick={() => openGradingForm(sub)} className="rounded bg-accent px-3 py-1 text-xs font-medium text-white hover:bg-brand-orangeHover">Chấm ngay</button>
                             </>
                           )}
                         </div>
@@ -225,7 +225,7 @@ const GradingManage = () => {
                       ) : (
                         <div className="flex justify-between items-center mt-1">
                           <span className="text-xs text-yellow-600 font-medium">Chưa chấm</span>
-                          <button onClick={() => openGradingForm(sub)} className="rounded bg-accent px-3 py-1 text-xs font-medium text-white hover:bg-purple-600">Chấm ngay</button>
+                          <button onClick={() => openGradingForm(sub)} className="rounded bg-accent px-3 py-1 text-xs font-medium text-white hover:bg-brand-orangeHover">Chấm ngay</button>
                         </div>
                       )}
                     </div>

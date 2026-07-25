@@ -1,15 +1,39 @@
 import { z } from 'zod'
 
 export const loginSchema = z.object({
-  email: z.string().email("Email không hợp lệ"),
-  password: z.string().min(8, "Mật khẩu tối thiểu 8 ký tự")
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Vui lòng nhập email')
+    .email('Email không hợp lệ'),
+  password: z
+    .string()
+    .min(1, 'Vui lòng nhập mật khẩu')
+    .min(8, 'Mật khẩu tối thiểu 8 ký tự'),
 })
 
-export const registerSchema = z.object({
-  name: z.string().min(2, "Tên phải dài hơn 2 ký tự"),
-  email: z.string().email("Email không hợp lệ"),
-  password: z.string().min(8, "Mật khẩu tối thiểu 8 ký tự")
-})
+export const registerSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(1, 'Vui lòng nhập họ và tên')
+      .min(2, 'Họ và tên tối thiểu 2 ký tự'),
+    email: z
+      .string()
+      .trim()
+      .min(1, 'Vui lòng nhập email')
+      .email('Email không hợp lệ'),
+    password: z
+      .string()
+      .min(1, 'Vui lòng nhập mật khẩu')
+      .min(8, 'Mật khẩu tối thiểu 8 ký tự'),
+    confirmPassword: z.string().min(1, 'Vui lòng nhập lại mật khẩu'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Mật khẩu nhập lại không khớp',
+    path: ['confirmPassword'],
+  })
 
 export const courseSchema = z.object({
   title: z.string().min(5, "Tên khóa học phải dài hơn 5 ký tự").max(100, "Tên quá dài"),

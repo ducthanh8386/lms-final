@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useAuthModal } from '../../context/AuthModalContext'
 import { authService } from '../../services/authService'
 import { useCart } from '../../context/CartContext'
-import { useDarkMode } from '../../hooks/useDarkMode'
 import NotificationBell from '../ui/NotificationBell'
+import { preloadRoute } from '../../utils/routePreload'
 
 const Navbar = () => {
   const { user, profile, loading } = useAuth()
+  const { openLogin } = useAuthModal()
   const { totalCount } = useCart()
-  const [dark, toggleDarkMode] = useDarkMode()
   const [isOpen, setIsOpen] = useState(false)
+  const [search, setSearch] = useState('')
   const location = useLocation()
   const navigate = useNavigate()
 
-  // Đóng menu khi chuyển trang
   useEffect(() => {
     setIsOpen(false)
   }, [location.pathname])
@@ -25,202 +26,192 @@ const Navbar = () => {
     navigate('/')
   }
 
+  const handleSearch = (e) => {
+    e.preventDefault()
+    const q = search.trim()
+    navigate(q ? `/courses?q=${encodeURIComponent(q)}` : '/courses')
+  }
+
+  const avatarLetter = (profile?.name || user?.email || 'U').charAt(0).toUpperCase()
+
   return (
-    <header className="relative bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm z-50 transition-colors">
-      <div className="flex h-16 items-center justify-between px-6 md:px-8">
-        <div>
-          <Link to="/" className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white transition-colors">
-            LMS Marketplace
-          </Link>
-        </div>
+    <header className="fixed top-0 left-0 right-0 z-50 h-[66px] border-b border-[#e8e8e8] bg-white">
+      <div className="flex h-full items-center gap-3 px-3 md:px-4 md:pl-[88px]">
+        {/* Logo + slogan */}
+        <Link to="/" className="flex shrink-0 items-center gap-2.5 min-w-0">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary text-white text-sm font-extrabold shadow-sm">
+            LMS
+          </span>
+          <span className="hidden lg:block text-[13px] font-bold uppercase tracking-wide text-[#242424] whitespace-nowrap">
+            Học lập trình để đi làm
+          </span>
+        </Link>
 
-        {/* Hamburger Mobile Menu Toggle Button */}
-        {!loading && (
-          <div className="flex items-center gap-2 md:hidden">
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              title={dark ? "Chuyển giao diện sáng" : "Chuyển giao diện tối"}
-              aria-label="Toggle Dark Mode"
-            >
-              {dark ? '☀️' : '🌙'}
-            </button>
+        {/* Search — F8 pill */}
+        <form onSubmit={handleSearch} className="hidden sm:flex flex-1 max-w-[420px] mx-auto">
+          <label className="relative flex w-full items-center">
+            <span className="pointer-events-none absolute left-3.5 text-[#888]">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" />
+              </svg>
+            </span>
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Tìm khóa học, bài tập..."
+              className="w-full rounded-full border border-[#e8e8e8] bg-[#f5f5f5] py-2.5 pl-10 pr-4 text-sm text-[#242424] placeholder:text-[#999] outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/15"
+            />
+          </label>
+        </form>
 
-            <button 
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-slate-600 dark:text-slate-300 hover:text-accent focus:outline-none p-2"
-              aria-label="Toggle navigation menu"
-            >
-              <div className="space-y-1.5 cursor-pointer">
-                <div className={`h-0.5 w-6 bg-slate-600 dark:bg-slate-300 transition-transform duration-300 ${isOpen ? 'rotate-45 translate-y-2' : ''}`}></div>
-                <div className={`h-0.5 w-6 bg-slate-600 dark:bg-slate-300 transition-opacity duration-300 ${isOpen ? 'opacity-0' : ''}`}></div>
-                <div className={`h-0.5 w-6 bg-slate-600 dark:bg-slate-300 transition-transform duration-300 ${isOpen ? '-rotate-45 -translate-y-2' : ''}`}></div>
-              </div>
-            </button>
-          </div>
-        )}
-
-        {/* Desktop Navigation Link Menu */}
-        <div className="hidden md:flex items-center gap-4">
-          <button
-            onClick={toggleDarkMode}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition"
-            title={dark ? "Chuyển về giao diện sáng" : "Chuyển về giao diện tối"}
-            aria-label="Toggle theme mode"
-          >
-            <span>{dark ? '☀️ Giao diện sáng' : '🌙 Giao diện tối'}</span>
-          </button>
-
-          {loading ? (
-            <div className="flex items-center gap-4">
-              <div className="h-8 w-32 animate-pulse rounded bg-slate-200 dark:bg-slate-700"></div>
-              <div className="h-8 w-8 animate-pulse rounded-full bg-slate-200 dark:bg-slate-700"></div>
-            </div>
-          ) : user ? (
+        {/* Right actions */}
+        <div className="ml-auto flex items-center gap-2 md:gap-3">
+          {!loading && user ? (
             <>
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                Xin chào, {profile?.name || user.email} ({profile?.role})
-              </span>
-              
               {profile?.role === 'student' && (
                 <>
-                  <Link to="/courses" className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">Khóa học</Link>
-                  <Link to="/my-schedule" className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">Lịch học</Link>
-                  <Link to="/my-classes" className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">Lớp học</Link>
-                  <Link to="/learning" className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">Đang học</Link>
-                  
-                  <Link to="/cart" className="relative text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">
-                    Giỏ hàng
+                  <Link
+                    to="/learning"
+                    onMouseEnter={() => preloadRoute('/learning')}
+                    className="hidden md:inline text-sm font-semibold text-[#242424] hover:text-primary transition-colors"
+                  >
+                    Khóa học của tôi
+                  </Link>
+                  <Link
+                    to="/cart"
+                    onMouseEnter={() => preloadRoute('/cart')}
+                    className="relative hidden sm:flex h-9 w-9 items-center justify-center rounded-full hover:bg-[#f5f5f5] text-[#555]"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M6 6h15l-1.5 9h-12z" />
+                      <circle cx="9" cy="20" r="1.2" fill="currentColor" />
+                      <circle cx="17" cy="20" r="1.2" fill="currentColor" />
+                      <path d="M6 6 5 3H2" />
+                    </svg>
                     {totalCount > 0 && (
-                      <span className="absolute -top-2 -right-3 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                      <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">
                         {totalCount}
                       </span>
                     )}
                   </Link>
                 </>
               )}
-
               {profile?.role === 'teacher' && (
-                <Link to="/teacher/courses" className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">Dành cho GV</Link>
-              )}
-
-              {profile?.role === 'admin' && (
-                <Link to="/admin" className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent">Admin</Link>
-              )}
-
-              {user && <NotificationBell />}
-
-              <button 
-                onClick={handleSignOut}
-                className="rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition"
-              >
-                Đăng xuất
-              </button>
-            </>
-          ) : (
-            <div className="flex gap-4">
-              <Link to="/login" className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-purple-600 transition">Đăng nhập</Link>
-              <Link to="/register" className="rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition">Đăng ký</Link>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Mobile/Tablet Drawer Collapsible Dropdown Menu */}
-      {isOpen && !loading && (
-        <div className="absolute top-16 left-0 w-full border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-4 shadow-md md:hidden flex flex-col gap-4 animate-fadeIn z-50">
-          {user ? (
-            <>
-              <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2">
-                <div>
-                  <div className="text-sm font-semibold text-slate-800 dark:text-white">{profile?.name || user.email}</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 capitalize">Vai trò: {profile?.role}</div>
-                </div>
-                <div>
-                  <NotificationBell />
-                </div>
-              </div>
-              
-              {profile?.role === 'student' && (
-                <>
-                  <Link 
-                    to="/courses" 
-                    className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
-                  >
-                    Khóa học
-                  </Link>
-                  <Link 
-                    to="/my-schedule" 
-                    className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
-                  >
-                    Lịch học
-                  </Link>
-                  <Link 
-                    to="/my-classes" 
-                    className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
-                  >
-                    Lớp học
-                  </Link>
-                  <Link 
-                    to="/learning" 
-                    className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
-                  >
-                    Đang học
-                  </Link>
-                  <Link 
-                    to="/cart" 
-                    className="flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
-                  >
-                    <span>Giỏ hàng</span>
-                    {totalCount > 0 && (
-                      <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
-                        {totalCount}
-                      </span>
-                    )}
-                  </Link>
-                </>
-              )}
-
-              {profile?.role === 'teacher' && (
-                <Link 
-                  to="/teacher/courses" 
-                  className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
+                <Link
+                  to="/teacher/courses"
+                  onMouseEnter={() => preloadRoute('/teacher/courses')}
+                  className="hidden md:inline text-sm font-semibold text-[#242424] hover:text-primary"
                 >
                   Dành cho GV
                 </Link>
               )}
-
               {profile?.role === 'admin' && (
-                <Link 
-                  to="/admin" 
-                  className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-accent py-1"
+                <Link
+                  to="/admin"
+                  onMouseEnter={() => preloadRoute('/admin')}
+                  className="hidden md:inline text-sm font-semibold text-[#242424] hover:text-primary"
                 >
                   Admin
                 </Link>
               )}
-
-              <button 
-                onClick={handleSignOut}
-                className="w-full rounded bg-red-50 dark:bg-red-950/40 py-2 text-center text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition"
-              >
-                Đăng xuất
-              </button>
+              <NotificationBell />
+              <div className="relative group">
+                <button
+                  type="button"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-white ring-2 ring-white"
+                  aria-label="Tài khoản"
+                >
+                  {avatarLetter}
+                </button>
+                <div className="invisible absolute right-0 top-full z-50 mt-2 w-48 rounded-xl border border-[#e8e8e8] bg-white py-2 opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition group-hover:visible group-hover:opacity-100">
+                  <div className="border-b border-[#f0f0f0] px-3 pb-2 mb-1">
+                    <p className="truncate text-sm font-semibold text-[#242424]">{profile?.name || user.email}</p>
+                    <p className="text-xs text-[#888] capitalize">{profile?.role}</p>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full px-3 py-2 text-left text-sm text-[#555] hover:bg-[#f5f5f5] hover:text-primary"
+                  >
+                    Đăng xuất
+                  </button>
+                </div>
+              </div>
             </>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <Link 
-                to="/login" 
-                className="w-full rounded bg-accent py-2 text-center text-sm font-medium text-white hover:bg-purple-600 transition"
-              >
-                Đăng nhập
-              </Link>
-              <Link 
-                to="/register" 
-                className="w-full rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-2 text-center text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+          ) : !loading ? (
+            <div className="hidden sm:flex items-center gap-2">
+              <Link
+                to="/register"
+                className="inline-flex h-9 cursor-pointer items-center rounded-full px-4 text-[14px] font-semibold leading-none font-sans text-[#292929] transition-all duration-200 hover:-translate-y-px hover:bg-[#f0f0f0] hover:text-primary"
               >
                 Đăng ký
               </Link>
+              <button
+                type="button"
+                onClick={() => openLogin(location.pathname)}
+                className="inline-flex h-9 cursor-pointer items-center rounded-full bg-[linear-gradient(90deg,#ff8f3f_0%,#f05123_50%,#e03e12_100%)] px-4 text-[14px] font-semibold leading-none font-sans text-white shadow-sm transition-all duration-200 hover:-translate-y-px hover:brightness-105 hover:shadow-md"
+              >
+                Đăng nhập
+              </button>
             </div>
+          ) : null}
+
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg text-[#555] hover:bg-[#f5f5f5]"
+            aria-label="Menu"
+          >
+            <div className="space-y-1.5">
+              <div className={`h-0.5 w-5 bg-current transition ${isOpen ? 'translate-y-2 rotate-45' : ''}`} />
+              <div className={`h-0.5 w-5 bg-current transition ${isOpen ? 'opacity-0' : ''}`} />
+              <div className={`h-0.5 w-5 bg-current transition ${isOpen ? '-translate-y-2 -rotate-45' : ''}`} />
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="md:hidden border-t border-[#e8e8e8] bg-white px-4 py-3 shadow-md flex flex-col gap-2">
+          <form onSubmit={handleSearch} className="sm:hidden mb-2">
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Tìm khóa học..."
+              className="w-full rounded-full border border-[#e8e8e8] bg-[#f5f5f5] px-4 py-2.5 text-sm outline-none focus:border-primary"
+            />
+          </form>
+          <Link to="/" className="py-2 text-sm font-medium" onClick={() => setIsOpen(false)}>Trang chủ</Link>
+          <Link to="/courses" className="py-2 text-sm font-medium" onClick={() => setIsOpen(false)}>Khóa học</Link>
+          {user ? (
+            <>
+              <Link to="/learning" className="py-2 text-sm font-medium" onClick={() => setIsOpen(false)}>Khóa học của tôi</Link>
+              <Link to="/cart" className="py-2 text-sm font-medium" onClick={() => setIsOpen(false)}>Giỏ hàng ({totalCount})</Link>
+              <button onClick={handleSignOut} className="py-2 text-left text-sm font-medium text-primary">Đăng xuất</button>
+            </>
+          ) : (
+            <>
+              <div className="mt-1 flex items-center gap-2">
+                <Link
+                  to="/register"
+                  className="inline-flex h-9 flex-1 cursor-pointer items-center justify-center rounded-full px-4 text-[14px] font-semibold leading-none font-sans text-[#292929] transition-all duration-200 hover:-translate-y-px hover:bg-[#f0f0f0] hover:text-primary"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Đăng ký
+                </Link>
+                <button
+                  type="button"
+                  className="inline-flex h-9 flex-1 cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(90deg,#ff8f3f_0%,#f05123_50%,#e03e12_100%)] px-4 text-[14px] font-semibold leading-none font-sans text-white shadow-sm transition-all duration-200 hover:-translate-y-px hover:brightness-105 hover:shadow-md"
+                  onClick={() => {
+                    setIsOpen(false)
+                    openLogin(location.pathname)
+                  }}
+                >
+                  Đăng nhập
+                </button>
+              </div>
+            </>
           )}
         </div>
       )}

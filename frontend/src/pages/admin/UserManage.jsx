@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+﻿import React, { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { adminService } from '../../services/adminService'
 import { supabase } from '../../lib/supabaseClient'
@@ -112,7 +112,7 @@ const UserManage = () => {
         </div>
         <button 
           onClick={() => setShowAddForm(!showAddForm)}
-          className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600 self-start sm:self-auto"
+          className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-brand-orangeHover self-start sm:self-auto"
         >
           {showAddForm ? 'Đóng form' : '+ Thêm User'}
         </button>

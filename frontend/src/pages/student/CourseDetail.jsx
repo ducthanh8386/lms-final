@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+﻿import React, { useEffect, useState } from 'react'
+import { useParams, Link, useLocation } from 'react-router-dom'
 import { courseService } from '../../services/courseService'
 import { studentService } from '../../services/studentService'
 import { useAuth } from '../../context/AuthContext'
+import { useAuthModal } from '../../context/AuthModalContext'
 import { useCart } from '../../context/CartContext'
 import { supabase } from '../../lib/supabaseClient'
 import DOMPurify from 'dompurify'
@@ -11,7 +12,9 @@ import { useToast } from '../../context/ToastContext'
 
 const CourseDetail = () => {
   const { id } = useParams()
-  const { user } = useAuth()
+  const location = useLocation()
+  const { user, loading: authLoading } = useAuth()
+  const { openLogin } = useAuthModal()
   const toast = useToast()
   const { addToCart, cart } = useCart()
   const [course, setCourse] = useState(null)
@@ -27,8 +30,22 @@ const CourseDetail = () => {
 
   const inCart = cart.find(c => c.id === id)
 
+  // Guest vào thẳng URL chi tiết → mở modal đăng nhập
   useEffect(() => {
+    if (authLoading) return
+    if (!user) {
+      openLogin(location.pathname)
+    }
+  }, [user, authLoading, openLogin, location.pathname])
+
+  useEffect(() => {
+    if (!user) {
+      setLoading(false)
+      return
+    }
+
     const fetchCourseData = async () => {
+      setLoading(true)
       const { data: cData } = await courseService.getCourseDetail(id)
       if (cData) setCourse(cData)
 
@@ -38,16 +55,14 @@ const CourseDetail = () => {
       const { data: rData } = await courseService.getCourseReviews(id)
       if (rData) setReviews(rData)
 
-      if (user) {
-        const { data: enrollData } = await supabase
-          .from('enrollments')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('course_id', id)
-          .maybeSingle()
-        if (enrollData) {
-          setIsEnrolled(true)
-        }
+      const { data: enrollData } = await supabase
+        .from('enrollments')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('course_id', id)
+        .maybeSingle()
+      if (enrollData) {
+        setIsEnrolled(true)
       }
 
       setLoading(false)
@@ -69,6 +84,14 @@ const CourseDetail = () => {
       toast.success("Đăng đánh giá thành công!")
     }
     setIsSubmittingReview(false)
+  }
+
+  if (authLoading || (!user && !authLoading)) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center p-8 text-sm text-[#666]">
+        Vui lòng đăng nhập để xem khóa học
+      </div>
+    )
   }
 
   if (loading) return <div className="p-8">Đang tải chi tiết khóa học...</div>
@@ -197,7 +220,7 @@ const CourseDetail = () => {
               ) : (
                 <button 
                   onClick={() => addToCart(course)}
-                  className="w-full rounded-lg bg-accent py-3 font-bold text-white hover:bg-purple-600"
+                  className="w-full rounded-lg bg-accent py-3 font-bold text-white hover:bg-brand-orangeHover"
                 >
                   Thêm vào giỏ hàng
                 </button>

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { authService } from '../services/authService'
 
@@ -10,19 +10,13 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // 1. Fetch current session
     const initSession = async () => {
       const { session } = await authService.getSession()
       if (session?.user) {
         setUser(session.user)
-        // Fetch profile
         const { data: userProfile } = await authService.getProfile(session.user.id)
-        
-        // Tối ưu: Dùng custom JWT claim làm nguồn chân lý cho role
         const jwtRole = session.user.app_metadata?.userrole
-        if (jwtRole && userProfile) {
-          userProfile.role = jwtRole
-        }
+        if (jwtRole && userProfile) userProfile.role = jwtRole
         setProfile(userProfile)
       }
       setLoading(false)
@@ -30,17 +24,16 @@ export const AuthProvider = ({ children }) => {
 
     initSession()
 
-    // 2. Listen to auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        // Không refetch profile mỗi lần refresh token — tránh giật UI
+        if (event === 'TOKEN_REFRESHED') return
+
         if (session?.user) {
           setUser(session.user)
           const { data: userProfile } = await authService.getProfile(session.user.id)
-          
           const jwtRole = session.user.app_metadata?.userrole
-          if (jwtRole && userProfile) {
-            userProfile.role = jwtRole
-          }
+          if (jwtRole && userProfile) userProfile.role = jwtRole
           setProfile(userProfile)
         } else {
           setUser(null)
@@ -55,11 +48,10 @@ export const AuthProvider = ({ children }) => {
     }
   }, [])
 
-  const value = {
-    user,
-    profile,
-    loading
-  }
+  const value = useMemo(
+    () => ({ user, profile, loading }),
+    [user, profile, loading]
+  )
 
   return (
     <AuthContext.Provider value={value}>
@@ -68,6 +60,4 @@ export const AuthProvider = ({ children }) => {
   )
 }
 
-export const useAuth = () => {
-  return useContext(AuthContext)
-}
+export const useAuth = () => useContext(AuthContext)

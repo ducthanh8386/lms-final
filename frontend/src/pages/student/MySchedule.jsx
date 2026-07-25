@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+﻿import React, { useEffect, useState, useCallback } from 'react'
 import { scheduleService } from '../../services/scheduleService'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
@@ -101,7 +101,7 @@ const MySchedule = () => {
                         href={event.meeting_url} 
                         target="_blank" 
                         rel="noreferrer"
-                        className="mt-2 text-center rounded bg-accent py-1.5 font-bold text-white hover:bg-purple-600 transition block text-[10px]"
+                        className="mt-2 text-center rounded bg-accent py-1.5 font-bold text-white hover:bg-brand-orangeHover transition block text-[10px]"
                       >
                         Vào học trực tuyến
                       </a>
