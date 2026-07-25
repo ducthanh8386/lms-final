@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+﻿import React, { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { classService } from '../../services/classService'
 import { useAuth } from '../../context/AuthContext'
@@ -53,7 +53,7 @@ const JoinClass = () => {
         <p className="text-sm text-slate-500 mb-6">Bạn cần đăng nhập vào tài khoản học viên để có thể tham gia vào lớp học này.</p>
         <Link 
           to={`/login?redirect=/join/${inviteCode}`}
-          className="rounded-lg bg-accent px-6 py-2.5 font-semibold text-white hover:bg-purple-600 transition block text-center"
+          className="rounded-lg bg-accent px-6 py-2.5 font-semibold text-white hover:bg-brand-orangeHover transition block text-center"
         >
           Đăng nhập ngay
         </Link>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+﻿import React, { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { quizService, seededShuffle } from '../../services/quizService'
 import { useAuth } from '../../context/AuthContext'
@@ -237,7 +237,7 @@ const QuizPage = () => {
               {attempts.length < quiz.max_attempts ? (
                 <button
                   onClick={handleStartAttempt}
-                  className="rounded-lg bg-accent px-6 py-3 font-bold text-white hover:bg-purple-600 transition shadow-sm w-full md:w-auto"
+                  className="rounded-lg bg-accent px-6 py-3 font-bold text-white hover:bg-brand-orangeHover transition shadow-sm w-full md:w-auto"
                 >
                   Bắt đầu làm bài thi
                 </button>
@@ -323,7 +323,7 @@ const QuizPage = () => {
                     key={opt.id}
                     onClick={() => handleOptionSelect(currentQuestion.id, opt.id, currentQuestion.question_type)}
                     className={`p-4 rounded-xl border-2 cursor-pointer transition duration-150 flex items-center gap-3 ${
-                      isSelected ? 'border-accent bg-purple-50/30' : 'border-slate-100 hover:border-slate-200 bg-white'
+                      isSelected ? 'border-accent bg-primary-container/30' : 'border-slate-100 hover:border-slate-200 bg-white'
                     }`}
                   >
                     <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
@@ -351,7 +351,7 @@ const QuizPage = () => {
             {currentQIndex < shuffledQuestions.length - 1 ? (
               <button
                 onClick={() => setCurrentQIndex(idx => idx + 1)}
-                className="rounded bg-accent px-4 py-2 font-bold text-white hover:bg-purple-600 text-xs"
+                className="rounded bg-accent px-4 py-2 font-bold text-white hover:bg-brand-orangeHover text-xs"
               >
                 Tiếp theo
               </button>

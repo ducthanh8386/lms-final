@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { courseService } from '../../services/courseService'
@@ -169,7 +169,7 @@ const CourseForm = () => {
                 accept="image/*"
                 onChange={handleImageUpload}
                 disabled={uploadingImage}
-                className="w-full text-sm text-slate-500 file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-purple-600 disabled:opacity-50"
+                className="w-full text-sm text-slate-500 file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-orangeHover disabled:opacity-50"
               />
               {uploadingImage && <div className="mt-2 text-sm text-accent">Đang tải ảnh lên...</div>}
               <label htmlFor="course-thumbnail-url" className="mt-2 text-xs text-slate-500 block">Hoặc dán URL:</label>
@@ -243,7 +243,7 @@ const CourseForm = () => {
           <button
             type="submit"
             disabled={loading}
-            className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600 disabled:opacity-50"
+            className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-brand-orangeHover disabled:opacity-50"
           >
             {loading ? 'Đang lưu...' : 'Lưu khóa học'}
           </button>

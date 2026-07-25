@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
@@ -160,7 +160,7 @@ const Cart = () => {
             <button
               onClick={handleCheckout}
               disabled={loading}
-              className="w-full rounded-lg bg-accent py-3 font-bold text-white hover:bg-purple-600 disabled:opacity-50"
+              className="w-full rounded-lg bg-accent py-3 font-bold text-white hover:bg-brand-orangeHover disabled:opacity-50"
             >
               {loading ? 'Đang xử lý...' : 'Thanh toán & Đăng ký'}
             </button>

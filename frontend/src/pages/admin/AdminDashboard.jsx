@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { adminService } from '../../services/adminService'
 import { useToast } from '../../context/ToastContext'
@@ -54,7 +54,7 @@ const AdminDashboard = () => {
           <p className="mt-1 text-[11px] text-slate-500 font-medium">Học viên đăng ký</p>
         </div>
 
-        <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-purple-500 animate-fadeIn">
+        <div className="rounded-xl border bg-white p-6 shadow-sm border-l-4 border-l-primary animate-fadeIn">
           <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng Giáo Viên</h3>
           {loading ? (
             <div className="mt-2 h-9 w-16 animate-pulse rounded bg-slate-100"></div>

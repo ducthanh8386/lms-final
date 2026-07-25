@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { teacherService } from '../../services/teacherService'
 import { supabase } from '../../lib/supabaseClient'
@@ -104,7 +104,7 @@ const TeacherSettings = () => {
                 accept="image/*"
                 onChange={handleQRUpload}
                 disabled={uploadingQR}
-                className="w-full text-sm text-slate-500 file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-purple-600 disabled:opacity-50"
+                className="w-full text-sm text-slate-500 file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-orangeHover disabled:opacity-50"
               />
               {uploadingQR && <div className="mt-2 text-sm text-accent">Đang tải ảnh lên...</div>}
               <label htmlFor="settings-qr-url" className="mt-2 text-xs text-slate-500 block">Hoặc dán URL ảnh QR:</label>
@@ -124,7 +124,7 @@ const TeacherSettings = () => {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600 disabled:opacity-50"
+            className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-brand-orangeHover disabled:opacity-50"
           >
             {saving ? 'Đang lưu...' : 'Lưu Cài đặt'}
           </button>

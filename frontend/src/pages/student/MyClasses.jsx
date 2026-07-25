@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { classService } from '../../services/classService'
 import { useAuth } from '../../context/AuthContext'
@@ -61,7 +61,7 @@ const MyClasses = () => {
         </div>
         <button
           onClick={() => setShowJoinForm(!showJoinForm)}
-          className="rounded-lg bg-accent px-5 py-2.5 font-semibold text-white hover:bg-purple-600 transition shadow-sm"
+          className="rounded-lg bg-accent px-5 py-2.5 font-semibold text-white hover:bg-brand-orangeHover transition shadow-sm"
         >
           {showJoinForm ? 'Đóng form nhập' : 'Tham gia lớp mới'}
         </button>

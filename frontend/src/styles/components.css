@@ -46,7 +46,7 @@
   font-weight: var(--fw-semi);
 }
 
-.badge-success { background-color: rgba(16, 185, 129, 0.15); color: #059669; }
-.badge-warning { background-color: rgba(245, 158, 11, 0.15); color: #d97706; }
-.badge-danger { background-color: rgba(239, 68, 68, 0.15); color: #dc2626; }
-.badge-info { background-color: rgba(79, 70, 229, 0.15); color: #4f46e5; }
+.badge-success { background-color: #E8F5E9; color: #2E7D32; }
+.badge-warning { background-color: #FFE8E0; color: #8A2A0E; }
+.badge-danger { background-color: #FFEBEE; color: #B71C1C; }
+.badge-info { background-color: #E3F0FF; color: #0B4A99; }

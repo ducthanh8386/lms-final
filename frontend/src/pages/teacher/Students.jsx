@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+﻿import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { teacherService } from '../../services/teacherService'
 import TeacherTabs from '../../components/teacher/TeacherTabs'
@@ -83,7 +83,7 @@ const Students = () => {
           />
           <button
             onClick={handleExportCSV}
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-purple-600 shrink-0 cursor-pointer"
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-brand-orangeHover shrink-0 cursor-pointer"
             title="Xuất danh sách học viên ra file CSV"
           >
             Xuất CSV

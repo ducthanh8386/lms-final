@@ -1,57 +1,92 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { courseService } from '../../services/courseService'
+import RequireAuthCourseLink from '../../components/auth/RequireAuthCourseLink'
+
+// Cache theo query để quay lại không flash loading
+const coursesCache = new Map()
 
 const CourseList = () => {
-  const [courses, setCourses] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [searchParams] = useSearchParams()
+  const q = searchParams.get('q') || ''
+  const cacheKey = q || '__all__'
+
+  const [courses, setCourses] = useState(() => coursesCache.get(cacheKey) || [])
+  const [loading, setLoading] = useState(() => !coursesCache.has(cacheKey))
 
   useEffect(() => {
+    let cancelled = false
+
     const fetchPublicCourses = async () => {
-      const { data } = await courseService.getPublicCourses()
-      if (data) setCourses(data)
+      if (!coursesCache.has(cacheKey)) setLoading(true)
+      const { data } = await courseService.getPublicCourses({ search: q || undefined, limit: 24 })
+      if (cancelled) return
+      if (data) {
+        coursesCache.set(cacheKey, data)
+        setCourses(data)
+      }
       setLoading(false)
     }
+
     fetchPublicCourses()
-  }, [])
+    return () => {
+      cancelled = true
+    }
+  }, [q, cacheKey])
 
   return (
-    <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 text-left">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">Khám phá Khóa Học</h1>
-        <p className="text-slate-500">Tìm kiếm và đăng ký các khóa học chất lượng cao.</p>
+    <div className="mx-auto max-w-[1100px] px-4 sm:px-6 py-6 text-left">
+      <header className="mb-6">
+        <h1 className="text-2xl font-extrabold text-[#242424]">
+          {q ? `Kết quả cho “${q}”` : 'Khám phá khóa học'}
+        </h1>
+        <p className="mt-1 text-sm text-[#666]">Tìm kiếm và đăng ký các khóa học chất lượng cao.</p>
       </header>
 
       {loading ? (
-        <p>Đang tải danh sách khóa học...</p>
+        <div className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="animate-pulse">
+              <div className="aspect-[16/10] rounded-2xl bg-[#eee]" />
+              <div className="mt-3 h-4 w-4/5 rounded bg-[#eee]" />
+              <div className="mt-2 h-4 w-1/3 rounded bg-[#eee]" />
+            </div>
+          ))}
+        </div>
       ) : courses.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
           {courses.map((course) => (
-            <Link key={course.id} to={`/courses/${course.id}`} className="group flex flex-col overflow-hidden rounded-xl border bg-white shadow-sm transition hover:shadow-md">
-              <div className="h-40 w-full bg-slate-200">
+            <RequireAuthCourseLink
+              key={course.id}
+              courseId={course.id}
+              className="group flex flex-col overflow-hidden rounded-2xl bg-white transition hover:-translate-y-0.5"
+            >
+              <div className="aspect-[16/10] w-full overflow-hidden rounded-2xl bg-[#eee]">
                 {course.thumbnail ? (
-                  <img src={course.thumbnail} alt={course.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+                  <img
+                    src={course.thumbnail}
+                    alt={course.title}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-slate-400">Không có ảnh</div>
+                  <div className="flex h-full w-full items-center justify-center text-[#999] text-sm">Không có ảnh</div>
                 )}
               </div>
-              <div className="flex flex-1 flex-col p-4">
-                <div className="mb-2 text-xs font-medium text-slate-500">
-                  {course.categories?.name || 'Chưa phân loại'}
-                </div>
-                <h3 className="mb-1 text-base font-bold text-slate-900 group-hover:text-accent line-clamp-2">{course.title}</h3>
-                <p className="mb-2 text-xs text-slate-500">Bởi: {course.profiles?.name || 'Giảng viên'}</p>
-                
-                <div className="mt-auto pt-4 font-bold text-accent">
-                  {course.is_free ? 'Miễn phí' : `${course.price?.toLocaleString()}đ`}
+              <div className="flex flex-1 flex-col px-1 pt-3">
+                <h3 className="mb-1 text-[15px] font-bold text-[#242424] group-hover:text-primary line-clamp-2">{course.title}</h3>
+                <p className="mb-2 text-xs text-[#757575]">{course.profiles?.name || 'Giảng viên'}</p>
+                <div className="mt-auto font-bold text-primary text-[15px]">
+                  {course.is_free ? 'Miễn phí' : `${Number(course.price || 0).toLocaleString('vi-VN')}đ`}
                 </div>
               </div>
-            </Link>
+            </RequireAuthCourseLink>
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-slate-300 p-12 text-center text-slate-500">
-          Hiện tại chưa có khóa học nào được duyệt.
+        <div className="rounded-2xl border border-dashed border-[#ddd] p-12 text-center text-sm text-[#888]">
+          {q ? 'Không tìm thấy khóa học phù hợp.' : 'Hiện tại chưa có khóa học nào được duyệt.'}
         </div>
       )}
     </div>

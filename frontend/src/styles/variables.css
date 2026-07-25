@@ -1,17 +1,15 @@
-/* ── Design Tokens & CSS Variables ── */
+/* ── Design Tokens — F8-inspired (sync with DESIGN.md) ── */
 :root {
-  /* Fonts */
   --font-sans: "Inter", "Segoe UI", "Roboto", system-ui, -apple-system, sans-serif;
+  --font-display: "Inter", "Segoe UI", system-ui, sans-serif;
   --font-mono: "Fira Code", "Cascadia Code", "Consolas", monospace;
 
-  /* Font weight utilities */
   --fw-light: 300;
   --fw-regular: 400;
   --fw-medium: 500;
   --fw-semi: 600;
   --fw-bold: 700;
 
-  /* Spacing Scale */
   --sp-1: 0.25rem;
   --sp-2: 0.5rem;
   --sp-3: 0.75rem;
@@ -20,42 +18,41 @@
   --sp-6: 1.5rem;
   --sp-8: 2rem;
 
-  /* Border Radius */
-  --r-sm: 0.25rem;
-  --r-md: 0.5rem;
-  --r-lg: 0.75rem;
+  --r-sm: 0.5rem;
+  --r-md: 0.75rem;
+  --r-lg: 1rem;
+  --r-xl: 1rem;
   --r-full: 9999px;
 
-  /* Light Theme Defaults */
-  --clr-gray-100: #f8fafc;
-  --clr-gray-200: #e2e8f0;
-  --clr-gray-300: #cbd5e1;
-  --clr-gray-500: #64748b;
-  --clr-gray-700: #334155;
-  --clr-white: #ffffff;
-  --clr-dark: #0f172a;
+  --clr-gray-100: #F5F5F5;
+  --clr-gray-200: #E8E8E8;
+  --clr-gray-300: #DBDBDB;
+  --clr-gray-500: #666666;
+  --clr-gray-700: #242424;
+  --clr-white: #FFFFFF;
+  --clr-dark: #242424;
 
-  --clr-primary: #4f46e5;
-  --clr-primary-l: #6366f1;
-  --clr-primary-bg: rgba(79, 70, 229, 0.1);
+  --clr-primary: #F05123;
+  --clr-primary-l: #D63F15;
+  --clr-primary-bg: rgba(240, 81, 35, 0.12);
+  --clr-secondary: #292929;
 
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-/* ── Explicit Dark Theme Override (Triggered via html.dark) ── */
 html.dark {
-  --clr-gray-100: #0f172a;
-  --clr-gray-200: #1e293b;
-  --clr-gray-300: #334155;
-  --clr-white: #1e293b;
-  --clr-dark: #f1f5f9;
-  --clr-gray-700: #cbd5e1;
-  --clr-gray-500: #94a3b8;
-  --clr-primary: #6366f1;
-  --clr-primary-bg: rgba(99, 102, 241, 0.15);
+  --clr-gray-100: #1A1A1A;
+  --clr-gray-200: #2A2A2A;
+  --clr-gray-300: #3D3D3D;
+  --clr-white: #242424;
+  --clr-dark: #F5F5F5;
+  --clr-gray-700: #F5F5F5;
+  --clr-gray-500: #A0A0A0;
+  --clr-primary: #F05123;
+  --clr-primary-bg: rgba(240, 81, 35, 0.2);
 
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.45);
 }

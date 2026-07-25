@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { studentService } from '../../services/studentService'
 import { useAuth } from '../../context/AuthContext'
@@ -56,7 +56,7 @@ const MyLearning = () => {
       ) : (
         <div className="rounded-xl border border-dashed p-12 text-center">
           <p className="mb-4 text-slate-500">Bạn chưa đăng ký khóa học nào.</p>
-          <Link to="/courses" className="rounded bg-accent px-6 py-2 font-medium text-white hover:bg-purple-600">
+          <Link to="/courses" className="rounded bg-accent px-6 py-2 font-medium text-white hover:bg-brand-orangeHover">
             Khám phá khóa học
           </Link>
         </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+﻿import React, { useEffect, useState, useCallback } from 'react'
 import { classService } from '../../services/classService'
 import { scheduleService } from '../../services/scheduleService'
 import { notificationService } from '../../services/notificationService'
@@ -205,7 +205,7 @@ const ScheduleManage = () => {
     { value: 'blue', label: 'Xanh dương', class: 'bg-blue-500' },
     { value: 'green', label: 'Xanh lá', class: 'bg-green-500' },
     { value: 'red', label: 'Đỏ', class: 'bg-red-500' },
-    { value: 'purple', label: 'Tím', class: 'bg-purple-500' },
+    { value: 'purple', label: 'Tím', class: 'bg-primary-container0' },
     { value: 'orange', label: 'Cam', class: 'bg-orange-500' }
   ]
 
@@ -218,7 +218,7 @@ const ScheduleManage = () => {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="rounded-lg bg-accent px-4 py-2.5 font-semibold text-white hover:bg-purple-600 transition shadow-sm"
+          className="rounded-lg bg-accent px-4 py-2.5 font-semibold text-white hover:bg-brand-orangeHover transition shadow-sm"
         >
           + Thêm buổi học
         </button>
@@ -417,7 +417,7 @@ const ScheduleManage = () => {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-purple-600 disabled:opacity-50 text-sm"
+                  className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-brand-orangeHover disabled:opacity-50 text-sm"
                 >
                   {saving ? 'Đang tạo lịch...' : 'Tạo buổi học'}
                 </button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+﻿import React, { useEffect, useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { quizService } from '../../services/quizService'
 import { courseService } from '../../services/courseService'
@@ -358,7 +358,7 @@ const QuizManage = () => {
             <h3 className="font-bold text-slate-900">Danh sách các bài trắc nghiệm</h3>
             <button
               onClick={handleOpenCreateQuiz}
-              className="rounded bg-accent px-4 py-2 text-xs font-bold text-white hover:bg-purple-600 transition"
+              className="rounded bg-accent px-4 py-2 text-xs font-bold text-white hover:bg-brand-orangeHover transition"
             >
               + Tạo Quiz Mới
             </button>
@@ -555,7 +555,7 @@ const QuizManage = () => {
             <button
               type="submit"
               disabled={savingQuiz}
-              className="rounded bg-accent px-5 py-2 text-xs font-bold text-white hover:bg-purple-600 disabled:opacity-50"
+              className="rounded bg-accent px-5 py-2 text-xs font-bold text-white hover:bg-brand-orangeHover disabled:opacity-50"
             >
               {savingQuiz ? 'Đang lưu...' : 'Lưu thông tin đề'}
             </button>
@@ -680,7 +680,7 @@ const QuizManage = () => {
                 <button
                   type="submit"
                   disabled={savingQuestion}
-                  className="rounded bg-accent px-5 py-2 text-xs font-bold text-white hover:bg-purple-600 disabled:opacity-50"
+                  className="rounded bg-accent px-5 py-2 text-xs font-bold text-white hover:bg-brand-orangeHover disabled:opacity-50"
                 >
                   {savingQuestion ? 'Đang lưu...' : 'Lưu câu hỏi'}
                 </button>

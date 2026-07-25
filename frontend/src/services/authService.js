@@ -24,6 +24,18 @@ export const authService = {
     return { data, error }
   },
 
+  // Đăng nhập OAuth (Google / Facebook / Github)
+  async signInWithOAuth(provider, redirectTo = '/') {
+    const redirectURL = `${window.location.origin}${redirectTo.startsWith('/') ? redirectTo : `/${redirectTo}`}`
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: redirectURL,
+      },
+    })
+    return { data, error }
+  },
+
   // Đăng xuất
   async signOut() {
     const { error } = await supabase.auth.signOut()

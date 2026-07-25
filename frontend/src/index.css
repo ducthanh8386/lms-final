@@ -1,12 +1,69 @@
 @import "tailwindcss";
 
 @theme {
-  --color-accent: #8b5cf6;
-  --color-success: #10b981;
-  --color-danger: #ef4444;
-  --color-warning: #f59e0b;
+  /* Legacy alias — existing UI uses bg-accent / text-accent */
+  --color-accent: #F05123;
+
+  /* Brand — F8 inspired */
+  --color-brand-orange: #F05123;
+  --color-brand-orangeHover: #D63F15;
+  --color-brand-greenDark: #292929;
+  --color-brand-greenLight: #3D3D3D;
+  --color-brand-bgGray: #F5F5F5;
+
+  /* Surface — clean F8 */
+  --color-surface: #F5F5F5;
+  --color-surface-dim: #E8E8E8;
+  --color-surface-container-lowest: #FFFFFF;
+  --color-surface-container-low: #FAFAFA;
+  --color-surface-container: #F0F0F0;
+  --color-surface-container-high: #E8E8E8;
+  --color-on-surface: #242424;
+  --color-on-surface-variant: #666666;
+  --color-outline: #DBDBDB;
+  --color-outline-variant: #E8E8E8;
+
+  /* Semantic */
+  --color-primary: #F05123;
+  --color-on-primary: #FFFFFF;
+  --color-primary-container: #FFE8E0;
+  --color-on-primary-container: #8A2A0E;
+  --color-primary-fixed: #FFCCBC;
+  --color-secondary: #292929;
+  --color-on-secondary: #FFFFFF;
+  --color-secondary-container: #3D3D3D;
+  --color-on-secondary-container: #E0E0E0;
+  --color-tertiary: #1473E6;
+  --color-tertiary-container: #E3F0FF;
+  --color-on-tertiary-container: #0B4A99;
+  --color-inverse-surface: #1A1A1A;
+  --color-inverse-on-surface: #F5F5F5;
+  --color-error: #E53935;
+  --color-error-container: #FFEBEE;
+  --color-on-error-container: #B71C1C;
+
+  --color-success: #2E7D32;
+  --color-danger: #E53935;
+  --color-warning: #F05123;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Inter", system-ui, sans-serif;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1rem;
+
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 body {
-  background-color: #f8fafc; /* tailwind slate-50 */
+  background-color: #FFFFFF;
+  color: #242424;
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
 }

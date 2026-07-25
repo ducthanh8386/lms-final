@@ -1,135 +1,264 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { courseService } from '../services/courseService'
+import RequireAuthCourseLink from '../components/auth/RequireAuthCourseLink'
+
+const GRADIENTS = [
+  'from-[#ff8a3d] via-[#f05123] to-[#c43a12]',
+  'from-[#ff6b9d] via-[#e63950] to-[#9b1d3a]',
+  'from-[#6a8cff] via-[#4f46e5] to-[#312e81]',
+  'from-[#2dd4bf] via-[#0ea5e9] to-[#0369a1]',
+  'from-[#fbbf24] via-[#f59e0b] to-[#d97706]',
+  'from-[#a78bfa] via-[#7c3aed] to-[#5b21b6]',
+]
+
+const BANNERS = [
+  {
+    title: 'Lớp Fullstack trực tuyến',
+    desc: 'Học thực chiến, làm dự án, được review và hỗ trợ trực tiếp từ giảng viên.',
+    cta: 'Nhận lộ trình fullstack',
+    to: '/courses',
+    gradient: 'linear-gradient(90deg, #123a8a 0%, #1d4ed8 45%, #3b82f6 100%)',
+    ctaHover: '#123a8a',
+    image:
+      'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'LMS - Học lập trình web FullStack',
+  },
+  {
+    title: 'Học lập trình để đi làm',
+    desc: 'Lộ trình từ zero đến junior — HTML, CSS, JavaScript, React và hơn thế nữa.',
+    cta: 'Xem lộ trình',
+    to: '/courses',
+    gradient: 'linear-gradient(90deg, #7c2d12 0%, #c2410c 50%, #f05123 100%)',
+    ctaHover: '#7c2d12',
+    image:
+      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'LMS - Học lập trình để đi làm',
+  },
+]
+
+// Cache để vào lại trang chủ không flash skeleton
+let cachedCourses = null
+
+function CourseCard({ course, index }) {
+  const gradient = GRADIENTS[index % GRADIENTS.length]
+  const priceLabel = course.is_free
+    ? 'Miễn phí'
+    : `${Number(course.price || 0).toLocaleString('vi-VN')}đ`
+  return (
+    <RequireAuthCourseLink
+      courseId={course.id}
+      className="group flex flex-col overflow-hidden rounded-2xl bg-white transition-transform duration-150 hover:-translate-y-1"
+    >
+      <div className={`relative aspect-[16/10] overflow-hidden rounded-2xl bg-gradient-to-br ${gradient}`}>
+        {course.thumbnail ? (
+          <img
+            src={course.thumbnail}
+            alt={course.title}
+            loading="eager"
+            decoding="async"
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+          />
+        ) : (
+          <div className="flex h-full w-full items-end p-4">
+            <h3 className="text-xl font-extrabold leading-tight text-white drop-shadow line-clamp-3">
+              {course.title}
+            </h3>
+          </div>
+        )}
+        {!course.is_free && (
+          <span className="absolute left-2.5 top-2.5 text-base" title="Pro">👑</span>
+        )}
+      </div>
+
+      <div className="flex flex-1 flex-col px-1 pt-3 pb-1">
+        <h3 className="text-[15px] font-bold leading-snug text-[#242424] line-clamp-2 group-hover:text-primary transition-colors">
+          {course.title}
+        </h3>
+
+        <div className="mt-2 flex items-baseline gap-2">
+          <span className="text-[15px] font-bold text-primary">{priceLabel}</span>
+          {!course.is_free && course.compare_at_price > course.price && (
+            <span className="text-xs text-[#999] line-through">
+              {Number(course.compare_at_price).toLocaleString('vi-VN')}đ
+            </span>
+          )}
+        </div>
+
+        <div className="mt-2 flex items-center gap-1 text-[12px] text-[#666]">
+          <span className="text-[#f5a623]">★★★★★</span>
+          <span className="font-semibold text-[#242424]">
+            {Number(course.rating_avg ?? 4.8).toFixed(1)}
+          </span>
+          <span className="text-[#999]">({course.rating_count || 100}+)</span>
+        </div>
+
+        <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-[#757575]">
+          <span className="inline-flex items-center gap-1.5 min-w-0">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold text-primary">
+              {(course.profiles?.name || 'G').charAt(0)}
+            </span>
+            <span className="truncate max-w-[110px]">{course.profiles?.name || 'Giảng viên'}</span>
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-8 2-8 4v1h16v-1c0-2-4-4-8-4Z"/></svg>
+            {course.student_count || course.enrollments_count || '—'}
+          </span>
+        </div>
+      </div>
+    </RequireAuthCourseLink>
+  )
+}
 
 const Home = () => {
-  const [featuredCourses, setFeaturedCourses] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [featuredCourses, setFeaturedCourses] = useState(() => cachedCourses || [])
+  const [loading, setLoading] = useState(() => !cachedCourses)
+  const [bannerIndex, setBannerIndex] = useState(0)
+
+  // Preload ảnh banner để đổi slide không bị trắng
+  useEffect(() => {
+    BANNERS.forEach((b) => {
+      const img = new Image()
+      img.src = b.image
+    })
+  }, [])
 
   useEffect(() => {
+    let cancelled = false
     const fetchCourses = async () => {
-      const { data, error } = await courseService.getPublicCourses()
+      const { data, error } = await courseService.getPublicCourses({ limit: 8 })
+      if (cancelled) return
       if (!error && data) {
-        setFeaturedCourses(data.slice(0, 4))
+        const list = data.slice(0, 8)
+        cachedCourses = list
+        setFeaturedCourses(list)
       }
       setLoading(false)
     }
     fetchCourses()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  return (
-    <div className="w-full">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-slate-900 py-24 sm:py-32">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-10"></div>
-        <div className="relative mx-auto max-w-7xl px-6 lg:px-8 text-center">
-          <h1 className="mx-auto max-w-4xl text-4xl font-extrabold tracking-tight text-white sm:text-6xl">
-            Nền tảng học tập <span className="text-accent">trực tuyến</span> hàng đầu
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-            Phát triển kỹ năng của bạn với các khóa học chất lượng cao từ những chuyên gia thực chiến. Học mọi lúc, mọi nơi, không giới hạn.
-          </p>
-          <div className="mt-10 flex items-center justify-center gap-x-6">
-            <Link
-              to="/courses"
-              className="rounded-full bg-accent px-8 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-all duration-200"
-            >
-              Khám phá khóa học
-            </Link>
-            <Link to="/register" className="text-sm font-semibold leading-6 text-white hover:text-slate-200 transition-all">
-              Đăng ký ngay <span aria-hidden="true">→</span>
-            </Link>
-          </div>
-        </div>
-      </section>
+  useEffect(() => {
+    const id = setInterval(() => {
+      setBannerIndex((i) => (i + 1) % BANNERS.length)
+    }, 6000)
+    return () => clearInterval(id)
+  }, [])
 
-      {/* Featured Courses Section */}
-      <section className="py-24 bg-slate-50">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8 text-left">
-          <div className="mb-12 md:flex md:items-end md:justify-between">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Khóa học nổi bật</h2>
-              <p className="mt-2 text-lg text-slate-600">Những khóa học được học viên yêu thích nhất hiện nay.</p>
+  const banner = BANNERS[bannerIndex]
+
+  return (
+    <div className="w-full bg-white">
+      <div className="mx-auto w-full max-w-[2400px] pl-2.5 pr-4 pt-4 pb-10 sm:pr-8 md:pl-[10px] md:pr-8">
+        <section className="relative mb-8 w-full">
+          <div
+            className="relative flex w-full overflow-hidden rounded-[16px] max-md:min-h-[250px] max-md:flex-col md:h-[270px] min-[1800px]:h-[300px]"
+            style={{ background: banner.gradient }}
+          >
+            <div className="relative z-10 order-2 flex w-full shrink-0 flex-col justify-center px-6 py-5 text-white md:order-1 md:w-[min(640px,38%)] md:max-w-[640px] md:px-9 md:py-0">
+              <p className="mb-2 inline-flex w-fit items-center gap-1.5 rounded-md bg-white/15 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
+                <span aria-hidden>📹</span> Học live qua Zoom
+              </p>
+              <h1 className="mb-2 text-[24px] font-bold leading-[1.35] sm:text-[28px] md:text-[32px]">
+                {banner.title}
+              </h1>
+              <p className="mb-5 max-w-[520px] text-[14px] leading-relaxed text-white/95 md:text-[15px] line-clamp-3">
+                {banner.desc}
+              </p>
+              <Link
+                to={banner.to}
+                className="inline-flex min-h-[44px] min-w-[124px] w-fit items-center justify-center gap-1.5 rounded-full border-2 border-white px-5 text-[13px] font-bold uppercase tracking-wide text-white transition-colors duration-200 hover:bg-white"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = banner.ctaHover
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#fff'
+                }}
+              >
+                {banner.cta}
+                <span aria-hidden>→</span>
+              </Link>
             </div>
-            <div className="mt-4 md:mt-0">
-              <Link to="/courses" className="text-sm font-bold text-accent hover:text-purple-600">Xem tất cả khóa học <span aria-hidden="true">→</span></Link>
+
+            {/* Giữ tất cả ảnh trong DOM + crossfade — tránh trắng khi đổi src */}
+            <div className="relative order-1 min-w-0 w-full aspect-[2/1] md:order-2 md:aspect-auto md:flex md:h-full md:flex-[3] md:justify-end">
+              {BANNERS.map((b, i) => (
+                <img
+                  key={b.image}
+                  src={b.image}
+                  alt={b.imageAlt}
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-500 ${
+                    i === bannerIndex ? 'opacity-100' : 'opacity-0'
+                  }`}
+                />
+              ))}
             </div>
+          </div>
+
+          <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-1.5">
+            {BANNERS.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Banner ${i + 1}`}
+                onClick={() => setBannerIndex(i)}
+                className={`h-1.5 rounded-full transition-all ${i === bannerIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="mx-auto w-full max-w-[1600px] px-3 sm:px-6 md:px-10">
+          <div className="mb-5 flex items-end justify-between gap-4">
+            <h2 className="text-[22px] sm:text-2xl font-extrabold text-[#242424]">Dành cho bạn</h2>
+            <Link to="/courses" className="text-sm font-semibold text-primary hover:underline">
+              Xem lộ trình
+            </Link>
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-accent border-t-transparent"></div>
+            <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="aspect-[16/10] rounded-2xl bg-[#eee]" />
+                  <div className="mt-3 h-4 w-4/5 rounded bg-[#eee]" />
+                  <div className="mt-2 h-4 w-1/3 rounded bg-[#eee]" />
+                </div>
+              ))}
             </div>
           ) : featuredCourses.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {featuredCourses.map((course) => (
-                <Link key={course.id} to={`/courses/${course.id}`} className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
-                  <div className="h-40 w-full bg-slate-200 overflow-hidden relative">
-                    {course.thumbnail ? (
-                      <img src={course.thumbnail} alt={course.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-slate-400 bg-slate-100">Không có ảnh</div>
-                    )}
-                    <div className="absolute top-2 right-2 rounded-md bg-white/90 backdrop-blur-sm px-2 py-1 text-xs font-bold text-slate-800 shadow-sm">
-                      {course.categories?.name || 'Chưa phân loại'}
-                    </div>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5">
-                    <h3 className="mb-2 text-base font-bold text-slate-900 group-hover:text-accent line-clamp-2 transition-colors">{course.title}</h3>
-                    <p className="mb-4 text-xs text-slate-500">Bởi: <span className="font-medium text-slate-700">{course.profiles?.name || 'Giảng viên'}</span></p>
-                    
-                    <div className="mt-auto flex items-center justify-between pt-2">
-                      <div className="font-bold text-accent text-base">
-                        {course.is_free ? 'Miễn phí' : `${course.price?.toLocaleString()}đ`}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
+            <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+              {featuredCourses.slice(0, 4).map((course, index) => (
+                <CourseCard key={course.id} course={course} index={index} />
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-slate-500">
-              Hiện tại chưa có khóa học nào.
+            <div className="rounded-2xl border border-dashed border-[#ddd] py-16 text-center text-sm text-[#888]">
+              Hiện chưa có khóa học nào. Hãy quay lại sau!
             </div>
           )}
-        </div>
-      </section>
+        </section>
 
-      {/* Value Proposition Section */}
-      <section className="py-24 bg-white">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-y-16 md:grid-cols-3 md:gap-x-12">
-            <div className="text-center md:text-left flex flex-col items-center md:items-start">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 mb-6">
-                <span className="text-3xl">👨‍🏫</span>
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Học từ chuyên gia</h3>
-              <p className="text-slate-600 leading-relaxed">Đội ngũ giảng viên giàu kinh nghiệm thực tế, mang đến những kiến thức và kỹ năng cập nhật nhất.</p>
+        <section className="mx-auto mt-14 w-full max-w-[1600px] px-3 sm:px-6 md:px-10">
+          <div className="flex flex-col gap-4 rounded-2xl bg-[#f5f5f5] px-6 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+            <div>
+              <h3 className="text-lg font-extrabold text-[#242424]">Bắt đầu hành trình học tập của bạn</h3>
+              <p className="mt-1 text-sm text-[#666]">Khám phá khóa học phù hợp, học mọi lúc mọi nơi và nâng cao kỹ năng để đi làm.</p>
             </div>
-            <div className="text-center md:text-left flex flex-col items-center md:items-start">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 mb-6">
-                <span className="text-3xl">⏰</span>
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Học mọi lúc mọi nơi</h3>
-              <p className="text-slate-600 leading-relaxed">Tự do sắp xếp thời gian học tập phù hợp với lịch trình cá nhân của bạn, trên mọi thiết bị.</p>
-            </div>
-            <div className="text-center md:text-left flex flex-col items-center md:items-start">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 mb-6">
-                <span className="text-3xl">🏆</span>
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Chứng chỉ hoàn thành</h3>
-              <p className="text-slate-600 leading-relaxed">Nhận chứng chỉ sau khi hoàn thành khóa học, giúp nâng cao profile và cơ hội nghề nghiệp.</p>
-            </div>
+            <Link
+              to="/courses"
+              className="inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-orangeHover"
+            >
+              Bắt đầu học
+            </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Footer minimal */}
-      <footer className="bg-slate-900 py-12 text-center text-slate-400">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <p>© {new Date().getFullYear()} E-Learning Platform. Đồ án môn học.</p>
-        </div>
-      </footer>
+        </section>
+      </div>
     </div>
   )
 }
