@@ -2,13 +2,17 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
+import { useAuthModal } from '../../context/AuthModalContext'
 import { studentService } from '../../services/studentService'
 import { supabase } from '../../lib/supabaseClient'
 import { useToast } from '../../context/ToastContext'
 
+const formatPrice = (n) => `${Number(n || 0).toLocaleString('vi-VN')}đ`
+
 const Cart = () => {
   const { cart, setCart, removeFromCart, clearCart, totalPrice } = useCart()
   const { user } = useAuth()
+  const { openLogin } = useAuthModal()
   const navigate = useNavigate()
   const toast = useToast()
   const [loading, setLoading] = useState(false)
@@ -21,7 +25,7 @@ const Cart = () => {
 
     const verifyPrices = async () => {
       setVerifying(true)
-      const courseIds = cart.map(item => item.id)
+      const courseIds = cart.map((item) => item.id)
       const { data: dbCourses, error: dbErr } = await supabase
         .from('courses')
         .select('id, title, price, is_free, status')
@@ -44,18 +48,22 @@ const Cart = () => {
       for (const item of cart) {
         const dbItem = dbMap[item.id]
         if (!dbItem || dbItem.status !== 'approved') {
-          newWarnings.push(`Khóa học "${item.title}" không còn khả dụng và đã được xóa khỏi giỏ hàng.`)
+          newWarnings.push(
+            `Khóa học "${item.title}" không còn khả dụng và đã được xóa khỏi giỏ hàng.`
+          )
           cartUpdated = true
         } else {
           const dbPrice = dbItem.is_free ? 0 : Number(dbItem.price || 0)
           const cartPrice = item.is_free ? 0 : Number(item.price || 0)
 
           if (dbPrice !== cartPrice) {
-            newWarnings.push(`Giá khóa học "${item.title}" đã thay đổi từ ${cartPrice.toLocaleString()}đ thành ${dbPrice.toLocaleString()}đ.`)
+            newWarnings.push(
+              `Giá khóa học "${item.title}" đã thay đổi từ ${formatPrice(cartPrice)} thành ${formatPrice(dbPrice)}.`
+            )
             updatedCart.push({
               ...item,
               price: dbItem.price,
-              is_free: dbItem.is_free
+              is_free: dbItem.is_free,
             })
             cartUpdated = true
           } else {
@@ -64,12 +72,8 @@ const Cart = () => {
         }
       }
 
-      if (cartUpdated) {
-        setCart(updatedCart)
-      }
-      if (newWarnings.length > 0) {
-        setWarnings(newWarnings)
-      }
+      if (cartUpdated) setCart(updatedCart)
+      if (newWarnings.length > 0) setWarnings(newWarnings)
       setVerifying(false)
     }
 
@@ -78,28 +82,25 @@ const Cart = () => {
 
   const handleCheckout = async () => {
     if (!user) {
-      navigate('/login')
+      openLogin('/cart')
       return
     }
-
     if (cart.length === 0) return
 
     setLoading(true)
     setError(null)
 
     try {
-      const { data, error } = await studentService.checkout(cart, user)
+      const { data, error: checkoutError } = await studentService.checkout(cart, user)
+      if (checkoutError) throw new Error(checkoutError.message || 'Lỗi tạo đơn hàng')
 
-      if (error) throw new Error(error.message || "Lỗi tạo đơn hàng")
-      
       clearCart()
 
       if (totalPrice === 0) {
-        toast.success("Đăng ký thành công! Bạn có thể bắt đầu học.")
+        toast.success('Đăng ký thành công! Bạn có thể bắt đầu học.')
         navigate('/learning')
       } else {
-        // Chuyển sang trang thanh toán chi tiết, truyền IDs vào query params để F5 không mất
-        const orderIds = data.map(o => o.id).join(',')
+        const orderIds = data.map((o) => o.id).join(',')
         navigate(`/checkout/detail?ids=${orderIds}`, { state: { orders: data } })
       }
     } catch (err) {
@@ -110,73 +111,172 @@ const Cart = () => {
   }
 
   return (
-    <div className="mx-auto max-w-4xl p-4 sm:p-6 lg:p-8 text-left">
-      <h1 className="mb-8 text-3xl font-bold text-slate-900">Giỏ Hàng</h1>
+    <div className="min-h-[calc(100vh-66px)] bg-[#F5F5F5]">
+      <div className="mx-auto max-w-[1100px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        {/* Steps */}
+        <nav className="mb-6 flex items-center gap-2 text-[13px] font-semibold text-[#666]">
+          <span className="text-primary">1. Giỏ hàng</span>
+          <span className="text-[#DBDBDB]">/</span>
+          <span>2. Thanh toán</span>
+          <span className="text-[#DBDBDB]">/</span>
+          <span>3. Hoàn tất</span>
+        </nav>
 
-      {error && <div className="mb-6 rounded bg-red-50 p-4 text-red-600">{error}</div>}
-
-      {warnings.length > 0 && (
-        <div className="mb-6 rounded-lg bg-yellow-50 border border-yellow-200 p-4 text-sm text-yellow-800 space-y-1">
-          {warnings.map((w, idx) => (
-            <p key={idx}>⚠️ {w}</p>
-          ))}
-        </div>
-      )}
-
-      {cart.length > 0 ? (
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          <div className="md:col-span-2 space-y-4">
-            {cart.map(course => (
-              <div key={course.id} className="flex gap-4 rounded-xl border bg-white p-4 shadow-sm">
-                <div className="h-24 w-32 shrink-0 rounded bg-slate-200 overflow-hidden">
-                  {course.thumbnail && <img src={course.thumbnail} alt={course.title} className="h-full w-full object-cover" />}
-                </div>
-                <div className="flex flex-1 flex-col justify-between">
-                  <div>
-                    <h3 className="font-bold text-slate-900 line-clamp-2">{course.title}</h3>
-                    <p className="text-sm text-slate-500">{course.profiles?.name || 'Giảng viên'}</p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-accent">
-                      {course.is_free ? 'Miễn phí' : `${course.price?.toLocaleString()}đ`}
-                    </span>
-                    <button 
-                      onClick={() => removeFromCart(course.id)}
-                      className="text-sm font-medium text-red-500 hover:text-red-600"
-                    >
-                      Xóa
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="h-fit rounded-xl border bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-xl font-bold text-slate-900">Tổng cộng</h2>
-            <div className="mb-6 text-3xl font-bold text-slate-900">
-              {totalPrice.toLocaleString()}đ
-            </div>
-            <button
-              onClick={handleCheckout}
-              disabled={loading}
-              className="w-full rounded-lg bg-accent py-3 font-bold text-white hover:bg-brand-orangeHover disabled:opacity-50"
-            >
-              {loading ? 'Đang xử lý...' : 'Thanh toán & Đăng ký'}
-            </button>
-            <p className="mt-4 text-center text-xs text-slate-500">
-              * Sau khi đặt hàng, bạn sẽ nhận thông tin chuyển khoản. Đơn hàng sẽ được kích hoạt sau khi giáo viên xác nhận thanh toán.
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-[26px] font-extrabold tracking-tight text-[#242424] sm:text-[30px]">
+              Giỏ hàng
+            </h1>
+            <p className="mt-1 text-[14px] text-[#666]">
+              {cart.length > 0
+                ? `${cart.length} khóa học đang chờ thanh toán`
+                : 'Chưa có khóa học nào trong giỏ'}
             </p>
           </div>
+          {cart.length > 0 && (
+            <Link
+              to="/courses"
+              className="text-[13px] font-semibold text-primary hover:underline"
+            >
+              + Thêm khóa học
+            </Link>
+          )}
         </div>
-      ) : (
-        <div className="rounded-xl border border-dashed p-12 text-center">
-          <p className="mb-4 text-slate-500">Giỏ hàng của bạn đang trống.</p>
-          <Link to="/courses" className="rounded bg-slate-900 px-6 py-2 font-medium text-white hover:bg-slate-800">
-            Khám phá khóa học
-          </Link>
-        </div>
-      )}
+
+        {error && (
+          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-600">
+            {error}
+          </div>
+        )}
+
+        {warnings.length > 0 && (
+          <div className="mb-5 space-y-1 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-800">
+            {warnings.map((w, idx) => (
+              <p key={idx}>{w}</p>
+            ))}
+          </div>
+        )}
+
+        {cart.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="space-y-3 lg:col-span-8">
+              {cart.map((course) => (
+                <article
+                  key={course.id}
+                  className="flex gap-4 rounded-2xl border border-[#E8E8E8] bg-white p-4 shadow-sm transition hover:border-[#DBDBDB] sm:p-5"
+                >
+                  <Link
+                    to={`/courses/${course.id}`}
+                    className="h-[88px] w-[120px] shrink-0 overflow-hidden rounded-xl bg-[#F5F5F5] sm:h-[100px] sm:w-[140px]"
+                  >
+                    {course.thumbnail ? (
+                      <img
+                        src={course.thumbnail}
+                        alt={course.title}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center bg-gradient-to-br from-primary to-[#7c2d12] p-2 text-center text-[11px] font-bold text-white">
+                        {course.title}
+                      </div>
+                    )}
+                  </Link>
+
+                  <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
+                    <div>
+                      <Link
+                        to={`/courses/${course.id}`}
+                        className="line-clamp-2 text-[15px] font-bold text-[#242424] transition hover:text-primary sm:text-[16px]"
+                      >
+                        {course.title}
+                      </Link>
+                      <p className="mt-1 text-[13px] text-[#666]">
+                        GV: {course.profiles?.name || 'Giảng viên'}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[17px] font-extrabold text-primary">
+                        {course.is_free ? 'Miễn phí' : formatPrice(course.price)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeFromCart(course.id)}
+                        className="rounded-lg px-2.5 py-1.5 text-[13px] font-semibold text-[#666] transition hover:bg-red-50 hover:text-red-600"
+                      >
+                        Xóa
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <aside className="lg:col-span-4">
+              <div className="sticky top-[82px] rounded-2xl border border-[#E8E8E8] bg-white p-5 shadow-sm sm:p-6">
+                <h2 className="text-[16px] font-extrabold text-[#242424]">Tóm tắt đơn hàng</h2>
+
+                <div className="mt-4 space-y-2.5 border-b border-[#E8E8E8] pb-4 text-[14px]">
+                  <div className="flex justify-between text-[#666]">
+                    <span>Tạm tính ({cart.length} khóa)</span>
+                    <span className="font-semibold text-[#242424]">{formatPrice(totalPrice)}</span>
+                  </div>
+                  <div className="flex justify-between text-[#666]">
+                    <span>Giảm giá</span>
+                    <span className="font-semibold text-[#242424]">0đ</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-end justify-between gap-2">
+                  <span className="text-[14px] font-semibold text-[#666]">Tổng cộng</span>
+                  <span className="text-[26px] font-extrabold leading-none text-[#242424]">
+                    {formatPrice(totalPrice)}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleCheckout}
+                  disabled={loading}
+                  className="mt-5 w-full rounded-full bg-primary py-3.5 text-[14px] font-bold text-white transition hover:bg-brand-orangeHover disabled:opacity-50"
+                >
+                  {loading ? 'Đang xử lý...' : 'Thanh toán ngay'}
+                </button>
+
+                <Link
+                  to="/courses"
+                  className="mt-3 block w-full rounded-full border border-[#DBDBDB] py-3 text-center text-[13px] font-bold text-[#242424] transition hover:border-[#242424]"
+                >
+                  Tiếp tục mua sắm
+                </Link>
+
+                <p className="mt-4 text-center text-[11px] leading-relaxed text-[#999]">
+                  Sau khi đặt hàng bạn sẽ nhận thông tin chuyển khoản. Khóa học kích hoạt khi giảng
+                  viên xác nhận thanh toán.
+                </p>
+              </div>
+            </aside>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-[#DBDBDB] bg-white px-6 py-16 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F5F5F5] text-[#999]">
+              <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13L5.4 5M7 13l-2 9m12-9l2 9M9 22a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z" />
+              </svg>
+            </div>
+            <h2 className="text-[18px] font-extrabold text-[#242424]">Giỏ hàng trống</h2>
+            <p className="mx-auto mt-2 max-w-sm text-[14px] text-[#666]">
+              Hãy chọn khóa học phù hợp và thêm vào giỏ để bắt đầu hành trình học tập.
+            </p>
+            <Link
+              to="/courses"
+              className="mt-6 inline-flex rounded-full bg-primary px-6 py-3 text-[14px] font-bold text-white transition hover:bg-brand-orangeHover"
+            >
+              Khám phá khóa học
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
