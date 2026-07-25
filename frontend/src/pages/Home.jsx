@@ -40,7 +40,7 @@ const BANNERS = [
 // Cache để vào lại trang chủ không flash skeleton
 let cachedCourses = null
 
-function CourseCard({ course, index }) {
+function CourseCard({ course, index, compact = false }) {
   const gradient = GRADIENTS[index % GRADIENTS.length]
   const priceLabel = course.is_free
     ? 'Miễn phí'
@@ -60,32 +60,40 @@ function CourseCard({ course, index }) {
             className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
           />
         ) : (
-          <div className="flex h-full w-full items-end p-4">
-            <h3 className="text-xl font-extrabold leading-tight text-white drop-shadow line-clamp-3">
+          <div className="flex h-full w-full items-end p-3 sm:p-4">
+            <h3 className={`font-extrabold leading-tight text-white drop-shadow line-clamp-3 ${compact ? 'text-[14px]' : 'text-xl'}`}>
               {course.title}
             </h3>
           </div>
         )}
         {!course.is_free && (
-          <span className="absolute left-2.5 top-2.5 text-base" title="Pro">👑</span>
+          <span className="absolute left-2 top-2 text-sm sm:left-2.5 sm:top-2.5 sm:text-base" title="Pro">
+            👑
+          </span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col px-1 pt-3 pb-1">
-        <h3 className="text-[15px] font-bold leading-snug text-[#242424] line-clamp-2 group-hover:text-primary transition-colors">
+      <div className={`flex flex-1 flex-col px-0.5 pt-2.5 pb-1 sm:px-1 sm:pt-3`}>
+        <h3
+          className={`font-bold leading-snug text-[#242424] line-clamp-2 transition-colors group-hover:text-primary ${
+            compact ? 'text-[13px] sm:text-[15px]' : 'text-[15px]'
+          }`}
+        >
           {course.title}
         </h3>
 
-        <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-[15px] font-bold text-primary">{priceLabel}</span>
+        <div className="mt-1.5 flex items-baseline gap-2 sm:mt-2">
+          <span className={`font-bold text-primary ${compact ? 'text-[13px] sm:text-[15px]' : 'text-[15px]'}`}>
+            {priceLabel}
+          </span>
           {!course.is_free && course.compare_at_price > course.price && (
-            <span className="text-xs text-[#999] line-through">
+            <span className="text-[11px] text-[#999] line-through sm:text-xs">
               {Number(course.compare_at_price).toLocaleString('vi-VN')}đ
             </span>
           )}
         </div>
 
-        <div className="mt-2 flex items-center gap-1 text-[12px] text-[#666]">
+        <div className={`mt-2 items-center gap-1 text-[12px] text-[#666] ${compact ? 'hidden sm:flex' : 'flex'}`}>
           <span className="text-[#f5a623]">★★★★★</span>
           <span className="font-semibold text-[#242424]">
             {Number(course.rating_avg ?? 4.8).toFixed(1)}
@@ -93,15 +101,21 @@ function CourseCard({ course, index }) {
           <span className="text-[#999]">({course.rating_count || 100}+)</span>
         </div>
 
-        <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-[#757575]">
-          <span className="inline-flex items-center gap-1.5 min-w-0">
+        <div
+          className={`mt-2.5 flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-[#757575] ${
+            compact ? 'hidden sm:flex' : 'flex'
+          }`}
+        >
+          <span className="inline-flex min-w-0 items-center gap-1.5">
             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold text-primary">
               {(course.profiles?.name || 'G').charAt(0)}
             </span>
-            <span className="truncate max-w-[110px]">{course.profiles?.name || 'Giảng viên'}</span>
+            <span className="max-w-[110px] truncate">{course.profiles?.name || 'Giảng viên'}</span>
           </span>
           <span className="inline-flex items-center gap-1">
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-8 2-8 4v1h16v-1c0-2-4-4-8-4Z"/></svg>
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
+              <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-8 2-8 4v1h16v-1c0-2-4-4-8-4Z" />
+            </svg>
             {course.student_count || course.enrollments_count || '—'}
           </span>
         </div>
@@ -152,39 +166,30 @@ const Home = () => {
 
   return (
     <div className="w-full bg-white">
-      <div className="mx-auto w-full max-w-[2400px] pl-2.5 pr-4 pt-4 pb-10 sm:pr-8 md:pl-[10px] md:pr-8">
-        <section className="relative mb-8 w-full">
+      <div className="mx-auto w-full max-w-[2400px] px-4 pt-4 pb-8 sm:pr-8 md:pl-[10px] md:pr-8 md:pb-10">
+        {/* Hero banner */}
+        <section className="relative mb-6 w-full sm:mb-8">
           <div
-            className="relative flex w-full overflow-hidden rounded-[16px] max-md:min-h-[250px] max-md:flex-col md:h-[270px] min-[1800px]:h-[300px]"
+            className="relative flex w-full overflow-hidden rounded-[16px] max-md:min-h-[220px] max-md:flex-col md:h-[270px] min-[1800px]:h-[300px]"
             style={{ background: banner.gradient }}
           >
-            <div className="relative z-10 order-2 flex w-full shrink-0 flex-col justify-center px-6 py-5 text-white md:order-1 md:w-[min(640px,38%)] md:max-w-[640px] md:px-9 md:py-0">
-              <p className="mb-2 inline-flex w-fit items-center gap-1.5 rounded-md bg-white/15 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
-                <span aria-hidden>📹</span> Học live qua Zoom
-              </p>
-              <h1 className="mb-2 text-[24px] font-bold leading-[1.35] sm:text-[28px] md:text-[32px]">
+            <div className="relative z-10 order-2 flex w-full shrink-0 flex-col justify-center px-5 py-5 text-white md:order-1 md:w-[min(640px,38%)] md:max-w-[640px] md:px-9 md:py-0">
+              <h1 className="mb-2 text-[22px] font-bold leading-[1.3] sm:text-[28px] md:text-[32px]">
                 {banner.title}
               </h1>
-              <p className="mb-5 max-w-[520px] text-[14px] leading-relaxed text-white/95 md:text-[15px] line-clamp-3">
+              <p className="mb-4 max-w-[520px] text-[13px] leading-relaxed text-white/95 line-clamp-2 sm:mb-5 sm:text-[14px] md:text-[15px] md:line-clamp-3">
                 {banner.desc}
               </p>
               <Link
                 to={banner.to}
-                className="inline-flex min-h-[44px] min-w-[124px] w-fit items-center justify-center gap-1.5 rounded-full border-2 border-white px-5 text-[13px] font-bold uppercase tracking-wide text-white transition-colors duration-200 hover:bg-white"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = banner.ctaHover
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#fff'
-                }}
+                className="inline-flex min-h-[40px] w-fit items-center justify-center gap-1.5 rounded-full bg-white px-4 text-[12px] font-bold uppercase tracking-wide text-[#1d4ed8] transition hover:bg-white/90 sm:min-h-[44px] sm:border-2 sm:border-white sm:bg-transparent sm:px-5 sm:text-[13px] sm:text-white sm:hover:bg-white sm:hover:text-[#123a8a]"
               >
                 {banner.cta}
                 <span aria-hidden>→</span>
               </Link>
             </div>
 
-            {/* Giữ tất cả ảnh trong DOM + crossfade — tránh trắng khi đổi src */}
-            <div className="relative order-1 min-w-0 w-full aspect-[2/1] md:order-2 md:aspect-auto md:flex md:h-full md:flex-[3] md:justify-end">
+            <div className="relative order-1 hidden min-w-0 w-full aspect-[2/1] sm:block md:order-2 md:aspect-auto md:flex md:h-full md:flex-[3] md:justify-end">
               {BANNERS.map((b, i) => (
                 <img
                   key={b.image}
@@ -213,28 +218,29 @@ const Home = () => {
           </div>
         </section>
 
-        <section className="mx-auto w-full max-w-[1600px] px-3 sm:px-6 md:px-10">
-          <div className="mb-5 flex items-end justify-between gap-4">
-            <h2 className="text-[22px] sm:text-2xl font-extrabold text-[#242424]">Dành cho bạn</h2>
-            <Link to="/courses" className="text-sm font-semibold text-primary hover:underline">
-              Xem lộ trình
+        {/* Dành cho bạn — mobile: horizontal scroll */}
+        <section className="mx-auto w-full max-w-[1600px] md:px-10">
+          <div className="mb-4 flex items-end justify-between gap-4 px-0 sm:mb-5 sm:px-6 md:px-0">
+            <h2 className="text-[20px] font-extrabold text-[#242424] sm:text-2xl">Dành cho bạn</h2>
+            <Link to="/courses" className="text-[13px] font-semibold text-primary hover:underline sm:text-sm">
+              Xem tất cả
             </Link>
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-4 sm:px-6 md:px-0">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="aspect-[16/10] rounded-2xl bg-[#eee]" />
-                  <div className="mt-3 h-4 w-4/5 rounded bg-[#eee]" />
-                  <div className="mt-2 h-4 w-1/3 rounded bg-[#eee]" />
+                  <div className="mt-2 h-3 w-4/5 rounded bg-[#eee] sm:mt-3 sm:h-4" />
+                  <div className="mt-2 h-3 w-1/3 rounded bg-[#eee] sm:h-4" />
                 </div>
               ))}
             </div>
           ) : featuredCourses.length > 0 ? (
-            <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-4 sm:px-6 md:px-0">
               {featuredCourses.slice(0, 4).map((course, index) => (
-                <CourseCard key={course.id} course={course} index={index} />
+                <CourseCard key={course.id} course={course} index={index} compact />
               ))}
             </div>
           ) : (
@@ -244,11 +250,15 @@ const Home = () => {
           )}
         </section>
 
-        <section className="mx-auto mt-14 w-full max-w-[1600px] px-3 sm:px-6 md:px-10">
-          <div className="flex flex-col gap-4 rounded-2xl bg-[#f5f5f5] px-6 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <section className="mx-auto mt-10 w-full max-w-[1600px] sm:mt-14 md:px-10">
+          <div className="flex flex-col gap-4 rounded-2xl bg-[#f5f5f5] px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-8">
             <div>
-              <h3 className="text-lg font-extrabold text-[#242424]">Bắt đầu hành trình học tập của bạn</h3>
-              <p className="mt-1 text-sm text-[#666]">Khám phá khóa học phù hợp, học mọi lúc mọi nơi và nâng cao kỹ năng để đi làm.</p>
+              <h3 className="text-[16px] font-extrabold text-[#242424] sm:text-lg">
+                Bắt đầu hành trình học tập của bạn
+              </h3>
+              <p className="mt-1 text-[13px] text-[#666] sm:text-sm">
+                Khám phá khóa học phù hợp, học mọi lúc mọi nơi và nâng cao kỹ năng để đi làm.
+              </p>
             </div>
             <Link
               to="/courses"
