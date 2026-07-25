@@ -58,6 +58,7 @@ const SiteFooter = () => {
           <div className="min-w-0">
             <h4 className={headingClass}>Hỗ trợ</h4>
             <ul className="space-y-1">
+              <li><Link to="/faq" className={linkClass}>Hỏi đáp</Link></li>
               <li><span className={linkClass}>Chính sách thanh toán</span></li>
               <li><span className={linkClass}>Chính sách vận chuyển</span></li>
               <li><span className={linkClass}>Chính sách kiểm hàng</span></li>

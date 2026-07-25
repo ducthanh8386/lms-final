@@ -20,6 +20,8 @@ const MySchedule = lazy(() => import('./pages/student/MySchedule'))
 const MyClasses = lazy(() => import('./pages/student/MyClasses'))
 const JoinClass = lazy(() => import('./pages/student/JoinClass'))
 const QuizPage = lazy(() => import('./pages/student/QuizPage'))
+const AccountSettings = lazy(() => import('./pages/AccountSettings'))
+const Faq = lazy(() => import('./pages/Faq'))
 
 const CourseManage = lazy(() => import('./pages/teacher/CourseManage'))
 const CourseForm = lazy(() => import('./pages/teacher/CourseForm'))
@@ -59,8 +61,10 @@ function App() {
 
         <Route path="/courses" element={<CourseList />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/faq" element={<Faq />} />
 
         <Route element={<ProtectedRoute allowedRoles={['student', 'teacher', 'admin']} />}>
+          <Route path="/settings" element={<AccountSettings />} />
           <Route path="/checkout/detail" element={<CheckoutDetail />} />
           <Route path="/learning" element={<MyLearning />} />
           <Route path="/learning/:id" element={<StudyLesson />} />

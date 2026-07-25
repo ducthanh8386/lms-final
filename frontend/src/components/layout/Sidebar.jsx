@@ -26,16 +26,6 @@ const navItems = [
     ),
   },
   {
-    to: '/learning',
-    label: 'Học tập',
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-        <path d="M4 19.5V6.2c0-.7.4-1.2 1-1.5L12 2l7 2.7c.6.3 1 .8 1 1.5v13.3L12 17l-8 2.5Z" />
-        <path d="M12 2v15" />
-      </svg>
-    ),
-  },
-  {
     to: '/my-classes',
     label: 'Lớp học',
     icon: (
@@ -53,6 +43,17 @@ const navItems = [
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
         <rect x="3" y="5" width="18" height="16" rx="2" />
         <path d="M3 10h18M8 3v4M16 3v4" />
+      </svg>
+    ),
+  },
+  {
+    to: '/faq',
+    label: 'Hỏi đáp',
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1.5 1-1.5 2.2V14" />
+        <path d="M12 17h.01" />
       </svg>
     ),
   },

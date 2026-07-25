@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
+import { NavLink, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useAuthModal } from '../../context/AuthModalContext'
-import { useCart } from '../../context/CartContext'
 import { authService } from '../../services/authService'
 import { preloadRoute } from '../../utils/routePreload'
 
@@ -30,17 +29,6 @@ const tabs = [
     ),
   },
   {
-    to: '/learning',
-    label: 'Học tập',
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-        <path d="M4 5h11a2 2 0 0 1 2 2v12H6a2 2 0 0 0-2 2V5Z" />
-        <path d="M17 7h3a1 1 0 0 1 1 1v11a2 2 0 0 0-2-2h-2" />
-        <path d="M8 9h5M8 13h5" />
-      </svg>
-    ),
-  },
-  {
     to: '/my-schedule',
     label: 'Lịch học',
     icon: (
@@ -55,9 +43,7 @@ const tabs = [
 const MobileBottomNav = () => {
   const { user, profile } = useAuth()
   const { openLogin } = useAuthModal()
-  const { totalCount } = useCart()
   const location = useLocation()
-  const navigate = useNavigate()
   const [accountOpen, setAccountOpen] = useState(false)
 
   useEffect(() => {
@@ -77,7 +63,7 @@ const MobileBottomNav = () => {
   const handleSignOut = async () => {
     setAccountOpen(false)
     await authService.signOut()
-    navigate('/')
+    window.location.assign('/')
   }
 
   return (
@@ -92,49 +78,75 @@ const MobileBottomNav = () => {
           />
           <div className="absolute bottom-[calc(56px+env(safe-area-inset-bottom,0px))] left-0 right-0 rounded-t-2xl bg-white p-4 shadow-xl">
             <div className="mb-4 flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                {avatarLetter}
+              <span className="inline-flex rounded-full bg-[conic-gradient(from_180deg_at_50%_50%,#f05123_0deg,#fbbf24_90deg,#22c55e_180deg,#3b82f6_270deg,#f05123_360deg)] p-[2.5px]">
+                <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-primary text-sm font-bold text-white ring-2 ring-white">
+                  {profile?.avatar ? (
+                    <img src={profile.avatar} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    avatarLetter
+                  )}
+                </span>
               </span>
               <div className="min-w-0">
                 <p className="truncate text-[15px] font-bold text-[#242424]">
-                  {profile?.name || user?.email}
+                  {profile?.name || user?.email?.split('@')[0]}
                 </p>
-                <p className="text-[12px] capitalize text-[#888]">{profile?.role || 'student'}</p>
+                <p className="truncate text-[12px] text-[#757575]">
+                  @{user?.email?.split('@')[0] || 'user'}
+                </p>
               </div>
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="border-t border-[#f0f0f0] px-3 pt-1.5">
               <Link
                 to="/learning"
                 onClick={() => setAccountOpen(false)}
-                className="rounded-xl px-3 py-3 text-[14px] font-semibold text-[#242424] hover:bg-[#f5f5f5]"
+                className="block w-full py-[10px] hover:opacity-80"
               >
-                Khóa học của tôi
+                <span
+                  style={{
+                    fontFamily: '"Be Vietnam Pro", system-ui, -apple-system, sans-serif',
+                    fontSize: '14px',
+                    fontWeight: 400,
+                    lineHeight: 1.4,
+                    color: '#666666',
+                  }}
+                >
+                  Khóa học của tôi
+                </span>
               </Link>
               <Link
-                to="/cart"
+                to="/settings"
                 onClick={() => setAccountOpen(false)}
-                className="flex items-center justify-between rounded-xl px-3 py-3 text-[14px] font-semibold text-[#242424] hover:bg-[#f5f5f5]"
+                className="block w-full py-[10px] hover:opacity-80"
               >
-                <span>Giỏ hàng</span>
-                {totalCount > 0 && (
-                  <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-white">
-                    {totalCount}
-                  </span>
-                )}
-              </Link>
-              <Link
-                to="/my-classes"
-                onClick={() => setAccountOpen(false)}
-                className="rounded-xl px-3 py-3 text-[14px] font-semibold text-[#242424] hover:bg-[#f5f5f5]"
-              >
-                Lớp học của tôi
+                <span
+                  style={{
+                    fontFamily: '"Be Vietnam Pro", system-ui, -apple-system, sans-serif',
+                    fontSize: '14px',
+                    fontWeight: 400,
+                    lineHeight: 1.4,
+                    color: '#666666',
+                  }}
+                >
+                  Cài đặt
+                </span>
               </Link>
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="rounded-xl px-3 py-3 text-left text-[14px] font-semibold text-primary hover:bg-[#f5f5f5]"
+                className="block w-full bg-transparent py-[10px] text-left hover:opacity-80"
               >
-                Đăng xuất
+                <span
+                  style={{
+                    fontFamily: '"Be Vietnam Pro", system-ui, -apple-system, sans-serif',
+                    fontSize: '14px',
+                    fontWeight: 400,
+                    lineHeight: 1.4,
+                    color: '#666666',
+                  }}
+                >
+                  Đăng xuất
+                </span>
               </button>
             </div>
           </div>
