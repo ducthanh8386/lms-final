@@ -56,5 +56,33 @@ export const authService = {
       .eq('id', userId)
       .single()
     return { data, error }
-  }
+  },
+
+  async updateProfile(userId, fields) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(fields)
+      .eq('id', userId)
+      .select()
+      .single()
+    return { data, error }
+  },
+
+  async updatePassword(newPassword) {
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword })
+    return { data, error }
+  },
+
+  /** Xác minh mật khẩu cũ rồi đổi sang mật khẩu mới */
+  async changePassword(email, currentPassword, newPassword) {
+    const { error: verifyError } = await supabase.auth.signInWithPassword({
+      email,
+      password: currentPassword,
+    })
+    if (verifyError) {
+      return { data: null, error: { message: 'Mật khẩu hiện tại không đúng' } }
+    }
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword })
+    return { data, error }
+  },
 }
