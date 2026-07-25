@@ -44,7 +44,7 @@ const CourseList = () => {
       </header>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="aspect-[16/10] rounded-2xl bg-[#eee]" />
@@ -54,7 +54,7 @@ const CourseList = () => {
           ))}
         </div>
       ) : courses.length > 0 ? (
-        <div className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-4">
           {courses.map((course) => (
             <RequireAuthCourseLink
               key={course.id}
