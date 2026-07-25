@@ -1,7 +1,8 @@
-import React, { lazy } from 'react'
+import React, { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
 import MainLayout from './components/layout/MainLayout'
+import PageFallback from './components/ui/PageFallback'
 
 // Eager — trang hay vào / auth (giữ layout ổn định)
 import Home from './pages/Home'
@@ -43,11 +44,20 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
+      {/* Landing mua khóa — full page, không header/sidebar/footer */}
+      <Route
+        path="/courses/:id"
+        element={
+          <Suspense fallback={<PageFallback />}>
+            <CourseDetail />
+          </Suspense>
+        }
+      />
+
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
 
         <Route path="/courses" element={<CourseList />} />
-        <Route path="/courses/:id" element={<CourseDetail />} />
         <Route path="/cart" element={<Cart />} />
 
         <Route element={<ProtectedRoute allowedRoles={['student', 'teacher', 'admin']} />}>
