@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient'
+import { compressImageFile } from '../utils/compressImage'
 
 export const courseService = {
   // === CHO TEACHER ===
@@ -22,14 +23,13 @@ export const courseService = {
     return { data, error }
   },
 
-  // Cập nhật khóa học
+  // Cập nhật khóa học (không .select() — tránh chậm / treo khi RLS)
   async updateCourse(courseId, courseData) {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('courses')
       .update(courseData)
       .eq('id', courseId)
-      .select()
-    return { data, error }
+    return { data: error ? null : [{ id: courseId }], error }
   },
 
   // === LESSONS ===
@@ -73,13 +73,16 @@ export const courseService = {
 
   // === THUMBNAILS ===
   async uploadThumbnail(file) {
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Math.random()}.${fileExt}`
-    const filePath = `${fileName}`
+    const compressed = await compressImageFile(file)
+    const fileExt = compressed.name.split('.').pop() || 'jpg'
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${fileExt}`
 
     const { error: uploadError } = await supabase.storage
       .from('course-thumbnails')
-      .upload(filePath, file)
+      .upload(fileName, compressed, {
+        contentType: compressed.type || 'image/jpeg',
+        upsert: false,
+      })
 
     if (uploadError) {
       return { error: uploadError }
@@ -87,7 +90,7 @@ export const courseService = {
 
     const { data } = supabase.storage
       .from('course-thumbnails')
-      .getPublicUrl(filePath)
+      .getPublicUrl(fileName)
 
     return { data: data.publicUrl }
   },

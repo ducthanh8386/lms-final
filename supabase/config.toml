@@ -1,0 +1,14 @@
+# Minimal config for remote link / deploy (project: lms-marketplace)
+project_id = "ygnjpkezyrsduukegihb"
+
+[api]
+enabled = true
+
+[functions.create-payment-session]
+verify_jwt = true
+
+[functions.sync-payment]
+verify_jwt = true
+
+[functions.sepay-webhook]
+verify_jwt = false

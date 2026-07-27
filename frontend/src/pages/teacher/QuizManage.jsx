@@ -5,6 +5,7 @@ import { courseService } from '../../services/courseService'
 import { useToast } from '../../context/ToastContext'
 import { useConfirm } from '../../context/ConfirmContext'
 import { quizSchema, questionSchema } from '../../schemas'
+import { zodFirstMessage } from '../../utils/zodError'
 
 const QuizManage = () => {
   const { courseId } = useParams()
@@ -122,7 +123,7 @@ const QuizManage = () => {
     // Validate Zod
     const result = quizSchema.safeParse(payload)
     if (!result.success) {
-      setQuizValidationError(result.error.errors[0].message)
+      setQuizValidationError(zodFirstMessage(result.error))
       setSavingQuiz(false)
       return
     }
@@ -271,7 +272,7 @@ const QuizManage = () => {
 
     const result = questionSchema.safeParse(payload)
     if (!result.success) {
-      setQValidationError(result.error.errors[0].message)
+      setQValidationError(zodFirstMessage(result.error))
       setSavingQuestion(false)
       return
     }

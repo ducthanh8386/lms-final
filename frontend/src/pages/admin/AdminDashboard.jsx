@@ -86,24 +86,33 @@ const AdminDashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Link to="/admin/courses" className="rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-accent group">
-          <div className="mb-4 inline-block rounded-lg bg-warning/10 p-3 text-warning">
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h2 className="mb-2 text-xl font-bold text-slate-900 group-hover:text-accent">Duyệt Khóa Học</h2>
-          <p className="text-slate-500 text-sm">Xem các khóa học đang chờ duyệt (Pending) và quyết định Approve hoặc Reject.</p>
+        <Link to="/admin/courses" className="rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-indigo-400 group">
+          <h2 className="mb-2 text-xl font-bold text-slate-900 group-hover:text-indigo-600">Quản lý khóa học</h2>
+          <p className="text-slate-500 text-sm">Duyệt · phân công GV · video/tài liệu · thời lượng.</p>
         </Link>
-        
-        <Link to="/admin/users" className="rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-accent group">
-          <div className="mb-4 inline-block rounded-lg bg-accent/10 p-3 text-accent">
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          </div>
-          <h2 className="mb-2 text-xl font-bold text-slate-900 group-hover:text-accent">Quản lý Người Dùng</h2>
-          <p className="text-slate-500 text-sm">Xem danh sách, phân quyền (Role) và Khóa/Mở khóa tài khoản.</p>
+        <Link to="/admin/payments" className="rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-indigo-400 group">
+          <h2 className="mb-2 text-xl font-bold text-slate-900 group-hover:text-indigo-600">Thanh toán</h2>
+          <p className="text-slate-500 text-sm">Đơn SePay / khóa video toàn hệ thống.</p>
+        </Link>
+        <Link to="/admin/teachers" className="rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-indigo-400 group">
+          <h2 className="mb-2 text-xl font-bold text-slate-900 group-hover:text-indigo-600">Giáo viên</h2>
+          <p className="text-slate-500 text-sm">Quản lý tài khoản giảng viên.</p>
+        </Link>
+        <Link to="/admin/students" className="rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-indigo-400 group">
+          <h2 className="mb-2 text-xl font-bold text-slate-900 group-hover:text-indigo-600">Học viên</h2>
+          <p className="text-slate-500 text-sm">Quản lý tài khoản học viên.</p>
+        </Link>
+        <Link to="/admin/leads" className="rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-indigo-400 group">
+          <h2 className="mb-2 text-xl font-bold text-slate-900 group-hover:text-indigo-600">Tư vấn Zoom</h2>
+          <p className="text-slate-500 text-sm">CRM lead · xếp lớp Zoom.</p>
+        </Link>
+        <Link to="/admin/classes" className="rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-indigo-400 group">
+          <h2 className="mb-2 text-xl font-bold text-slate-900 group-hover:text-indigo-600">Lớp Zoom</h2>
+          <p className="text-slate-500 text-sm">Tuyển sinh · sĩ số · lịch học.</p>
+        </Link>
+        <Link to="/admin/users" className="rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-indigo-400 group">
+          <h2 className="mb-2 text-xl font-bold text-slate-900 group-hover:text-indigo-600">Users nâng cao</h2>
+          <p className="text-slate-500 text-sm">Tạo user · đổi role · xóa tài khoản.</p>
         </Link>
       </div>
     </div>

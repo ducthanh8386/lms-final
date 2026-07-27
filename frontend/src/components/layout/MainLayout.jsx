@@ -5,6 +5,7 @@ import Sidebar from './Sidebar'
 import MobileBottomNav from './MobileBottomNav'
 import SiteFooter from './SiteFooter'
 import PageFallback from '../ui/PageFallback'
+import PendingPaymentBanner from '../payment/PendingPaymentBanner'
 
 const MainLayout = () => {
   return (
@@ -12,6 +13,7 @@ const MainLayout = () => {
       <Navbar />
 
       <div className="pt-[66px] pb-[calc(56px+env(safe-area-inset-bottom,0px))] md:pb-0">
+        <PendingPaymentBanner />
         <div className="flex">
           <Sidebar />
           <main className="min-w-0 flex-1 bg-white">

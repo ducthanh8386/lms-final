@@ -2,7 +2,19 @@ import { supabase } from '../lib/supabaseClient'
 import { notificationService } from './notificationService'
 
 export const teacherService = {
-  // Lấy các đơn hàng đang pending của giáo viên
+  // Đơn hàng gần đây (SePay tự duyệt — không cần approve thủ công)
+  async getRecentOrders(teacherId, limit = 50) {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*, profiles:user_id(name, email), order_items(price, courses(title))')
+      .eq('teacher_id', teacherId)
+      .in('status', ['pending', 'awaiting_confirmation', 'completed', 'rejected'])
+      .order('created_at', { ascending: false })
+      .limit(limit)
+    return { data, error }
+  },
+
+  // Lấy các đơn hàng đang pending của giáo viên (legacy)
   async getPendingOrders(teacherId) {
     const { data, error } = await supabase
       .from('orders')
@@ -111,5 +123,94 @@ export const teacherService = {
       .eq('courses.teacher_id', teacherId)
       .order('enrolled_at', { ascending: false })
     return { data, error }
-  }
+  },
+
+  // Khóa video (purchase) của giáo viên — filter tiến độ học
+  async getPurchaseCourses(teacherId) {
+    const { data, error } = await supabase
+      .from('courses')
+      .select('id, title, enrollment_mode')
+      .eq('teacher_id', teacherId)
+      .eq('enrollment_mode', 'purchase')
+      .order('title', { ascending: true })
+    return { data, error }
+  },
+
+  /**
+   * Tiến độ học F8-style: enrollments khóa purchase + course_learning_progress
+   * @param {string} teacherId
+   * @param {string|null} courseId optional filter
+   */
+  async getCourseLearningProgress(teacherId, courseId = null) {
+    let enrollQuery = supabase
+      .from('enrollments')
+      .select(`
+        id,
+        enrolled_at,
+        user_id,
+        course_id,
+        courses!inner(id, title, teacher_id, enrollment_mode),
+        profiles:user_id(id, name, email)
+      `)
+      .eq('courses.teacher_id', teacherId)
+      .eq('courses.enrollment_mode', 'purchase')
+      .order('enrolled_at', { ascending: false })
+
+    if (courseId) {
+      enrollQuery = enrollQuery.eq('course_id', courseId)
+    }
+
+    const { data: enrollments, error: enrollError } = await enrollQuery
+    if (enrollError) return { data: null, error: enrollError }
+    if (!enrollments?.length) return { data: [], error: null }
+
+    const courseIds = [...new Set(enrollments.map((e) => e.course_id))]
+    const userIds = [...new Set(enrollments.map((e) => e.user_id))]
+
+    const { data: progressRows, error: progressError } = await supabase
+      .from('course_learning_progress')
+      .select(`
+        user_id,
+        course_id,
+        progress_percent,
+        completed_lessons,
+        total_lessons,
+        last_studied_at,
+        study_seconds,
+        last_lesson_id,
+        lessons:last_lesson_id(id, title, order_index)
+      `)
+      .in('course_id', courseIds)
+      .in('user_id', userIds)
+
+    if (progressError) return { data: null, error: progressError }
+
+    const progressMap = new Map()
+    for (const row of progressRows || []) {
+      progressMap.set(`${row.user_id}:${row.course_id}`, row)
+    }
+
+    const data = enrollments.map((en) => {
+      const progress = progressMap.get(`${en.user_id}:${en.course_id}`) || null
+      return {
+        enrollmentId: en.id,
+        enrolledAt: en.enrolled_at,
+        userId: en.user_id,
+        courseId: en.course_id,
+        courseTitle: en.courses?.title || '',
+        studentName: en.profiles?.name || 'Học viên',
+        studentEmail: en.profiles?.email || '',
+        progressPercent: progress?.progress_percent ?? 0,
+        completedLessons: progress?.completed_lessons ?? 0,
+        totalLessons: progress?.total_lessons ?? 0,
+        lastStudiedAt: progress?.last_studied_at ?? null,
+        studySeconds: progress?.study_seconds ?? 0,
+        lastLessonId: progress?.last_lesson_id ?? null,
+        lastLessonTitle: progress?.lessons?.title ?? null,
+        lastLessonOrder: progress?.lessons?.order_index ?? null,
+      }
+    })
+
+    return { data, error: null }
+  },
 }

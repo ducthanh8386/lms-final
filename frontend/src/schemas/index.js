@@ -36,11 +36,12 @@ export const registerSchema = z
   })
 
 export const courseSchema = z.object({
-  title: z.string().min(5, "Tên khóa học phải dài hơn 5 ký tự").max(100, "Tên quá dài"),
+  title: z.string().trim().min(5, 'Tên khóa học phải dài hơn 5 ký tự').max(100, 'Tên quá dài'),
   description: z.string().optional(),
-  price: z.number().min(0, "Giá không được âm").default(0),
-  is_free: z.boolean().default(false),
-  category_id: z.string().min(1, "Vui lòng chọn danh mục")
+  price: z.coerce.number().min(0, 'Giá không được âm'),
+  is_free: z.boolean().optional().default(false),
+  // DB: categories.id / courses.category_id là bigint → coerce về string cho form
+  category_id: z.coerce.string().min(1, 'Vui lòng chọn danh mục'),
 })
 
 export const lessonSchema = z.object({
@@ -92,6 +93,8 @@ export const classSchema = z.object({
   description: z.string().optional(),
   max_students: z.number().int().min(1, 'Sĩ số tối thiểu là 1').max(200, 'Sĩ số tối đa là 200').default(50),
   course_id: z.string().uuid().optional().nullable(),
+  schedule_label: z.string().optional().nullable(),
+  status: z.enum(['recruiting', 'upcoming', 'ongoing', 'finished']).default('recruiting'),
 })
 
 export const scheduleSchema = z.object({

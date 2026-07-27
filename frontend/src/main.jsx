@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { AuthModalProvider } from './context/AuthModalContext'
 import { CartProvider } from './context/CartContext'
+import { PendingPaymentProvider } from './context/PendingPaymentContext'
 import { ToastProvider } from './context/ToastContext'
 import { ConfirmProvider } from './context/ConfirmContext'
 
@@ -28,11 +29,13 @@ createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <AuthModalProvider>
           <CartProvider>
-            <ToastProvider>
-              <ConfirmProvider>
-                <App />
-              </ConfirmProvider>
-            </ToastProvider>
+            <PendingPaymentProvider>
+              <ToastProvider>
+                <ConfirmProvider>
+                  <App />
+                </ConfirmProvider>
+              </ToastProvider>
+            </PendingPaymentProvider>
           </CartProvider>
         </AuthModalProvider>
       </AuthProvider>

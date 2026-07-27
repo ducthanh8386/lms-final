@@ -13,7 +13,13 @@ const ClassDetail = () => {
   const [classObj, setClassObj] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
-  const [editData, setEditData] = useState({ name: '', description: '', max_students: 50 })
+  const [editData, setEditData] = useState({
+    name: '',
+    description: '',
+    max_students: 50,
+    schedule_label: '',
+    status: 'recruiting',
+  })
   const [saving, setSaving] = useState(false)
 
   const fetchDetails = useCallback(async () => {
@@ -27,7 +33,9 @@ const ClassDetail = () => {
       setEditData({
         name: data.name,
         description: data.description || '',
-        max_students: data.max_students || 50
+        max_students: data.max_students || 50,
+        schedule_label: data.schedule_label || '',
+        status: data.status || 'recruiting',
       })
     }
     setLoading(false)
@@ -74,7 +82,9 @@ const ClassDetail = () => {
     const { data, error } = await classService.updateClass(classId, {
       name: editData.name,
       description: editData.description,
-      max_students: Number(editData.max_students)
+      max_students: Number(editData.max_students),
+      schedule_label: editData.schedule_label || null,
+      status: editData.status || 'recruiting',
     })
     
     if (error) {
@@ -156,6 +166,32 @@ const ClassDetail = () => {
                   onChange={e => setEditData({...editData, max_students: e.target.value})}
                   className="w-full rounded-md border p-2 focus:border-accent focus:outline-none text-sm"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Lịch học</label>
+                  <input
+                    type="text"
+                    value={editData.schedule_label}
+                    onChange={(e) => setEditData({ ...editData, schedule_label: e.target.value })}
+                    placeholder="T2-T4-T6"
+                    className="w-full rounded-md border p-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Trạng thái</label>
+                  <select
+                    value={editData.status}
+                    onChange={(e) => setEditData({ ...editData, status: e.target.value })}
+                    className="w-full rounded-md border p-2 text-sm"
+                  >
+                    <option value="recruiting">Đang tuyển sinh</option>
+                    <option value="upcoming">Sắp khai giảng</option>
+                    <option value="ongoing">Đang học</option>
+                    <option value="finished">Đã kết thúc</option>
+                  </select>
+                </div>
               </div>
 
               <div className="flex gap-2 justify-end pt-2">

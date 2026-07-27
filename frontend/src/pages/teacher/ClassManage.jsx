@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import { useConfirm } from '../../context/ConfirmContext'
 import { classSchema } from '../../schemas'
-import TeacherTabs from '../../components/teacher/TeacherTabs'
+import { zodFirstMessage } from '../../utils/zodError'
 
 const ClassManage = () => {
   const { user } = useAuth()
@@ -24,7 +24,9 @@ const ClassManage = () => {
     name: '',
     description: '',
     max_students: 50,
-    course_id: ''
+    course_id: '',
+    schedule_label: '',
+    status: 'recruiting',
   })
   const [saving, setSaving] = useState(false)
   const [validationError, setValidationError] = useState(null)
@@ -82,12 +84,14 @@ const ClassManage = () => {
       name: formData.name,
       description: formData.description || undefined,
       max_students: Number(formData.max_students),
-      course_id: formData.course_id || null
+      course_id: formData.course_id || null,
+      schedule_label: formData.schedule_label || null,
+      status: formData.status || 'recruiting',
     }
 
     const result = classSchema.safeParse(payload)
     if (!result.success) {
-      setValidationError(result.error.errors[0].message)
+      setValidationError(zodFirstMessage(result.error))
       setSaving(false)
       return
     }
@@ -98,18 +102,27 @@ const ClassManage = () => {
     } else {
       toast.success("Tạo lớp học thành công!")
       setShowModal(false)
-      setFormData({ name: '', description: '', max_students: 50, course_id: '' })
+      setFormData({
+        name: '',
+        description: '',
+        max_students: 50,
+        course_id: '',
+        schedule_label: '',
+        status: 'recruiting',
+      })
       fetchClasses()
     }
     setSaving(false)
   }
 
   return (
-    <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 text-left bg-slate-50 min-h-screen">
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Quản Lý Lớp Học</h1>
-          <p className="text-slate-500">Giảng dạy học viên của bạn thông qua việc chia nhóm học tập.</p>
+          <h1 className="text-2xl font-extrabold text-slate-900">Lớp học</h1>
+          <p className="mt-1 text-[14px] text-slate-500">
+            Xếp lớp cho khóa Zoom / Fullstack — tạo lớp, mã mời, quản lý sĩ số.
+          </p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -118,8 +131,6 @@ const ClassManage = () => {
           + Tạo lớp mới
         </button>
       </header>
-
-      <TeacherTabs />
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -137,7 +148,18 @@ const ClassManage = () => {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <Link to={`/teacher/classes/${c.id}`} className="text-lg font-bold text-slate-900 hover:text-accent line-clamp-1">{c.name}</Link>
-                  <p className="text-xs text-slate-400 mt-1">Sĩ số: {c.student_count} / {c.max_students}</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Sĩ số: {c.student_count} / {c.max_students}
+                    {c.schedule_label ? ` · ${c.schedule_label}` : ''}
+                  </p>
+                  {c.status && (
+                    <p className="mt-1 text-[11px] font-semibold text-slate-500">
+                      {c.status === 'recruiting' && 'Đang tuyển sinh'}
+                      {c.status === 'upcoming' && 'Sắp khai giảng'}
+                      {c.status === 'ongoing' && 'Đang học'}
+                      {c.status === 'finished' && 'Đã kết thúc'}
+                    </p>
+                  )}
                 </div>
                 <button 
                   onClick={() => handleToggleActive(c)}
@@ -246,6 +268,32 @@ const ClassManage = () => {
                     {courses.map(course => (
                       <option key={course.id} value={course.id}>{course.title}</option>
                     ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Lịch học</label>
+                  <input
+                    type="text"
+                    value={formData.schedule_label}
+                    onChange={(e) => setFormData({ ...formData, schedule_label: e.target.value })}
+                    placeholder="T2-T4-T6"
+                    className="w-full rounded-md border p-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Trạng thái</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full rounded-md border p-2.5 text-sm"
+                  >
+                    <option value="recruiting">Đang tuyển sinh</option>
+                    <option value="upcoming">Sắp khai giảng</option>
+                    <option value="ongoing">Đang học</option>
+                    <option value="finished">Đã kết thúc</option>
                   </select>
                 </div>
               </div>
