@@ -80,7 +80,7 @@ export const adminService = {
       .from('courses')
       .update({ status })
       .eq('id', courseId)
-      .select()
+      .select('id')
     return { data, error }
   },
 
@@ -131,5 +131,77 @@ export const adminService = {
         pendingCourses: pendingCourses || 0
       }
     }
-  }
+  },
+
+  async getAllCourses() {
+    const { data, error } = await supabase
+      .from('courses')
+      .select('*, profiles:teacher_id(id, name, email)')
+      .order('created_at', { ascending: false })
+    return { data, error }
+  },
+
+  async assignTeacher(courseId, teacherId) {
+    const { data, error } = await supabase
+      .from('courses')
+      .update({ teacher_id: teacherId })
+      .eq('id', courseId)
+      .select('id')
+      .single()
+    return { data, error }
+  },
+
+  async updateCourseMeta(courseId, payload) {
+    const { data, error } = await supabase
+      .from('courses')
+      .update(payload)
+      .eq('id', courseId)
+      .select('id')
+      .single()
+    return { data, error }
+  },
+
+  async getTeachers() {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, name, email, status, created_at')
+      .eq('role', 'teacher')
+      .order('name', { ascending: true })
+    return { data, error }
+  },
+
+  async getStudents() {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, name, email, status, created_at')
+      .eq('role', 'student')
+      .order('created_at', { ascending: false })
+    return { data, error }
+  },
+
+  async getAllOrders() {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*, profiles:user_id(name, email), teacher:teacher_id(name), order_items(price, courses(title))')
+      .order('created_at', { ascending: false })
+      .limit(200)
+    return { data, error }
+  },
+
+  async getAllLeads() {
+    const { data, error } = await supabase
+      .from('course_leads')
+      .select('*, courses(id, title, teacher_id), classes:assigned_class_id(id, name)')
+      .order('created_at', { ascending: false })
+    return { data, error }
+  },
+
+  async getAllClasses() {
+    const { data, error } = await supabase
+      .from('classes')
+      .select('*, courses(title), profiles:teacher_id(name), class_members(id, status)')
+      .order('created_at', { ascending: false })
+    return { data, error }
+  },
 }
+

@@ -25,7 +25,8 @@ const ProtectedRoute = ({ allowedRoles }) => {
 
   // Role checking
   if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
-    // Redirect to appropriate dashboard/home based on role, or unauth page
+    if (profile.role === 'teacher') return <Navigate to="/teacher" replace />
+    if (profile.role === 'admin') return <Navigate to="/admin" replace />
     return <Navigate to="/" replace />
   }
 

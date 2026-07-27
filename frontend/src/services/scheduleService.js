@@ -11,7 +11,8 @@ export const scheduleService = {
 
     const baseRecord = {
       ...rest,
-      teacher_id: user.id
+      teacher_id: user.id,
+      approval_status: 'pending',
     }
 
     if (recurrence_type === 'weekly' && recurrence_days?.length > 0 && recurrence_end_date) {
@@ -124,7 +125,7 @@ export const scheduleService = {
 
     const { data, error } = await supabase
       .from('schedule_participants')
-      .insert(participants)
+      .upsert(participants, { onConflict: 'schedule_id,student_id', ignoreDuplicates: true })
       .select()
 
     return { data, error }
@@ -158,7 +159,7 @@ export const scheduleService = {
 
     // Format lại dữ liệu trả về cho đồng bộ cấu trúc lịch
     const formattedSchedules = data
-      .filter(p => p.schedules !== null)
+      .filter(p => p.schedules !== null && p.schedules.approval_status === 'approved')
       .map(p => ({
         ...p.schedules,
         participation_status: p.status
@@ -167,6 +168,26 @@ export const scheduleService = {
       .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
 
     return { data: formattedSchedules, error: null }
+  },
+
+  // === CHO ADMIN ===
+
+  async getPendingSchedules() {
+    const { data, error } = await supabase
+      .from('schedules')
+      .select('*, classes(name), profiles:teacher_id(name, email)')
+      .eq('approval_status', 'pending')
+      .order('start_time', { ascending: true })
+    return { data, error }
+  },
+
+  async reviewSchedule(scheduleId, decision, reason = null) {
+    const { data, error } = await supabase.rpc('review_schedule', {
+      p_schedule_id: scheduleId,
+      p_decision: decision,
+      p_reason: reason,
+    })
+    return { data, error }
   },
 
   // Học viên xác nhận tham gia buổi học (status = 'confirmed' / 'declined')

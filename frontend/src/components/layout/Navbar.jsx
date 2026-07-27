@@ -1,16 +1,15 @@
-﻿import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useAuthModal } from '../../context/AuthModalContext'
-import { useCart } from '../../context/CartContext'
 import NotificationBell from '../ui/NotificationBell'
 import UserMenu from './UserMenu'
+import MyCoursesMenu from './MyCoursesMenu'
 import { preloadRoute } from '../../utils/routePreload'
 
 const Navbar = () => {
   const { user, profile, loading } = useAuth()
   const { openLogin } = useAuthModal()
-  const { totalCount } = useCart()
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [search, setSearch] = useState('')
   const location = useLocation()
@@ -34,9 +33,7 @@ const Navbar = () => {
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary text-sm font-extrabold text-white shadow-sm">
             LMS
           </span>
-          <span className="truncate text-[11px] font-bold uppercase leading-tight tracking-wide text-[#242424] sm:text-[12px] lg:text-[13px]">
-            Học lập trình để đi làm
-          </span>
+          <span className="truncate text-[11px] font-bold leading-tight tracking-wide text-[#242424] sm:text-[12px] lg:text-[13px]" style={{ fontFamily: '"Be Vietnam Pro", system-ui, sans-serif' }}>{`HỌC LẬP TRÌNH \u0110\u1EC4 ĐI LÀM`}</span>
         </Link>
 
         <form onSubmit={handleSearch} className="mx-auto hidden max-w-[420px] flex-1 sm:flex">
@@ -72,32 +69,13 @@ const Navbar = () => {
 
           {!loading && user ? (
             <>
-              {profile?.role === 'student' && (
-                <Link
-                  to="/cart"
-                  onMouseEnter={() => preloadRoute('/cart')}
-                  className="relative hidden h-9 w-9 items-center justify-center rounded-full text-[#555] hover:bg-[#f5f5f5] sm:flex"
-                >
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M6 6h15l-1.5 9h-12z" />
-                    <circle cx="9" cy="20" r="1.2" fill="currentColor" />
-                    <circle cx="17" cy="20" r="1.2" fill="currentColor" />
-                    <path d="M6 6 5 3H2" />
-                  </svg>
-                  {totalCount > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">
-                      {totalCount}
-                    </span>
-                  )}
-                </Link>
-              )}
               {profile?.role === 'teacher' && (
                 <Link
-                  to="/teacher/courses"
-                  onMouseEnter={() => preloadRoute('/teacher/courses')}
-                  className="hidden text-sm font-semibold text-[#242424] hover:text-primary md:inline"
+                  to="/teacher"
+                  onMouseEnter={() => preloadRoute('/teacher')}
+                  className="hidden rounded-full bg-slate-900 px-3 py-2 text-[13px] font-bold text-white hover:bg-slate-800 md:inline"
                 >
-                  Dành cho GV
+                  Khu vực GV
                 </Link>
               )}
               {profile?.role === 'admin' && (
@@ -109,6 +87,7 @@ const Navbar = () => {
                   Admin
                 </Link>
               )}
+              <MyCoursesMenu />
               <div className="hidden sm:block">
                 <NotificationBell />
               </div>

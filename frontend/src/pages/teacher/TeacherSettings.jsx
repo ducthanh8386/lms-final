@@ -2,9 +2,6 @@
 import { useAuth } from '../../context/AuthContext'
 import { teacherService } from '../../services/teacherService'
 import { supabase } from '../../lib/supabaseClient'
-
-import TeacherTabs from '../../components/teacher/TeacherTabs'
-
 import { useToast } from '../../context/ToastContext'
 
 const TeacherSettings = () => {
@@ -63,15 +60,18 @@ const TeacherSettings = () => {
   if (loading) return <div className="p-8">Đang tải...</div>
 
   return (
-    <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8 text-left">
-      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Giảng Viên Dashboard</h1>
-          <p className="text-slate-500">Quản lý khóa học, đơn hàng và cài đặt thanh toán.</p>
-        </div>
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+      <header className="mb-6">
+        <h1 className="text-2xl font-extrabold text-slate-900">Cài đặt nhận tiền</h1>
+        <p className="mt-1 text-[14px] text-slate-500">
+          Checkout học viên dùng SePay nền tảng. Thông tin ngân hàng dưới đây chỉ tham khảo / dự phòng.
+        </p>
       </header>
 
-      <TeacherTabs />
+      <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        Học viên thanh toán tự động qua <strong>SePay</strong> (một tài khoản nhận của hệ thống). Không
+        cần duyệt đơn thủ công.
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-6 rounded-xl border bg-white p-6 shadow-sm max-w-2xl">
         <div>

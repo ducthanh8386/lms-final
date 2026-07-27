@@ -4,8 +4,10 @@ import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
 import { useAuthModal } from '../../context/AuthModalContext'
 import { studentService } from '../../services/studentService'
-import { supabase } from '../../lib/supabaseClient'
+import { paymentService } from '../../services/paymentService'
 import { useToast } from '../../context/ToastContext'
+import { usePendingPayment } from '../../context/PendingPaymentContext'
+import { supabase } from '../../lib/supabaseClient'
 
 const formatPrice = (n) => `${Number(n || 0).toLocaleString('vi-VN')}đ`
 
@@ -13,6 +15,7 @@ const Cart = () => {
   const { cart, setCart, removeFromCart, clearCart, totalPrice } = useCart()
   const { user } = useAuth()
   const { openLogin } = useAuthModal()
+  const { hasPendingPayment, pending, setPendingFromSession, refreshPending } = usePendingPayment()
   const navigate = useNavigate()
   const toast = useToast()
   const [loading, setLoading] = useState(false)
@@ -91,18 +94,36 @@ const Cart = () => {
     setError(null)
 
     try {
+      // Còn phiên SePay chưa trả → không tạo đơn mới, quay lại thanh toán
+      const active = (await refreshPending()) || pending
+      if (active?.paymentCode) {
+        toast.error('Bạn còn đơn chưa thanh toán. Hãy hoàn tất trước khi mua khóa khác.')
+        navigate(`/checkout/detail?payment=${encodeURIComponent(active.paymentCode)}`, {
+          state: { payment: active },
+        })
+        return
+      }
+
       const { data, error: checkoutError } = await studentService.checkout(cart, user)
       if (checkoutError) throw new Error(checkoutError.message || 'Lỗi tạo đơn hàng')
 
       clearCart()
 
-      if (totalPrice === 0) {
+      const paidOrders = (data || []).filter((o) => Number(o.total_price) > 0)
+      if (paidOrders.length === 0) {
         toast.success('Đăng ký thành công! Bạn có thể bắt đầu học.')
         navigate('/learning')
-      } else {
-        const orderIds = data.map((o) => o.id).join(',')
-        navigate(`/checkout/detail?ids=${orderIds}`, { state: { orders: data } })
+        return
       }
+
+      const orderIds = paidOrders.map((o) => o.id)
+      const { data: session, error: payErr } = await paymentService.createSession(orderIds)
+      if (payErr) throw new Error(payErr.message || 'Không tạo được phiên thanh toán SePay')
+
+      setPendingFromSession(session)
+      navigate(`/checkout/detail?payment=${encodeURIComponent(session.paymentCode)}`, {
+        state: { payment: session, orders: paidOrders },
+      })
     } catch (err) {
       setError(err.message)
     } finally {
@@ -146,6 +167,20 @@ const Cart = () => {
         {error && (
           <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-600">
             {error}
+          </div>
+        )}
+
+        {hasPendingPayment && pending?.paymentCode && (
+          <div className="mb-5 flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[13px] text-amber-900">
+              Bạn còn đơn chưa thanh toán. Hoàn tất trước khi mua thêm khóa học.
+            </p>
+            <Link
+              to={`/checkout/detail?payment=${encodeURIComponent(pending.paymentCode)}`}
+              className="inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-4 py-2 text-[13px] font-bold text-white"
+            >
+              Tiếp tục thanh toán
+            </Link>
           </div>
         )}
 
@@ -240,7 +275,11 @@ const Cart = () => {
                   disabled={loading}
                   className="mt-5 w-full rounded-full bg-primary py-3.5 text-[14px] font-bold text-white transition hover:bg-brand-orangeHover disabled:opacity-50"
                 >
-                  {loading ? 'Đang xử lý...' : 'Thanh toán ngay'}
+                  {loading
+                    ? 'Đang xử lý...'
+                    : hasPendingPayment
+                      ? 'Tiếp tục thanh toán đơn đang chờ'
+                      : 'Thanh toán ngay'}
                 </button>
 
                 <Link
@@ -251,8 +290,8 @@ const Cart = () => {
                 </Link>
 
                 <p className="mt-4 text-center text-[11px] leading-relaxed text-[#999]">
-                  Sau khi đặt hàng bạn sẽ nhận thông tin chuyển khoản. Khóa học kích hoạt khi giảng
-                  viên xác nhận thanh toán.
+                  Thanh toán tự động qua SePay (VietQR). Khóa học mở ngay sau khi hệ thống nhận
+                  chuyển khoản đúng nội dung.
                 </p>
               </div>
             </aside>

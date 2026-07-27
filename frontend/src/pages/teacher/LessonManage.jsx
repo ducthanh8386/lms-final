@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { courseService } from '../../services/courseService'
 import { lessonSchema } from '../../schemas'
+import { zodFirstMessage } from '../../utils/zodError'
 
 import { useToast } from '../../context/ToastContext'
 import { useConfirm } from '../../context/ConfirmContext'
@@ -55,7 +56,7 @@ const LessonManage = () => {
     })
 
     if (!validationResult.success) {
-      toast.error(validationResult.error.errors[0].message)
+      toast.error(zodFirstMessage(validationResult.error))
       return
     }
 

@@ -94,6 +94,16 @@ const UserMenu = () => {
           </div>
 
           <div className="border-t border-[#f0f0f0] px-5 py-2">
+            {(profile?.role === 'teacher' || profile?.role === 'admin') && (
+              <Link
+                to="/teacher"
+                onMouseEnter={() => preloadRoute('/teacher')}
+                onClick={() => setOpen(false)}
+                className="block w-full py-[10px] hover:opacity-80"
+              >
+                <span style={itemStyle}>Khu vực giảng viên</span>
+              </Link>
+            )}
             <Link
               to="/learning"
               onMouseEnter={() => preloadRoute('/learning')}
@@ -110,12 +120,26 @@ const UserMenu = () => {
             >
               <span style={itemStyle}>Cài đặt</span>
             </Link>
+            <div className="my-1 border-t border-[#eee]" />
             <button
               type="button"
               onClick={handleSignOut}
-              className="block w-full bg-transparent py-[10px] text-left hover:opacity-80"
+              className="flex w-full items-center gap-2 bg-transparent py-[10px] text-left transition hover:opacity-80"
             >
-              <span style={itemStyle}>Đăng xuất</span>
+              <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#999]" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <path d="M16 17l5-5-5-5" />
+                <path d="M21 12H9" />
+              </svg>
+              <span
+                style={{
+                  ...itemStyle,
+                  color: '#444',
+                  fontWeight: 500,
+                }}
+              >
+                Đăng xuất
+              </span>
             </button>
           </div>
         </div>

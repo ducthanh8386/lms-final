@@ -1,12 +1,12 @@
 ﻿import React, { useEffect, useState, useCallback } from 'react'
 import { classService } from '../../services/classService'
 import { scheduleService } from '../../services/scheduleService'
-import { notificationService } from '../../services/notificationService'
+import { attendanceService } from '../../services/attendanceService'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import { useConfirm } from '../../context/ConfirmContext'
 import { scheduleSchema } from '../../schemas'
-import TeacherTabs from '../../components/teacher/TeacherTabs'
+import { zodFirstMessage } from '../../utils/zodError'
 import WeeklyCalendar from '../../components/schedule/WeeklyCalendar'
 
 const ScheduleManage = () => {
@@ -34,6 +34,10 @@ const ScheduleManage = () => {
   })
   const [saving, setSaving] = useState(false)
   const [validationError, setValidationError] = useState(null)
+  const [attendanceSchedule, setAttendanceSchedule] = useState(null)
+  const [attendanceMembers, setAttendanceMembers] = useState([])
+  const [attendanceMap, setAttendanceMap] = useState({})
+  const [attendanceLoading, setAttendanceLoading] = useState(false)
 
   // Fetch lịch (lấy khoảng rộng +/- 12 tháng để thoải mái chuyển đổi tuần)
   const fetchSchedules = useCallback(async () => {
@@ -62,6 +66,34 @@ const ScheduleManage = () => {
       fetchClasses()
     }
   }, [user, fetchSchedules, fetchClasses])
+
+  const openAttendance = async (schedule) => {
+    if (!schedule?.class_id) {
+      toast.error('Buổi học chưa gắn lớp')
+      return
+    }
+    setAttendanceSchedule(schedule)
+    setAttendanceLoading(true)
+    const [{ data: details }, { data: marks }] = await Promise.all([
+      classService.getClassDetails(schedule.class_id),
+      attendanceService.getForSchedule(schedule.id),
+    ])
+    setAttendanceMembers(details?.members || [])
+    const map = {}
+    for (const m of marks || []) map[m.student_id] = m.status
+    setAttendanceMap(map)
+    setAttendanceLoading(false)
+  }
+
+  const markAttendance = async (studentId, status) => {
+    if (!attendanceSchedule) return
+    const { error } = await attendanceService.upsert(attendanceSchedule.id, studentId, status)
+    if (error) toast.error(error.message)
+    else {
+      setAttendanceMap((prev) => ({ ...prev, [studentId]: status }))
+      toast.success('Đã điểm danh')
+    }
+  }
 
   const handleDeleteSchedule = async (id) => {
     if (!(await confirm("Bạn có chắc chắn muốn xóa buổi học này khỏi lịch dạy không?"))) return
@@ -109,7 +141,7 @@ const ScheduleManage = () => {
 
     const result = scheduleSchema.safeParse(payload)
     if (!result.success) {
-      setValidationError(result.error.errors[0].message)
+      setValidationError(zodFirstMessage(result.error))
       setSaving(false)
       return
     }
@@ -123,51 +155,25 @@ const ScheduleManage = () => {
       return
     }
 
-    toast.success("Đã thêm buổi học mới thành công!")
+    toast.success("Đã gửi buổi học — chờ Admin duyệt trước khi học viên thấy lịch.")
     setShowModal(false)
 
-    // Thực hiện gán học viên và gửi thông báo trong nền để không chặn UI
+    // Gán HV vào buổi (HV chưa thấy lịch cho đến khi Admin duyệt)
     const handleBackgroundTasks = async () => {
       try {
         if (formData.class_id && createdSchedules) {
           const scheduleList = Array.isArray(createdSchedules) ? createdSchedules : [createdSchedules]
-          
+
           for (const sched of scheduleList) {
             if (!sched || !sched.id) continue
-            // Gán học viên trong lớp
-            const { data: participants, error: partErr } = await scheduleService.addParticipantsFromClass(sched.id, formData.class_id)
+            const { error: partErr } = await scheduleService.addParticipantsFromClass(sched.id, formData.class_id)
             if (partErr) {
               console.error("Lỗi gán học viên vào lịch học:", partErr)
-              continue
-            }
-            
-            // Gửi thông báo cho từng học sinh
-            if (participants && participants.length > 0) {
-              const selectedClass = classes.find(c => c.id === formData.class_id)
-              const className = selectedClass ? selectedClass.name : 'lớp học'
-              const formattedDate = new Date(sched.start_time).toLocaleDateString('vi-VN')
-              const formattedTime = new Date(sched.start_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-
-              for (const part of participants) {
-                if (!part.student_id) continue
-                try {
-                  await notificationService.createNotification(
-                    part.student_id,
-                    'schedule_reminder',
-                    `Lịch học mới: Lớp ${className}`,
-                    `Bạn có lịch học mới vào ngày ${formattedDate} lúc ${formattedTime}.`,
-                    sched.id,
-                    'schedule'
-                  )
-                } catch (notifErr) {
-                  console.error("Gửi thông báo thất bại:", notifErr)
-                }
-              }
             }
           }
         }
       } catch (bgErr) {
-        console.error("Lỗi tác vụ nền (gán học viên/gửi thông báo):", bgErr)
+        console.error("Lỗi tác vụ nền (gán học viên):", bgErr)
       }
     }
 
@@ -210,11 +216,13 @@ const ScheduleManage = () => {
   ]
 
   return (
-    <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 text-left bg-slate-50 min-h-screen">
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Quản Lý Lịch Dạy</h1>
-          <p className="text-slate-500">Xem và phân bổ lịch dạy kèm, cuộc họp Zoom/Meet của bạn.</p>
+          <h1 className="text-2xl font-extrabold text-slate-900">Lịch dạy Zoom</h1>
+          <p className="mt-1 text-[14px] text-slate-500">
+            Tạo buổi học → chờ Admin duyệt → học viên mới thấy lịch và nhận thông báo.
+          </p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -224,8 +232,6 @@ const ScheduleManage = () => {
         </button>
       </header>
 
-      <TeacherTabs />
-
       {loading ? (
         <div className="h-96 w-full rounded-xl bg-white border border-slate-200 animate-pulse flex items-center justify-center text-slate-400">
           Đang tải thời khóa biểu...
@@ -234,8 +240,62 @@ const ScheduleManage = () => {
         <WeeklyCalendar 
           schedules={schedules} 
           isStudent={false} 
-          onDeleteSchedule={handleDeleteSchedule} 
+          onDeleteSchedule={handleDeleteSchedule}
+          onAttendance={openAttendance}
         />
+      )}
+
+      {attendanceSchedule && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Điểm danh</h3>
+                <p className="text-sm text-slate-500">{attendanceSchedule.title}</p>
+              </div>
+              <button type="button" onClick={() => setAttendanceSchedule(null)} className="text-slate-400">
+                ✕
+              </button>
+            </div>
+            {attendanceLoading ? (
+              <p className="text-slate-500">Đang tải...</p>
+            ) : attendanceMembers.length === 0 ? (
+              <p className="text-slate-500">Lớp chưa có học viên.</p>
+            ) : (
+              <ul className="space-y-3">
+                {attendanceMembers.map((m) => {
+                  const sid = m.student_id || m.profiles?.id
+                  const status = attendanceMap[sid] || ''
+                  return (
+                    <li key={m.id} className="rounded-lg border p-3">
+                      <div className="font-medium text-slate-900">{m.profiles?.name || 'HV'}</div>
+                      <div className="text-xs text-slate-500">{m.profiles?.email}</div>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {['present', 'late', 'absent', 'excused'].map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => markAttendance(sid, s)}
+                            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                              status === s
+                                ? 'bg-primary text-white'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            {s === 'present' && 'Có mặt'}
+                            {s === 'late' && 'Muộn'}
+                            {s === 'absent' && 'Vắng'}
+                            {s === 'excused' && 'Có phép'}
+                          </button>
+                        ))}
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Modal Thêm Buổi Học */}

@@ -4,15 +4,15 @@ import { Link } from 'react-router-dom'
 const FAQ_ITEMS = [
   {
     q: 'Làm sao để mua và học khóa học?',
-    a: 'Chọn khóa học → Thêm vào giỏ / Mua ngay → Thanh toán chuyển khoản theo hướng dẫn. Sau khi giảng viên xác nhận, khóa học sẽ xuất hiện trong “Khóa học của tôi”.',
+    a: 'Chọn khóa học → bấm Mua ngay → thanh toán chuyển khoản VietQR (SePay). Hệ thống tự xác nhận và mở khóa trong “Khóa học của tôi”.',
   },
   {
     q: 'Tôi đã chuyển khoản nhưng chưa được mở khóa?',
-    a: 'Đơn hàng thường được duyệt trong vòng 24 giờ. Hãy kiểm tra đã nhập đúng nội dung chuyển khoản và (nếu có) đã tải biên lai. Liên hệ giảng viên hoặc hỗ trợ nếu quá thời gian chờ.',
+    a: 'Trang thanh toán tự kiểm tra mỗi vài giây. Hãy nhập đúng nội dung chuyển khoản (mã PAY…). Nếu quá 5 phút phiên hết hạn, mua lại khóa và chuyển khoản với mã mới.',
   },
   {
     q: 'Khóa học miễn phí có cần thanh toán không?',
-    a: 'Không. Với khóa miễn phí bạn chỉ cần đăng ký / thêm vào giỏ và hoàn tất quy trình đăng ký để bắt đầu học ngay.',
+    a: 'Không. Với khóa miễn phí bạn chỉ cần bấm “Học miễn phí” để bắt đầu học ngay.',
   },
   {
     q: 'Làm sao đổi mật khẩu?',

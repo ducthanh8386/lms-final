@@ -20,10 +20,7 @@ const SiteFooter = () => {
                 <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg bg-primary text-[12px] font-extrabold text-white">
                   LMS
                 </span>
-                <span className="text-[14px] font-bold uppercase leading-snug text-white">
-                  Học lập trình
-                  <br className="hidden xl:block" /> để đi làm
-                </span>
+                <span className="text-[14px] font-bold leading-snug text-white" style={{ fontFamily: '"Be Vietnam Pro", system-ui, sans-serif' }}>HỌC LẬP TRÌNH<br className="hidden xl:block" />{` \u0110\u1EC4 ĐI LÀM`}</span>
               </Link>
             </div>
             <ul className="space-y-1 text-[14px] leading-7 text-[#a9b3bb]">
@@ -71,10 +68,9 @@ const SiteFooter = () => {
             <h4 className={headingClass}>Sản phẩm</h4>
             <ul className="space-y-1">
               <li><Link to="/courses" className={linkClass}>Khóa học</Link></li>
-              <li><Link to="/learning" className={linkClass}>Không gian học tập</Link></li>
+              <li><Link to="/learning" className={linkClass}>Khóa học của tôi</Link></li>
               <li><Link to="/my-classes" className={linkClass}>Lớp học</Link></li>
               <li><Link to="/my-schedule" className={linkClass}>Lịch học</Link></li>
-              <li><Link to="/cart" className={linkClass}>Giỏ hàng</Link></li>
               <li><Link to="/register" className={linkClass}>Đăng ký giảng viên</Link></li>
             </ul>
           </div>
@@ -96,7 +92,7 @@ const SiteFooter = () => {
         {/* Bottom bar */}
         <div className="mt-12 flex flex-col-reverse items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
           <p className="text-center text-[13px] text-[#a9b3bb]/80 sm:text-left">
-            © 2024 - {new Date().getFullYear()} LMS. Nền tảng học lập trình hàng đầu Việt Nam.
+            © 2024 - {new Date().getFullYear()} LMS. Nền tảng học lập trình hàng ĐỄu Việt Nam.
           </p>
           <div className="flex items-center gap-2">
             <a

@@ -1,7 +1,6 @@
 ﻿import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { teacherService } from '../../services/teacherService'
-import TeacherTabs from '../../components/teacher/TeacherTabs'
 
 const Students = () => {
   const { user } = useAuth()
@@ -61,15 +60,13 @@ const Students = () => {
   }
 
   return (
-    <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8 text-left">
-      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Giảng Viên Dashboard</h1>
-          <p className="text-slate-500">Quản lý khóa học, đơn hàng và cài đặt thanh toán.</p>
-        </div>
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+      <header className="mb-6">
+        <h1 className="text-2xl font-extrabold text-slate-900">Học viên</h1>
+        <p className="mt-1 text-[14px] text-slate-500">
+          Danh sách học viên đã enroll khóa của bạn (sau thanh toán SePay hoặc xếp lớp).
+        </p>
       </header>
-
-      <TeacherTabs />
 
       {/* Control bar */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

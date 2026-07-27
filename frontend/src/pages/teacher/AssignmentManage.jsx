@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { useToast } from '../../context/ToastContext'
 import { useConfirm } from '../../context/ConfirmContext'
 import { assignmentSchema } from '../../schemas'
+import { zodFirstMessage } from '../../utils/zodError'
 
 const AssignmentManage = () => {
   const { id: courseId } = useParams()
@@ -49,7 +50,7 @@ const AssignmentManage = () => {
     })
 
     if (!validationResult.success) {
-      toast.error(validationResult.error.errors[0].message)
+      toast.error(zodFirstMessage(validationResult.error))
       return
     }
 
