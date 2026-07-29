@@ -11,22 +11,26 @@ async function verifyWebhookAuth(req: Request, rawBody: string): Promise<boolean
   const ipnSecret = Deno.env.get('SEPAY_IPN_SECRET') || ''
   const hmacSecret = Deno.env.get('SEPAY_WEBHOOK_HMAC_SECRET') || ''
 
-  // Dev: both blank → allow
+  const xSecret = req.headers.get('X-Secret-Key') || ''
+  const auth = req.headers.get('Authorization') || ''
+  const signature = req.headers.get('X-SePay-Signature') || ''
+
+  // No auth headers sent by SePay → skip verification
+  if (!xSecret && !auth && !signature) return true
+
+  // Both secrets blank → allow
   if (!ipnSecret && !hmacSecret) return true
 
-  const xSecret = req.headers.get('X-Secret-Key') || ''
   if (ipnSecret && xSecret && xSecret === ipnSecret) return true
 
-  const auth = req.headers.get('Authorization') || ''
   if (ipnSecret && auth.toLowerCase().startsWith('apikey ')) {
     if (auth.slice(7).trim() === ipnSecret) return true
   }
 
-  if (hmacSecret) {
-    const signature = req.headers.get('X-SePay-Signature') || ''
+  if (hmacSecret && signature) {
     const timestamp = req.headers.get('X-SePay-Timestamp') || ''
     const tolerance = Number(Deno.env.get('SEPAY_WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS') || '300')
-    if (signature && timestamp) {
+    if (timestamp) {
       const ts = Number(timestamp)
       if (!Number.isNaN(ts)) {
         const now = Math.floor(Date.now() / 1000)
