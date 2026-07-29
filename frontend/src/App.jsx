@@ -28,6 +28,7 @@ const CourseManage = lazy(() => import('./pages/teacher/CourseManage'))
 const CourseForm = lazy(() => import('./pages/teacher/CourseForm'))
 const LessonManage = lazy(() => import('./pages/teacher/LessonManage'))
 const TeacherCourseQA = lazy(() => import('./pages/teacher/TeacherCourseQA'))
+const TeacherQA = lazy(() => import('./pages/teacher/TeacherQA'))
 const CourseLeads = lazy(() => import('./pages/teacher/CourseLeads'))
 const TeacherSettings = lazy(() => import('./pages/teacher/TeacherSettings'))
 const Students = lazy(() => import('./pages/teacher/Students'))
@@ -69,6 +70,7 @@ function App() {
         <Route element={<TeacherLayout />}>
           <Route path="/teacher" element={<TeacherDashboard />} />
           <Route path="/teacher/courses" element={<CourseManage />} />
+          <Route path="/teacher/qa" element={<TeacherQA />} />
           <Route path="/teacher/courses/new" element={<Navigate to="/teacher/courses" replace />} />
           <Route path="/teacher/courses/:id/edit" element={<Navigate to="/teacher/courses" replace />} />
           <Route path="/teacher/courses/:id/lessons" element={<LessonManage />} />

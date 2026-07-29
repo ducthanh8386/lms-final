@@ -66,31 +66,42 @@ const CourseManage = () => {
                   <h3 className="mb-1 text-[16px] font-bold text-slate-900">{course.title}</h3>
                   <p className="mb-4 line-clamp-2 text-[13px] text-slate-500">{course.description}</p>
 
-                  <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4">
-                    <span
-                      className={`text-[14px] font-bold ${mode.isZoom ? 'text-blue-700' : 'text-teal-700'}`}
-                    >
-                      {course.enrollment_mode === 'consultation'
-                        ? 'Liên hệ'
-                        : course.is_free
-                          ? 'Miễn phí'
-                          : `${Number(course.price || 0).toLocaleString('vi-VN')}đ`}
-                    </span>
-                    <div className="flex flex-wrap gap-2 text-[12px] font-semibold">
+                  <div className="mt-auto space-y-3 border-t border-slate-100 pt-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span
+                        className={`text-[14px] font-bold ${mode.isZoom ? 'text-blue-700' : 'text-teal-700'}`}
+                      >
+                        {course.enrollment_mode === 'consultation'
+                          ? 'Liên hệ'
+                          : course.is_free || Number(course.price) === 0
+                            ? 'Miễn phí'
+                            : `${Number(course.price || 0).toLocaleString('vi-VN')}đ`}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        to={`/teacher/courses/${course.id}/lessons`}
+                        className="rounded-full bg-slate-900 px-3 py-1.5 text-[12px] font-bold text-white hover:bg-slate-800"
+                      >
+                        Bài học
+                      </Link>
+                      <Link
+                        to={`/teacher/courses/${course.id}/qa`}
+                        className="rounded-full bg-primary/10 px-3 py-1.5 text-[12px] font-bold text-primary hover:bg-primary/15"
+                      >
+                        Hỏi đáp
+                      </Link>
                       <Link
                         to={`/teacher/courses/${course.id}/quizzes`}
-                        className="text-slate-600 hover:text-primary"
+                        className="rounded-full bg-slate-100 px-3 py-1.5 text-[12px] font-bold text-slate-700 hover:bg-slate-200"
                       >
                         Quiz
                       </Link>
-                      <Link
-                        to={`/teacher/progress`}
-                        className="text-slate-600 hover:text-primary"
-                      >
-                        Tiến độ
-                      </Link>
                       {course.enrollment_mode === 'consultation' && (
-                        <Link to="/teacher/leads" className="text-blue-700 hover:underline">
+                        <Link
+                          to="/teacher/leads"
+                          className="rounded-full bg-blue-50 px-3 py-1.5 text-[12px] font-bold text-blue-700 hover:bg-blue-100"
+                        >
                           Tư vấn
                         </Link>
                       )}

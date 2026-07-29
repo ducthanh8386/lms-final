@@ -15,6 +15,7 @@ const routeLoaders = {
   '/register': () => import('../pages/auth/Register'),
   '/teacher': () => import('../pages/teacher/TeacherDashboard'),
   '/teacher/courses': () => import('../pages/teacher/CourseManage'),
+  '/teacher/qa': () => import('../pages/teacher/TeacherQA'),
   '/teacher/leads': () => import('../pages/teacher/CourseLeads'),
   '/teacher/classes': () => import('../pages/teacher/ClassManage'),
   '/teacher/schedule': () => import('../pages/teacher/ScheduleManage'),

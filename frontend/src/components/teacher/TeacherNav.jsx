@@ -19,10 +19,11 @@ const SECTIONS = [
     title: 'Khóa video',
     titleClass: 'text-teal-300',
     items: [
-      { to: '/teacher/courses', label: 'Khóa học', hint: 'Được Admin phân công' },
+      { to: '/teacher/courses', label: 'Khóa học', hint: 'Video · free · Zoom được giao' },
+      { to: '/teacher/qa', label: 'Hỏi đáp', hint: 'Trả lời học viên trong bài' },
       { to: '/teacher/students', label: 'Học viên', hint: 'Danh sách enroll' },
       { to: '/teacher/progress', label: 'Tiến độ học', hint: 'F8-style' },
-      { to: '/teacher/reviews', label: 'Bình luận', hint: 'Trả lời đánh giá' },
+      { to: '/teacher/reviews', label: 'Đánh giá', hint: 'Review khóa học' },
     ],
   },
   {
