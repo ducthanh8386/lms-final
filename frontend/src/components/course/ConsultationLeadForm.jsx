@@ -57,11 +57,13 @@ const ConsultationLeadForm = ({ courseId, courseTitle, open, onClose }) => {
     setSubmitting(false)
     if (error) {
       const msg = error.message || 'Gửi thông tin thất bại'
-      toast.error(
-        msg.includes('không nhận đăng ký')
-          ? 'Khóa học chưa được duyệt hoặc không phải khóa Zoom tư vấn.'
-          : msg
-      )
+      if (msg.includes('DUPLICATE_LEAD:')) {
+        toast.error(msg.split('DUPLICATE_LEAD:')[1] || 'Bạn đã đăng ký tư vấn rồi.')
+      } else if (msg.includes('không nhận đăng ký')) {
+        toast.error('Khóa học chưa được duyệt hoặc không phải khóa Zoom tư vấn.')
+      } else {
+        toast.error(msg)
+      }
       return
     }
     setSubmitted(true)
