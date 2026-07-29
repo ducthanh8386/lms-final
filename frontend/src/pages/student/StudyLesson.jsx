@@ -9,6 +9,7 @@ import { useToast } from '../../context/ToastContext'
 import DOMPurify from 'dompurify'
 import LessonQAPanel, { LessonQAButton } from '../../components/lesson/LessonQAPanel'
 import { lessonCommentService } from '../../services/lessonCommentService'
+import YoutubeLessonPlayer from '../../components/lesson/YoutubeLessonPlayer'
 
 const HEARTBEAT_MS = 30_000
 
@@ -55,6 +56,7 @@ const StudyLesson = () => {
   const [qaOpen, setQaOpen] = useState(() => Boolean(readQaStorage(courseId)?.open))
   const [qaCount, setQaCount] = useState(0)
   const hasLoadedRef = useRef(false)
+  const completingRef = useRef(false)
 
   const activeKey =
     activeItem.type && activeItem.data?.id
@@ -235,13 +237,25 @@ const StudyLesson = () => {
   const handleCompleteLesson = async () => {
     if (!user || activeItem.type !== 'lesson' || !activeItem.data) return
     if (completedIds.includes(activeItem.data.id)) return
+    if (completingRef.current) return
 
-    const { error } = await studentService.completeLesson(user.id, activeItem.data.id)
+    completingRef.current = true
+    const lessonId = activeItem.data.id
+    const { error } = await studentService.completeLesson(user.id, lessonId)
+    completingRef.current = false
+
     if (!error) {
-      setCompletedIds((prev) => [...prev, activeItem.data.id])
+      setCompletedIds((prev) => (prev.includes(lessonId) ? prev : [...prev, lessonId]))
+      toast.success('Đã hoàn thành bài học')
     } else {
       toast.error(error.message || 'Không thể đánh dấu hoàn thành')
     }
+  }
+
+  const handleVideoEnded = () => {
+    if (activeItem.type !== 'lesson' || !activeItem.data) return
+    if (activeItem.data.content_type !== 'video') return
+    handleCompleteLesson()
   }
 
   const handleDownloadAssignmentFile = async (fileUrl) => {
@@ -485,17 +499,12 @@ const StudyLesson = () => {
             <h1 className="mb-6 text-2xl font-bold text-slate-900">{activeItem.data.title}</h1>
 
             {activeItem.data.content_type === 'video' ? (
-              <div className="mb-8 aspect-video w-full rounded-xl overflow-hidden bg-black shadow-lg">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src={`https://www.youtube.com/embed/${getYoutubeId(activeItem.data.content) || activeItem.data.content}`}
-                  title="YouTube video player"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              </div>
+              <YoutubeLessonPlayer
+                key={activeItem.data.id}
+                videoId={getYoutubeId(activeItem.data.content) || activeItem.data.content}
+                title={activeItem.data.title}
+                onEnded={handleVideoEnded}
+              />
             ) : (
               <div
                 className="mb-8 rounded-xl bg-white p-6 shadow-sm border whitespace-pre-wrap text-slate-700"
@@ -505,16 +514,22 @@ const StudyLesson = () => {
 
             <div className="flex items-center justify-between border-t pt-6">
               <div>
-                {!completedIds.includes(activeItem.data.id) && (
+                {completedIds.includes(activeItem.data.id) ? (
+                  <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-[13px] font-bold text-emerald-700">
+                    ✓ Đã hoàn thành
+                  </span>
+                ) : activeItem.data.content_type === 'video' ? (
+                  <p className="text-[13px] text-slate-500">
+                    Xem hết video để hoàn thành bài học tự động.
+                  </p>
+                ) : (
                   <button
+                    type="button"
                     onClick={handleCompleteLesson}
-                    className="rounded bg-green-500 px-6 py-2 font-bold text-white hover:bg-green-600"
+                    className="rounded-full bg-emerald-500 px-5 py-2.5 text-[13px] font-bold text-white hover:bg-emerald-600"
                   >
                     Hoàn thành bài học
                   </button>
-                )}
-                {completedIds.includes(activeItem.data.id) && (
-                  <span className="font-medium text-green-600">✓ Đã hoàn thành</span>
                 )}
               </div>
             </div>
