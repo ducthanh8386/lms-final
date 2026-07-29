@@ -103,12 +103,25 @@ export default function LessonQAPanel({
 }) {
   const { user, profile } = useAuth()
   const toast = useToast()
+  const draftKey = `lms_qa_draft:${lessonId || 'none'}`
   const [comments, setComments] = useState([])
   const [loading, setLoading] = useState(false)
-  const [body, setBody] = useState('')
+  const [body, setBody] = useState(() => {
+    try {
+      return sessionStorage.getItem(draftKey) || ''
+    } catch {
+      return ''
+    }
+  })
   const [replyTo, setReplyTo] = useState(null)
   const [submitting, setSubmitting] = useState(false)
-  const [composerOpen, setComposerOpen] = useState(false)
+  const [composerOpen, setComposerOpen] = useState(() => {
+    try {
+      return Boolean(sessionStorage.getItem(draftKey))
+    } catch {
+      return false
+    }
+  })
 
   const load = useCallback(async () => {
     if (!lessonId || !open) return
@@ -124,11 +137,18 @@ export default function LessonQAPanel({
   }, [load])
 
   useEffect(() => {
-    if (!open) {
-      setBody('')
-      setReplyTo(null)
-      setComposerOpen(false)
+    try {
+      if (body.trim()) sessionStorage.setItem(draftKey, body)
+      else sessionStorage.removeItem(draftKey)
+    } catch {
+      /* ignore */
     }
+  }, [body, draftKey])
+
+  useEffect(() => {
+    if (!open) return
+    // Keep draft when reopening; only reset reply target
+    setReplyTo(null)
   }, [open, lessonId])
 
   const roots = useMemo(() => {
@@ -168,6 +188,11 @@ export default function LessonQAPanel({
     setBody('')
     setReplyTo(null)
     setComposerOpen(false)
+    try {
+      sessionStorage.removeItem(draftKey)
+    } catch {
+      /* ignore */
+    }
     await load()
   }
 

@@ -12,6 +12,26 @@ import { lessonCommentService } from '../../services/lessonCommentService'
 
 const HEARTBEAT_MS = 30_000
 
+const qaStorageKey = (courseId) => `lms_qa_panel:${courseId}`
+
+function readQaStorage(courseId) {
+  try {
+    const raw = sessionStorage.getItem(qaStorageKey(courseId))
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+function writeQaStorage(courseId, payload) {
+  try {
+    if (!payload) sessionStorage.removeItem(qaStorageKey(courseId))
+    else sessionStorage.setItem(qaStorageKey(courseId), JSON.stringify(payload))
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
 const StudyLesson = () => {
   const { id: courseId } = useParams()
   const { user } = useAuth()
@@ -27,23 +47,50 @@ const StudyLesson = () => {
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const lastHeartbeatRef = useRef(Date.now())
+  const prevActiveKeyRef = useRef('')
 
   const [submission, setSubmission] = useState(null)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef(null)
-  const [qaOpen, setQaOpen] = useState(false)
+  const [qaOpen, setQaOpen] = useState(() => Boolean(readQaStorage(courseId)?.open))
   const [qaCount, setQaCount] = useState(0)
   const hasLoadedRef = useRef(false)
 
   const activeKey =
     activeItem.type && activeItem.data?.id
       ? `${activeItem.type}:${activeItem.data.id}`
-      : activeItem.type || ''
+      : ''
 
+  // Close Q&A only when user switches to a different lesson — not on first load / remount
   useEffect(() => {
+    const prev = prevActiveKeyRef.current
+    prevActiveKeyRef.current = activeKey
     setSidebarOpen(false)
-    setQaOpen(false)
-  }, [activeKey])
+    if (prev && activeKey && prev !== activeKey) {
+      setQaOpen(false)
+      writeQaStorage(courseId, null)
+    }
+  }, [activeKey, courseId])
+
+  // After remount (leave TikTok / switch app), restore panel if saved
+  useEffect(() => {
+    if (activeItem.type !== 'lesson' || !activeItem.data?.id) return
+    const saved = readQaStorage(courseId)
+    if (saved?.open && saved.lessonId === activeItem.data.id) {
+      setQaOpen(true)
+    }
+  }, [activeKey, courseId, activeItem.type, activeItem.data?.id])
+
+  // Persist open state so mobile browser restore can reopen
+  useEffect(() => {
+    if (!courseId) return
+    if (qaOpen && activeItem.type === 'lesson' && activeItem.data?.id) {
+      writeQaStorage(courseId, { open: true, lessonId: activeItem.data.id })
+    } else if (!qaOpen) {
+      const saved = readQaStorage(courseId)
+      if (saved) writeQaStorage(courseId, null)
+    }
+  }, [qaOpen, courseId, activeItem.type, activeItem.data?.id])
 
   useEffect(() => {
     const lessonId = activeItem.type === 'lesson' ? activeItem.data?.id : null
@@ -63,6 +110,7 @@ const StudyLesson = () => {
 
   useEffect(() => {
     hasLoadedRef.current = false
+    prevActiveKeyRef.current = ''
   }, [courseId])
 
   useEffect(() => {
@@ -101,8 +149,12 @@ const StudyLesson = () => {
         setCompletedIds([])
       }
 
-      // Keep current lesson/assignment when refetching (e.g. auth refresh on tab focus)
+      const savedQa = readQaStorage(courseId)
       setActiveItem((prev) => {
+        if (savedQa?.lessonId && lData) {
+          const fromQa = lData.find((l) => l.id === savedQa.lessonId)
+          if (fromQa) return { type: 'lesson', data: fromQa }
+        }
         if (prev?.type === 'lesson' && prev.data?.id && lData) {
           const still = lData.find((l) => l.id === prev.data.id)
           if (still) return { type: 'lesson', data: still }
@@ -253,13 +305,54 @@ const StudyLesson = () => {
     return match && match[2].length === 11 ? match[2] : null
   }
 
-  if (loading) return <div className="p-8">Đang tải nội dung...</div>
+  const savedQa = readQaStorage(courseId)
+  const qaLessonId =
+    activeItem.type === 'lesson' && activeItem.data?.id
+      ? activeItem.data.id
+      : savedQa?.lessonId || null
+  const qaLessonTitle =
+    activeItem.type === 'lesson' && activeItem.data?.title
+      ? activeItem.data.title
+      : 'Hỏi đáp bài học'
+
+  const openQa = () => setQaOpen(true)
+  const closeQa = () => {
+    setQaOpen(false)
+    writeQaStorage(courseId, null)
+    if (qaLessonId) {
+      lessonCommentService.listByLesson(qaLessonId).then(({ data }) => {
+        setQaCount((data || []).length)
+      })
+    }
+  }
+
+  const qaOverlay =
+    qaOpen && qaLessonId ? (
+      <LessonQAPanel
+        open={qaOpen}
+        onClose={closeQa}
+        lessonId={qaLessonId}
+        courseId={courseId}
+        lessonTitle={qaLessonTitle}
+        teacherId={course?.teacher_id || null}
+      />
+    ) : null
+
+  if (loading) {
+    return (
+      <>
+        <div className="p-8">Đang tải nội dung...</div>
+        {qaOverlay}
+      </>
+    )
+  }
   if (!course) return <div className="p-8">Không tìm thấy khóa học!</div>
 
   const progressPercent =
     lessons.length > 0 ? Math.round((completedIds.length / lessons.length) * 100) : 0
 
   return (
+    <>
     <div className="flex h-[calc(100vh-64px)] w-full flex-col md:flex-row text-left bg-slate-50">
       <div
         className={`${sidebarOpen ? 'flex' : 'hidden'} md:flex w-full border-r bg-white md:w-80 overflow-y-auto shrink-0 flex-col h-72 md:h-full border-b md:border-b-0`}
@@ -426,21 +519,7 @@ const StudyLesson = () => {
               </div>
             </div>
 
-            <LessonQAButton count={qaCount} onClick={() => setQaOpen(true)} />
-            <LessonQAPanel
-              open={qaOpen}
-              onClose={() => {
-                setQaOpen(false)
-                // refresh count after closing
-                lessonCommentService.listByLesson(activeItem.data.id).then(({ data }) => {
-                  setQaCount((data || []).length)
-                })
-              }}
-              lessonId={activeItem.data.id}
-              courseId={courseId}
-              lessonTitle={activeItem.data.title}
-              teacherId={course?.teacher_id || null}
-            />
+            <LessonQAButton count={qaCount} onClick={openQa} />
           </div>
         ) : activeItem.type === 'assignment' && activeItem.data ? (
           <div className="mx-auto max-w-3xl">
@@ -576,6 +655,8 @@ const StudyLesson = () => {
         )}
       </div>
     </div>
+    {qaOverlay}
+    </>
   )
 }
 
