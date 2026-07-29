@@ -31,7 +31,7 @@ const SECTIONS = [
     titleClass: 'text-blue-300',
     items: [
       { to: '/teacher/leads', label: 'Đăng ký tư vấn', hint: 'CRM · xếp lớp' },
-      { to: '/teacher/classes', label: 'Lớp học', hint: 'Tuyển sinh · sĩ số' },
+      { to: '/teacher/classes', label: 'Lớp Zoom', hint: 'Tạo lớp · mã lớp · sĩ số' },
       { to: '/teacher/schedule', label: 'Lịch dạy', hint: 'Zoom · điểm danh' },
     ],
   },
@@ -169,7 +169,7 @@ export const TeacherMobileNav = () => {
     { to: '/teacher', end: true, label: 'Home' },
     { to: '/teacher/progress', label: 'Tiến độ' },
     { to: '/teacher/leads', label: 'Tư vấn' },
-    { to: '/teacher/classes', label: 'Lớp' },
+    { to: '/teacher/classes', label: 'Lớp Zoom' },
     { to: '/teacher/schedule', label: 'Lịch' },
   ]
   return (

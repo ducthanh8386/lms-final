@@ -28,15 +28,19 @@ const AdminClasses = () => {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-extrabold text-slate-900">Lớp Zoom</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Tổng quan lớp theo khóa Zoom. Tạo khóa tại{' '}
-          <Link to="/admin/zoom-courses" className="font-semibold text-blue-700 hover:underline">
-            Khóa Zoom
-          </Link>
-          ; tạo/sửa lớp chi tiết tại khu vực giảng viên.
-        </p>
+      <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold text-slate-900">Lớp Zoom</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Tổng quan toàn hệ thống. Tạo lớp mới ở khu vực giảng viên (Admin cũng vào được).
+          </p>
+        </div>
+        <Link
+          to="/teacher/classes"
+          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700"
+        >
+          + Tạo lớp Zoom
+        </Link>
       </header>
 
       {loading ? (
