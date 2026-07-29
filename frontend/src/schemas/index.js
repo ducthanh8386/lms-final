@@ -92,18 +92,21 @@ export const classSchema = z.object({
   name: z.string().min(2, 'Tên lớp phải có ít nhất 2 ký tự'),
   description: z.string().optional(),
   max_students: z.number().int().min(1, 'Sĩ số tối thiểu là 1').max(200, 'Sĩ số tối đa là 200').default(50),
-  course_id: z.string().uuid().optional().nullable(),
+  course_id: z.string().uuid({ message: 'Phải chọn khóa Zoom' }),
   schedule_label: z.string().optional().nullable(),
   status: z.enum(['recruiting', 'upcoming', 'ongoing', 'finished']).default('recruiting'),
 })
 
 export const scheduleSchema = z.object({
   title: z.string().min(2, 'Tiêu đề phải có ít nhất 2 ký tự'),
-  class_id: z.string().uuid().optional().nullable(),
+  class_id: z.string().uuid({ message: 'Phải chọn lớp Zoom' }),
   start_time: z.string().min(1, 'Chọn giờ bắt đầu'),
   end_time: z.string().min(1, 'Chọn giờ kết thúc'),
   location: z.string().optional(),
-  meeting_url: z.string().url('URL họp không hợp lệ').optional().or(z.literal('')),
+  meeting_url: z
+    .string()
+    .min(1, 'Bắt buộc nhập link Zoom / Meet')
+    .url('URL họp không hợp lệ'),
   recurrence_type: z.enum(['none', 'weekly']).default('none'),
   recurrence_days: z.array(z.number().int().min(0).max(6)).optional(),
   recurrence_end_date: z.string().optional(),

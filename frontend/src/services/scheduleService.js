@@ -143,31 +143,33 @@ export const scheduleService = {
 
   // === CHO HỌC VIÊN ===
 
-  // Lấy lịch học của học viên (lọc theo khoảng thời gian)
+  // Lấy lịch học của học viên theo lớp Zoom đã tham gia (không phụ thuộc sync participants)
   async getStudentSchedules(startDate, endDate) {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: { message: "Chưa đăng nhập" } }
+    if (!user) return { error: { message: 'Chưa đăng nhập' } }
+
+    const { data: memberships, error: memErr } = await supabase
+      .from('class_members')
+      .select('class_id')
+      .eq('student_id', user.id)
+      .eq('status', 'active')
+
+    if (memErr) return { error: memErr }
+
+    const classIds = [...new Set((memberships || []).map((m) => m.class_id).filter(Boolean))]
+    if (classIds.length === 0) return { data: [], error: null }
 
     const { data, error } = await supabase
-      .from('schedule_participants')
-      .select('schedule_id, status, schedules(*, classes(name), profiles:teacher_id(name))')
-      .eq('student_id', user.id)
-      .gte('schedules.start_time', startDate)
-      .lte('schedules.start_time', endDate)
+      .from('schedules')
+      .select('*, classes(name), profiles:teacher_id(name)')
+      .in('class_id', classIds)
+      .eq('approval_status', 'approved')
+      .gte('start_time', startDate)
+      .lte('start_time', endDate)
+      .order('start_time', { ascending: true })
 
     if (error) return { error }
-
-    // Format lại dữ liệu trả về cho đồng bộ cấu trúc lịch
-    const formattedSchedules = data
-      .filter(p => p.schedules !== null && p.schedules.approval_status === 'approved')
-      .map(p => ({
-        ...p.schedules,
-        participation_status: p.status
-      }))
-      // Sắp xếp tăng dần theo thời gian
-      .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
-
-    return { data: formattedSchedules, error: null }
+    return { data: data || [], error: null }
   },
 
   // === CHO ADMIN ===

@@ -45,7 +45,8 @@ const ClassManage = () => {
   const fetchCourses = async () => {
     if (!user) return
     const { data } = await courseService.getTeacherCourses(user.id)
-    if (data) setCourses(data)
+    // Chỉ khóa Zoom — lớp không gắn khóa Video
+    if (data) setCourses(data.filter((c) => c.enrollment_mode === 'consultation'))
   }
 
   useEffect(() => {
@@ -84,7 +85,7 @@ const ClassManage = () => {
       name: formData.name,
       description: formData.description || undefined,
       max_students: Number(formData.max_students),
-      course_id: formData.course_id || null,
+      course_id: formData.course_id || undefined,
       schedule_label: formData.schedule_label || null,
       status: formData.status || 'recruiting',
     }
@@ -92,6 +93,12 @@ const ClassManage = () => {
     const result = classSchema.safeParse(payload)
     if (!result.success) {
       setValidationError(zodFirstMessage(result.error))
+      setSaving(false)
+      return
+    }
+
+    if (!formData.course_id) {
+      setValidationError('Phải chọn khóa Zoom để tạo lớp')
       setSaving(false)
       return
     }
@@ -119,9 +126,9 @@ const ClassManage = () => {
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900">Lớp học</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900">Lớp học Zoom</h1>
           <p className="mt-1 text-[14px] text-slate-500">
-            Xếp lớp cho khóa Zoom / Fullstack — tạo lớp, mã mời, quản lý sĩ số.
+            Quản lý lớp Zoom riêng (không dùng chung khóa Video): mã lớp, sĩ số, lịch học.
           </p>
         </div>
         <button
@@ -257,17 +264,28 @@ const ClassManage = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="class-course" className="block text-sm font-medium text-slate-700 mb-1">Liên kết Khóa học</label>
-                  <select 
+                  <label htmlFor="class-course" className="block text-sm font-medium text-slate-700 mb-1">
+                    Khóa Zoom *
+                  </label>
+                  <select
                     id="class-course"
+                    required
                     value={formData.course_id}
-                    onChange={e => setFormData({...formData, course_id: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, course_id: e.target.value })}
                     className="w-full rounded-md border p-2.5 bg-white focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent text-sm"
                   >
-                    <option value="">-- Không bắt buộc --</option>
-                    {courses.map(course => (
-                      <option key={course.id} value={course.id}>{course.title}</option>
-                    ))}
+                    <option value="">-- Chọn khóa Zoom --</option>
+                    {courses.length === 0 ? (
+                      <option value="" disabled>
+                        Chưa có khóa Zoom — tạo khóa consultation trước
+                      </option>
+                    ) : (
+                      courses.map((course) => (
+                        <option key={course.id} value={course.id}>
+                          {course.title}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
               </div>

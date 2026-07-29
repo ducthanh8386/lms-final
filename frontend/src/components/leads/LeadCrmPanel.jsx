@@ -223,6 +223,11 @@ const LeadCrmPanel = ({ mode, teacherId }) => {
                 )
               })}
             </select>
+            {classes.length === 0 && (
+              <p className="mt-2 text-xs text-amber-700">
+                Chưa có lớp Zoom cho khóa này. Tạo lớp tại mục Lớp học (gắn khóa Zoom) rồi quay lại xếp.
+              </p>
+            )}
             <div className="mt-4 flex justify-end gap-2">
               <button
                 type="button"

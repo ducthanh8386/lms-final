@@ -59,7 +59,7 @@ const MySchedule = () => {
           Lịch học của tôi
         </h1>
         <p className="mt-1 text-[14px] text-[#666]">
-          Theo dõi thời khóa biểu và tham gia buổi học trực tuyến.
+          Thời khóa biểu lớp Zoom đã tham gia. Nhấn buổi học để mở link Zoom khi đến giờ.
         </p>
       </header>
 

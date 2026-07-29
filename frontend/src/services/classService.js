@@ -111,87 +111,35 @@ export const classService = {
 
   // === CHO HỌC VIÊN ===
 
-  // Tham gia lớp bằng mã mời
+  // Tham gia lớp bằng mã mời (RPC — bypass RLS + sync lịch Zoom)
   async joinClassByCode(inviteCode) {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: { message: "Chưa đăng nhập" } }
+    if (!user) return { error: { message: 'Chưa đăng nhập' } }
 
     const formattedCode = inviteCode.trim().toUpperCase()
+    const { data: classId, error } = await supabase.rpc('join_class_by_code', {
+      p_code: formattedCode,
+    })
 
-    // 1. Tìm lớp bằng mã mời (phải là lớp active)
-    const { data: classObj, error: classErr } = await supabase
-      .from('classes')
-      .select('*')
-      .eq('invite_code', formattedCode)
-      .eq('is_active', true)
-      .single()
-
-    if (classErr || !classObj) {
-      return { error: { message: "Mã lớp học không hợp lệ hoặc lớp học đã bị đóng." } }
-    }
-
-    // 2. Kiểm tra xem sĩ số lớp đã đầy chưa
-    const { count, error: countErr } = await supabase
-      .from('class_members')
-      .select('*', { count: 'exact', head: true })
-      .eq('class_id', classObj.id)
-      .eq('status', 'active')
-
-    if (countErr) return { error: countErr }
-
-    if (count >= (classObj.max_students || 50)) {
-      return { error: { message: "Lớp học đã đạt số lượng học viên tối đa." } }
-    }
-
-    // 3. Kiểm tra xem học viên đã từng có bản ghi thành viên hay chưa
-    const { data: existing, error: existErr } = await supabase
-      .from('class_members')
-      .select('*')
-      .eq('class_id', classObj.id)
-      .eq('student_id', user.id)
-      .maybeSingle()
-
-    if (existing) {
-      if (existing.status === 'active') {
-        return { error: { message: "Bạn đã tham gia lớp này rồi!" } }
-      } else {
-        // Kích hoạt lại
-        const { data, error } = await supabase
-          .from('class_members')
-          .update({ status: 'active', joined_at: new Date().toISOString() })
-          .eq('id', existing.id)
-          .select()
-        return { data, error }
-      }
-    }
-
-    // 4. Nếu chưa có, tiến hành chèn bản ghi mới
-    const { data, error } = await supabase
-      .from('class_members')
-      .insert([{
-        class_id: classObj.id,
-        student_id: user.id,
-        status: 'active'
-      }])
-      .select()
-      .single()
-
-    return { data, error }
+    if (error) return { data: null, error }
+    return { data: { class_id: classId }, error: null }
   },
 
-  // Lấy các lớp học học viên đang tham gia
+  // Lấy các lớp học học viên đang tham gia (kèm tên khóa Zoom)
   async getStudentClasses() {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: { message: "Chưa đăng nhập" } }
+    if (!user) return { error: { message: 'Chưa đăng nhập' } }
 
     const { data, error } = await supabase
       .from('class_members')
-      .select('joined_at, classes(*, profiles:teacher_id(name, email))')
+      .select(
+        'joined_at, classes(*, profiles:teacher_id(name, email), courses:course_id(id, title, enrollment_mode))'
+      )
       .eq('student_id', user.id)
       .eq('status', 'active')
       .order('joined_at', { ascending: false })
 
     if (error) return { error }
-    return { data: data?.map(m => m.classes).filter(Boolean) || [], error: null }
+    return { data: data?.map((m) => m.classes).filter(Boolean) || [], error: null }
   }
 }

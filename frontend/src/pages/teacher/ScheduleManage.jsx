@@ -128,11 +128,11 @@ const ScheduleManage = () => {
     // Validate Zod
     const payload = {
       title: formData.title,
-      class_id: formData.class_id || null,
+      class_id: formData.class_id || undefined,
       start_time: formData.start_time,
       end_time: formData.end_time,
       location: formData.location || undefined,
-      meeting_url: formData.meeting_url || undefined,
+      meeting_url: formData.meeting_url?.trim() || '',
       recurrence_type: formData.recurrence_type,
       recurrence_days: formData.recurrence_type === 'weekly' ? formData.recurrence_days : undefined,
       recurrence_end_date: formData.recurrence_type === 'weekly' ? formData.recurrence_end_date : undefined,
@@ -220,8 +220,11 @@ const ScheduleManage = () => {
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900">Lịch dạy Zoom</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Tạo buổi học gắn lớp Zoom + link Zoom. Học viên thấy lịch sau khi Admin duyệt.
+          </p>
           <p className="mt-1 text-[14px] text-slate-500">
-            Tạo buổi học → chờ Admin duyệt → học viên mới thấy lịch và nhận thông báo.
+            Buổi học gắn lớp Zoom + link Zoom → Admin duyệt → học viên vào học qua link.
           </p>
         </div>
         <button
@@ -327,16 +330,21 @@ const ScheduleManage = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="schedule-class" className="block text-sm font-medium text-slate-700 mb-1">Gán vào Lớp học</label>
-                  <select 
+                  <label htmlFor="schedule-class" className="block text-sm font-medium text-slate-700 mb-1">
+                    Lớp Zoom *
+                  </label>
+                  <select
                     id="schedule-class"
+                    required
                     value={formData.class_id}
-                    onChange={e => setFormData({...formData, class_id: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, class_id: e.target.value })}
                     className="w-full rounded-md border p-2 bg-white focus:border-accent focus:outline-none text-sm text-slate-700"
                   >
-                    <option value="">-- Chọn lớp học (tùy chọn) --</option>
-                    {classes.map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                    <option value="">-- Chọn lớp Zoom --</option>
+                    {classes.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -383,12 +391,15 @@ const ScheduleManage = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="schedule-meeting" className="block text-sm font-medium text-slate-700 mb-1">Zoom / Google Meet URL</label>
-                  <input 
+                  <label htmlFor="schedule-meeting" className="block text-sm font-medium text-slate-700 mb-1">
+                    Link Zoom / Meet *
+                  </label>
+                  <input
                     id="schedule-meeting"
-                    type="url" 
+                    type="url"
+                    required
                     value={formData.meeting_url}
-                    onChange={e => setFormData({...formData, meeting_url: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, meeting_url: e.target.value })}
                     className="w-full rounded-md border p-2 focus:border-accent focus:outline-none text-sm"
                     placeholder="https://zoom.us/j/..."
                   />
@@ -401,7 +412,7 @@ const ScheduleManage = () => {
                     value={formData.location}
                     onChange={e => setFormData({...formData, location: e.target.value})}
                     className="w-full rounded-md border p-2 focus:border-accent focus:outline-none text-sm"
-                    placeholder="VD: Phòng A3 hoặc Online"
+                    placeholder="VD: Online Zoom"
                   />
                 </div>
               </div>
