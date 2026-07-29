@@ -33,11 +33,17 @@ const StudyLesson = () => {
   const fileInputRef = useRef(null)
   const [qaOpen, setQaOpen] = useState(false)
   const [qaCount, setQaCount] = useState(0)
+  const hasLoadedRef = useRef(false)
+
+  const activeKey =
+    activeItem.type && activeItem.data?.id
+      ? `${activeItem.type}:${activeItem.data.id}`
+      : activeItem.type || ''
 
   useEffect(() => {
     setSidebarOpen(false)
     setQaOpen(false)
-  }, [activeItem])
+  }, [activeKey])
 
   useEffect(() => {
     const lessonId = activeItem.type === 'lesson' ? activeItem.data?.id : null
@@ -53,11 +59,15 @@ const StudyLesson = () => {
     return () => {
       cancelled = true
     }
-  }, [activeItem])
+  }, [activeKey])
+
+  useEffect(() => {
+    hasLoadedRef.current = false
+  }, [courseId])
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true)
+      if (!hasLoadedRef.current) setLoading(true)
       const { data: cData } = await courseService.getCourseDetail(courseId)
       if (cData) setCourse(cData)
 
@@ -91,19 +101,31 @@ const StudyLesson = () => {
         setCompletedIds([])
       }
 
-      if (lData && lData.length > 0) {
-        const resumeLesson = lastLessonId ? lData.find((l) => l.id === lastLessonId) : null
-        setActiveItem({ type: 'lesson', data: resumeLesson || lData[0] })
-      } else if (aData && aData.length > 0) {
-        setActiveItem({ type: 'assignment', data: aData[0] })
-      } else {
-        setActiveItem({ type: 'lesson', data: null })
-      }
+      // Keep current lesson/assignment when refetching (e.g. auth refresh on tab focus)
+      setActiveItem((prev) => {
+        if (prev?.type === 'lesson' && prev.data?.id && lData) {
+          const still = lData.find((l) => l.id === prev.data.id)
+          if (still) return { type: 'lesson', data: still }
+        }
+        if (prev?.type === 'assignment' && prev.data?.id && aData) {
+          const still = aData.find((a) => a.id === prev.data.id)
+          if (still) return { type: 'assignment', data: still }
+        }
+        if (lData && lData.length > 0) {
+          const resumeLesson = lastLessonId ? lData.find((l) => l.id === lastLessonId) : null
+          return { type: 'lesson', data: resumeLesson || lData[0] }
+        }
+        if (aData && aData.length > 0) {
+          return { type: 'assignment', data: aData[0] }
+        }
+        return { type: 'lesson', data: null }
+      })
 
+      hasLoadedRef.current = true
       setLoading(false)
     }
     fetchData()
-  }, [courseId, user])
+  }, [courseId, user?.id])
 
   useEffect(() => {
     if (activeItem.type === 'assignment' && activeItem.data && user) {
