@@ -5,10 +5,15 @@ import { lessonCommentService } from '../../services/lessonCommentService'
 
 function Avatar({ name, avatar, size = 'md' }) {
   const letter = (name || '?').charAt(0).toUpperCase()
-  const box = size === 'sm' ? 'h-8 w-8 text-[11px]' : 'h-10 w-10 text-sm'
+  const box =
+    size === 'xs'
+      ? 'h-7 w-7 text-[10px]'
+      : size === 'sm'
+        ? 'h-8 w-8 text-[11px]'
+        : 'h-9 w-9 text-[12px]'
   return (
     <span
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary font-bold text-white ${box}`}
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary to-[#e03e12] font-bold text-white ring-2 ring-white ${box}`}
     >
       {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" /> : letter}
     </span>
@@ -27,48 +32,53 @@ function CommentItem({
 }) {
   const isTeacher = teacherId && comment.user_id === teacherId
   return (
-    <div className={depth > 0 ? 'ml-10 mt-3' : 'mt-4'}>
-      <div className="flex gap-3">
-        <Avatar name={comment.author_name} avatar={comment.author_avatar} size="sm" />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-2">
-            <span className="text-[14px] font-semibold text-[#1473e6]">
+    <div className={depth > 0 ? 'ml-9 mt-3 border-l-2 border-[#f0f0f0] pl-3' : ''}>
+      <div className="flex gap-2.5">
+        <Avatar name={comment.author_name} avatar={comment.author_avatar} size={depth > 0 ? 'xs' : 'sm'} />
+        <div className="min-w-0 flex-1 pt-0.5">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            <span className="text-[13px] font-bold text-[#242424]">
               {comment.author_name || 'Người dùng'}
             </span>
             {isTeacher && (
-              <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
-                Giảng viên
+              <span className="rounded-md bg-primary/10 px-1.5 py-px text-[10px] font-bold text-primary">
+                GV
               </span>
             )}
-            <span className="text-[12px] text-[#999]">
+            <span className="text-[11px] text-[#a3a3a3]">
               {lessonCommentService.relativeTime(comment.created_at)}
             </span>
           </div>
-          <p className="mt-1 whitespace-pre-wrap text-[14px] leading-relaxed text-[#292929]">
+          <p className="mt-1 whitespace-pre-wrap text-[13px] leading-[1.55] text-[#444]">
             {comment.body}
           </p>
-          <div className="mt-1.5 flex items-center gap-3 text-[12px] font-semibold">
+          <div className="mt-1.5 flex items-center gap-1">
             <button
               type="button"
               onClick={() => onToggleLike(comment)}
-              className={`hover:underline ${comment.liked_by_me ? 'text-primary' : 'text-[#1473e6]'}`}
+              className={`inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[12px] font-semibold transition hover:bg-[#f5f5f5] ${
+                comment.liked_by_me ? 'text-primary' : 'text-[#757575]'
+              }`}
             >
-              Thích{comment.like_count > 0 ? ` (${comment.like_count})` : ''}
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill={comment.liked_by_me ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+              </svg>
+              {comment.like_count > 0 ? comment.like_count : 'Thích'}
             </button>
             {depth === 0 && (
               <button
                 type="button"
                 onClick={() => onReply(comment)}
-                className="text-[#1473e6] hover:underline"
+                className="rounded-md px-1.5 py-1 text-[12px] font-semibold text-[#757575] transition hover:bg-[#f5f5f5] hover:text-[#242424]"
               >
                 Phản hồi
               </button>
             )}
-            {(comment.user_id === currentUserId) && (
+            {comment.user_id === currentUserId && (
               <button
                 type="button"
                 onClick={() => onDelete(comment)}
-                className="text-[#999] hover:text-red-500 hover:underline"
+                className="rounded-md px-1.5 py-1 text-[12px] font-semibold text-[#bdbdbd] transition hover:bg-red-50 hover:text-red-500"
               >
                 Xóa
               </button>
@@ -76,19 +86,23 @@ function CommentItem({
           </div>
         </div>
       </div>
-      {replies?.map((r) => (
-        <CommentItem
-          key={r.id}
-          comment={r}
-          replies={[]}
-          currentUserId={currentUserId}
-          teacherId={teacherId}
-          onReply={onReply}
-          onToggleLike={onToggleLike}
-          onDelete={onDelete}
-          depth={1}
-        />
-      ))}
+      {replies?.length > 0 && (
+        <div className="mt-1 space-y-0">
+          {replies.map((r) => (
+            <CommentItem
+              key={r.id}
+              comment={r}
+              replies={[]}
+              currentUserId={currentUserId}
+              teacherId={teacherId}
+              onReply={onReply}
+              onToggleLike={onToggleLike}
+              onDelete={onDelete}
+              depth={1}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -147,7 +161,6 @@ export default function LessonQAPanel({
 
   useEffect(() => {
     if (!open) return
-    // Keep draft when reopening; only reset reply target
     setReplyTo(null)
   }, [open, lessonId])
 
@@ -232,122 +245,157 @@ export default function LessonQAPanel({
       <button
         type="button"
         aria-label="Đóng hỏi đáp"
-        className="fixed inset-0 z-[60] bg-black/40"
+        className="fixed inset-0 z-[60] bg-black/35 backdrop-blur-[1px] transition-opacity"
         onClick={onClose}
       />
-      <aside className="fixed inset-y-0 right-0 z-[70] flex w-full max-w-[420px] flex-col bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-[#eee] px-4 py-3">
-          <div className="min-w-0">
-            <h2 className="text-[16px] font-extrabold text-[#242424]">Hỏi đáp</h2>
-            {lessonTitle && (
-              <p className="truncate text-[12px] text-[#888]">{lessonTitle}</p>
-            )}
+      <aside
+        className="fixed inset-y-0 right-0 z-[70] flex w-full max-w-[380px] flex-col bg-white shadow-[-8px_0_32px_rgba(0,0,0,0.12)] sm:max-w-[400px]"
+        style={{
+          fontFamily: '"Be Vietnam Pro", system-ui, sans-serif',
+          animation: 'slideInRight 0.22s ease-out',
+        }}
+      >
+        {/* Header */}
+        <div className="flex items-start gap-3 border-b border-[#f0f0f0] px-4 pb-3 pt-4">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-[15px] font-extrabold leading-tight text-[#242424]">Hỏi đáp</h2>
+                {lessonTitle && (
+                  <p className="mt-0.5 truncate text-[12px] text-[#888]">{lessonTitle}</p>
+                )}
+              </div>
+            </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[#666] hover:bg-[#f5f5f5]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#888] transition hover:bg-[#f5f5f5] hover:text-[#242424]"
             aria-label="Đóng"
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path d="M6 6l12 12M18 6 6 18" />
             </svg>
           </button>
         </div>
 
-        <div className="border-b border-[#f0f0f0] px-4 py-4">
+        {/* Composer */}
+        <div className="border-b border-[#f0f0f0] px-4 py-3">
           {!composerOpen ? (
             <button
               type="button"
               onClick={() => setComposerOpen(true)}
-              className="flex w-full items-center gap-3 rounded-xl border border-[#e8e8e8] bg-[#fafafa] px-3 py-3 text-left hover:bg-[#f5f5f5]"
+              className="flex w-full items-center gap-2.5 rounded-2xl border border-[#ebebeb] bg-[#fafafa] px-3 py-2.5 text-left transition hover:border-[#e0e0e0] hover:bg-[#f5f5f5]"
             >
-              <Avatar name={displayName} avatar={profile?.avatar} size="sm" />
-              <span className="text-[14px] text-[#999]">Viết bình luận của bạn...</span>
+              <Avatar name={displayName} avatar={profile?.avatar} size="xs" />
+              <span className="text-[13px] text-[#a3a3a3]">Viết câu hỏi hoặc bình luận...</span>
             </button>
           ) : (
-            <div>
+            <div className="rounded-2xl border border-[#ebebeb] bg-[#fafafa] p-3">
               {replyTo && (
-                <p className="mb-2 text-[12px] text-[#666]">
-                  Đang phản hồi{' '}
-                  <span className="font-semibold text-[#1473e6]">
-                    {replyTo.author_name || 'người dùng'}
+                <div className="mb-2 flex items-center justify-between rounded-lg bg-white px-2.5 py-1.5 text-[12px] text-[#666]">
+                  <span>
+                    Đang trả lời{' '}
+                    <b className="text-primary">{replyTo.author_name || 'người dùng'}</b>
                   </span>
-                  .{' '}
                   <button
                     type="button"
-                    className="text-primary hover:underline"
+                    className="font-semibold text-[#999] hover:text-[#242424]"
                     onClick={() => setReplyTo(null)}
                   >
-                    Hủy trả lời
+                    Hủy
                   </button>
-                </p>
+                </div>
               )}
-              <div className="flex gap-3">
-                <Avatar name={displayName} avatar={profile?.avatar} size="sm" />
+              <div className="flex gap-2.5">
+                <Avatar name={displayName} avatar={profile?.avatar} size="xs" />
                 <textarea
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
-                  rows={4}
+                  rows={3}
                   autoFocus
-                  placeholder="Bạn đang nghĩ gì?"
-                  className="min-h-[96px] w-full resize-none rounded-xl border border-[#dbdbdb] px-3 py-2.5 text-[14px] outline-none focus:border-primary"
+                  placeholder="Bạn muốn hỏi gì?"
+                  className="min-h-[72px] w-full resize-none rounded-xl border-0 bg-white px-3 py-2 text-[13px] leading-relaxed text-[#242424] outline-none ring-1 ring-[#e8e8e8] placeholder:text-[#bdbdbd] focus:ring-primary/40"
                 />
               </div>
-              <div className="mt-3 flex justify-end gap-2">
+              <div className="mt-2.5 flex items-center justify-end gap-1.5">
                 <button
                   type="button"
                   onClick={() => {
                     setComposerOpen(false)
                     setBody('')
                     setReplyTo(null)
+                    try {
+                      sessionStorage.removeItem(draftKey)
+                    } catch {
+                      /* ignore */
+                    }
                   }}
-                  className="rounded-full px-4 py-2 text-[13px] font-bold text-[#1473e6] hover:bg-[#f0f7ff]"
+                  className="rounded-full px-3.5 py-1.5 text-[12px] font-bold text-[#757575] transition hover:bg-[#f0f0f0]"
                 >
-                  HỦY
+                  Hủy
                 </button>
                 <button
                   type="button"
                   disabled={submitting || !body.trim()}
                   onClick={submit}
-                  className="rounded-full bg-[#1473e6] px-4 py-2 text-[13px] font-bold text-white hover:bg-[#0f5bbd] disabled:opacity-50"
+                  className="rounded-full bg-primary px-4 py-1.5 text-[12px] font-bold text-white shadow-sm transition hover:bg-brand-orangeHover disabled:opacity-45"
                 >
-                  {submitting ? 'Đang gửi...' : 'BÌNH LUẬN'}
+                  {submitting ? 'Đang gửi...' : 'Gửi'}
                 </button>
               </div>
             </div>
           )}
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8">
-          <p className="sticky top-0 bg-white py-3 text-[15px] font-bold text-[#242424]">
-            {comments.length} bình luận
-          </p>
+        {/* List */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6">
+          <div className="sticky top-0 z-[1] -mx-4 border-b border-[#f5f5f5] bg-white/95 px-4 py-2.5 backdrop-blur-sm">
+            <p className="text-[13px] font-bold text-[#242424]">
+              {comments.length}{' '}
+              <span className="font-semibold text-[#888]">bình luận</span>
+            </p>
+          </div>
 
           {loading ? (
-            <div className="flex justify-center py-10">
-              <div className="h-7 w-7 animate-spin rounded-full border-[3px] border-primary border-t-transparent" />
+            <div className="flex justify-center py-12">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
           ) : roots.length === 0 ? (
-            <p className="py-10 text-center text-[14px] text-[#888]">
-              Chưa có bình luận. Hãy là người đầu tiên hỏi đáp!
-            </p>
+            <div className="flex flex-col items-center px-6 py-14 text-center">
+              <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f5f5f5] text-[#bbb]">
+                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+                </svg>
+              </span>
+              <p className="text-[13px] font-semibold text-[#666]">Chưa có thảo luận</p>
+              <p className="mt-1 text-[12px] leading-relaxed text-[#a3a3a3]">
+                Hãy là người đầu tiên đặt câu hỏi về bài học này.
+              </p>
+            </div>
           ) : (
-            roots.map((c) => (
-              <CommentItem
-                key={c.id}
-                comment={c}
-                replies={c.replies}
-                currentUserId={user?.id}
-                teacherId={teacherId}
-                onReply={(item) => {
-                  setReplyTo(item)
-                  setComposerOpen(true)
-                }}
-                onToggleLike={onToggleLike}
-                onDelete={onDelete}
-              />
-            ))
+            <div className="space-y-4 pt-3">
+              {roots.map((c) => (
+                <CommentItem
+                  key={c.id}
+                  comment={c}
+                  replies={c.replies}
+                  currentUserId={user?.id}
+                  teacherId={teacherId}
+                  onReply={(item) => {
+                    setReplyTo(item)
+                    setComposerOpen(true)
+                  }}
+                  onToggleLike={onToggleLike}
+                  onDelete={onDelete}
+                />
+              ))}
+            </div>
           )}
         </div>
       </aside>
@@ -355,18 +403,26 @@ export default function LessonQAPanel({
   )
 }
 
-/** Floating pill button — F8 style */
+/** Compact floating pill — sits above mobile bottom nav */
 export function LessonQAButton({ count = 0, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 rounded-full border border-[#e8e8e8] bg-white px-4 py-2.5 text-[14px] font-bold text-primary shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(0,0,0,0.16)] md:bottom-8 md:right-8"
+      className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px))] right-4 z-40 inline-flex h-11 items-center gap-2 rounded-full border border-[#eee] bg-white pl-3.5 pr-4 text-[13px] font-bold text-primary shadow-[0_6px_20px_rgba(0,0,0,0.12)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(240,81,35,0.18)] active:scale-[0.98] md:bottom-7 md:right-7"
+      style={{ fontFamily: '"Be Vietnam Pro", system-ui, sans-serif' }}
     >
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
-        <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
-      </svg>
-      Hỏi đáp{count > 0 ? ` (${count})` : ''}
+      <span className="relative flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
+        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
+          <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+        </svg>
+        {count > 0 && (
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-extrabold leading-none text-white">
+            {count > 99 ? '99+' : count}
+          </span>
+        )}
+      </span>
+      Hỏi đáp
     </button>
   )
 }
