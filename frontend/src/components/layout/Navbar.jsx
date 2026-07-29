@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext'
 import { useAuthModal } from '../../context/AuthModalContext'
 import NotificationBell from '../ui/NotificationBell'
 import UserMenu from './UserMenu'
-import MyCoursesMenu from './MyCoursesMenu'
 import { preloadRoute } from '../../utils/routePreload'
 
 const Navbar = () => {
@@ -87,7 +86,6 @@ const Navbar = () => {
                   Admin
                 </Link>
               )}
-              <MyCoursesMenu />
               <div className="hidden sm:block">
                 <NotificationBell />
               </div>

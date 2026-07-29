@@ -105,12 +105,12 @@ const UserMenu = () => {
               </Link>
             )}
             <Link
-              to="/learning"
-              onMouseEnter={() => preloadRoute('/learning')}
+              to="/profile"
+              onMouseEnter={() => preloadRoute('/profile')}
               onClick={() => setOpen(false)}
               className="block w-full py-[10px] hover:opacity-80"
             >
-              <span style={itemStyle}>Khóa học của tôi</span>
+              <span style={itemStyle}>Trang cá nhân</span>
             </Link>
             <Link
               to="/settings"

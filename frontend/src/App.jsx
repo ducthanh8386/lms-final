@@ -20,6 +20,7 @@ const MyClasses = lazy(() => import('./pages/student/MyClasses'))
 const JoinClass = lazy(() => import('./pages/student/JoinClass'))
 const QuizPage = lazy(() => import('./pages/student/QuizPage'))
 const AccountSettings = lazy(() => import('./pages/AccountSettings'))
+const Profile = lazy(() => import('./pages/student/Profile'))
 const Faq = lazy(() => import('./pages/Faq'))
 
 const TeacherDashboard = lazy(() => import('./pages/teacher/TeacherDashboard'))
@@ -109,6 +110,7 @@ function App() {
         <Route path="/faq" element={<Faq />} />
 
         <Route element={<ProtectedRoute allowedRoles={['student', 'teacher', 'admin']} />}>
+          <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<AccountSettings />} />
           <Route path="/checkout/detail" element={<CheckoutDetail />} />
           <Route path="/learning" element={<MyLearning />} />

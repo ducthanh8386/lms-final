@@ -111,7 +111,7 @@ const MobileBottomNav = () => {
             </div>
             <div className="border-t border-[#f0f0f0] px-3 pt-1.5">
               <Link
-                to="/learning"
+                to="/profile"
                 onClick={() => setAccountOpen(false)}
                 className="block w-full py-[10px] hover:opacity-80"
               >
@@ -124,7 +124,7 @@ const MobileBottomNav = () => {
                     color: '#666666',
                   }}
                 >
-                  Khóa học của tôi
+                  Trang cá nhân
                 </span>
               </Link>
               <Link
