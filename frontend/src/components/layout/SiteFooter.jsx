@@ -68,7 +68,7 @@ const SiteFooter = () => {
             <h4 className={headingClass}>Sản phẩm</h4>
             <ul className="space-y-1">
               <li><Link to="/courses" className={linkClass}>Khóa học</Link></li>
-              <li><Link to="/learning" className={linkClass}>Khóa học của tôi</Link></li>
+              <li><Link to="/profile" className={linkClass}>Trang cá nhân</Link></li>
               <li><Link to="/my-classes" className={linkClass}>Lớp học</Link></li>
               <li><Link to="/my-schedule" className={linkClass}>Lịch học</Link></li>
               <li><Link to="/register" className={linkClass}>Đăng ký giảng viên</Link></li>
