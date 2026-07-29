@@ -185,13 +185,33 @@ export const classService = {
     const { data, error } = await supabase
       .from('class_members')
       .select(
-        'joined_at, classes(*, profiles:teacher_id(name, email), courses:course_id(id, title, enrollment_mode))'
+        'joined_at, classes(*, courses:course_id(id, title, enrollment_mode))'
       )
       .eq('student_id', user.id)
       .eq('status', 'active')
       .order('joined_at', { ascending: false })
 
     if (error) return { error }
-    return { data: data?.map((m) => m.classes).filter(Boolean) || [], error: null }
+
+    const classes = (data || []).map((m) => m.classes).filter(Boolean)
+    const teacherIds = [...new Set(classes.map((c) => c.teacher_id).filter(Boolean))]
+    let nameById = {}
+    if (teacherIds.length) {
+      const { data: pubs } = await supabase
+        .from('profiles_public')
+        .select('id, name')
+        .in('id', teacherIds)
+      nameById = Object.fromEntries((pubs || []).map((p) => [p.id, p.name]))
+    }
+
+    return {
+      data: classes.map((c) => ({
+        ...c,
+        profiles: c.teacher_id
+          ? { id: c.teacher_id, name: nameById[c.teacher_id] || null }
+          : null,
+      })),
+      error: null,
+    }
   }
 }

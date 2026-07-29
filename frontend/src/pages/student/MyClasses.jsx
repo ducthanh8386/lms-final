@@ -128,8 +128,8 @@ const MyClasses = () => {
               </div>
 
               <p className="mb-1 text-xs text-slate-500">
-                Giáo viên:{' '}
-                <strong className="text-slate-700">{c.profiles?.name || 'Chưa rõ'}</strong>
+                Giáo viên phụ trách:{' '}
+                <strong className="text-slate-700">{c.profiles?.name || 'Đang cập nhật'}</strong>
               </p>
               {c.courses?.title && (
                 <p className="mb-1 text-xs text-slate-500">
