@@ -5,7 +5,9 @@ export const studentService = {
   async getMyEnrollments(userId) {
     const { data, error } = await supabase
       .from('enrollments')
-      .select('course_id, enrolled_at, courses(*, profiles(name))')
+      .select(
+        'course_id, enrolled_at, courses(*, enrollment_mode, profiles:teacher_id(name))'
+      )
       .eq('user_id', userId)
       .order('enrolled_at', { ascending: false })
     return { data, error }

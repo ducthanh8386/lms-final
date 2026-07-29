@@ -46,13 +46,16 @@ const MyCoursesMenu = () => {
         list.map((en) => {
           const course = en.courses
           const summary = byCourse.get(course.id)
+          const isZoom = course.enrollment_mode === 'consultation'
           return {
             id: course.id,
             title: course.title,
             thumbnail: course.thumbnail,
-            percent: summary?.progress_percent ?? 0,
-            lastStudiedAt: summary?.last_studied_at || null,
+            percent: isZoom ? null : summary?.progress_percent ?? 0,
+            lastStudiedAt: isZoom ? null : summary?.last_studied_at || null,
             enrolledAt: en.enrolled_at,
+            isZoom,
+            href: isZoom ? '/my-classes' : `/learning/${course.id}`,
           }
         })
       )
@@ -142,12 +145,12 @@ const MyCoursesMenu = () => {
             ) : (
               <ul className="space-y-1">
                 {items.map((course) => {
-                  const started = course.percent > 0 || course.lastStudiedAt
+                  const started = !course.isZoom && (course.percent > 0 || course.lastStudiedAt)
                   const relative = formatRelativeStudy(course.lastStudiedAt)
                   return (
                     <li key={course.id}>
                       <Link
-                        to={`/learning/${course.id}`}
+                        to={course.href}
                         onClick={() => setOpen(false)}
                         className="flex gap-3 rounded-xl px-2 py-2.5 transition hover:bg-[#f5f5f5]"
                       >
@@ -159,7 +162,13 @@ const MyCoursesMenu = () => {
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <div className="flex h-full items-center justify-center bg-gradient-to-br from-primary to-[#7c2d12] px-1 text-center text-[9px] font-bold leading-tight text-white">
+                            <div
+                              className={`flex h-full items-center justify-center px-1 text-center text-[9px] font-bold leading-tight text-white ${
+                                course.isZoom
+                                  ? 'bg-gradient-to-br from-blue-600 to-indigo-800'
+                                  : 'bg-gradient-to-br from-primary to-[#7c2d12]'
+                              }`}
+                            >
                               {course.title}
                             </div>
                           )}
@@ -168,7 +177,12 @@ const MyCoursesMenu = () => {
                           <p className="line-clamp-2 text-[14px] font-bold leading-snug text-[#242424]">
                             {course.title}
                           </p>
-                          {started ? (
+                          {course.isZoom ? (
+                            <p className="mt-1 text-[12px] text-[#888]">
+                              Khóa Zoom ·{' '}
+                              <span className="font-semibold text-blue-600">Xem lớp & lịch</span>
+                            </p>
+                          ) : started ? (
                             <>
                               <p className="mt-1 text-[12px] text-[#888]">
                                 {relative || 'Đã bắt đầu học'}
