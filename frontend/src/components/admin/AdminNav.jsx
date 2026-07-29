@@ -14,7 +14,7 @@ const SECTIONS = [
     title: 'Khóa video',
     titleClass: 'text-teal-300',
     items: [
-      { to: '/admin/courses', label: 'Quản lý khóa học', hint: 'Duyệt · phân công GV' },
+      { to: '/admin/courses', label: 'Khóa Video', hint: 'SePay · bài học' },
       { to: '/admin/payments', label: 'Thanh toán', hint: 'Đơn SePay / video' },
     ],
   },
@@ -29,6 +29,7 @@ const SECTIONS = [
     title: 'Khóa Zoom',
     titleClass: 'text-blue-300',
     items: [
+      { to: '/admin/zoom-courses', label: 'Khóa Zoom', hint: 'Tư vấn · phân công GV' },
       { to: '/admin/leads', label: 'Yêu cầu tư vấn', hint: 'CRM · xếp lớp' },
       { to: '/admin/classes', label: 'Lớp Zoom', hint: 'Tuyển sinh · sĩ số' },
       { to: '/admin/schedules', label: 'Duyệt lịch', hint: 'Buổi Zoom chờ duyệt' },
@@ -107,6 +108,13 @@ export const AdminSidebar = ({ onNavigate }) => (
 export const AdminTopbar = ({ onOpenMenu }) => {
   const { profile, user } = useAuth()
   const location = useLocation()
+  const onZoomArea =
+    location.pathname.startsWith('/admin/zoom-courses') ||
+    location.pathname.startsWith('/admin/leads') ||
+    location.pathname.startsWith('/admin/classes') ||
+    location.pathname.startsWith('/admin/schedules') ||
+    (location.pathname.startsWith('/admin/courses/new') &&
+      location.search.includes('mode=consultation'))
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
@@ -128,10 +136,12 @@ export const AdminTopbar = ({ onOpenMenu }) => {
       </div>
       <div className="flex items-center gap-2">
         <Link
-          to="/admin/courses/new"
-          className="hidden rounded-full bg-indigo-600 px-3.5 py-2 text-[12px] font-bold text-white hover:bg-indigo-700 sm:inline-flex"
+          to={onZoomArea ? '/admin/courses/new?mode=consultation' : '/admin/courses/new?mode=purchase'}
+          className={`hidden rounded-full px-3.5 py-2 text-[12px] font-bold text-white sm:inline-flex ${
+            onZoomArea ? 'bg-blue-600 hover:bg-blue-700' : 'bg-teal-700 hover:bg-teal-800'
+          }`}
         >
-          + Tạo khóa học
+          {onZoomArea ? '+ Tạo khóa Zoom' : '+ Tạo khóa Video'}
         </Link>
         <button
           type="button"

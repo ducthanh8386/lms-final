@@ -93,7 +93,8 @@ function App() {
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/courses" element={<AdminCourses />} />
+          <Route path="/admin/courses" element={<AdminCourses courseMode="purchase" />} />
+          <Route path="/admin/zoom-courses" element={<AdminCourses courseMode="consultation" />} />
           <Route path="/admin/courses/new" element={<CourseForm />} />
           <Route path="/admin/courses/:id/edit" element={<CourseForm />} />
           <Route path="/admin/courses/approval" element={<CourseApproval />} />

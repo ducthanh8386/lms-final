@@ -31,7 +31,11 @@ const AdminClasses = () => {
       <header className="mb-6">
         <h1 className="text-2xl font-extrabold text-slate-900">Lớp Zoom</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Tổng quan lớp theo khóa. Tạo/sửa lớp chi tiết tại khu vực giảng viên.
+          Tổng quan lớp theo khóa Zoom. Tạo khóa tại{' '}
+          <Link to="/admin/zoom-courses" className="font-semibold text-blue-700 hover:underline">
+            Khóa Zoom
+          </Link>
+          ; tạo/sửa lớp chi tiết tại khu vực giảng viên.
         </p>
       </header>
 

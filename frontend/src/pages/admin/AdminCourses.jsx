@@ -4,12 +4,16 @@ import { adminService } from '../../services/adminService'
 import { useToast } from '../../context/ToastContext'
 import CourseModeBadge from '../../components/course/CourseModeBadge'
 
-const AdminCourses = () => {
+/**
+ * @param {'purchase'|'consultation'} courseMode — tách danh sách Video vs Zoom
+ */
+const AdminCourses = ({ courseMode = 'purchase' }) => {
   const toast = useToast()
   const [courses, setCourses] = useState([])
   const [teachers, setTeachers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const isZoom = courseMode === 'consultation'
 
   const load = async () => {
     setLoading(true)
@@ -27,12 +31,12 @@ const AdminCourses = () => {
   }, [])
 
   const filtered = useMemo(() => {
-    if (filter === 'all') return courses
-    if (filter === 'purchase' || filter === 'consultation') {
-      return courses.filter((c) => (c.enrollment_mode || 'purchase') === filter)
+    let list = courses.filter((c) => (c.enrollment_mode || 'purchase') === courseMode)
+    if (statusFilter === 'pending' || statusFilter === 'approved' || statusFilter === 'rejected') {
+      list = list.filter((c) => c.status === statusFilter)
     }
-    return courses.filter((c) => c.status === filter)
-  }, [courses, filter])
+    return list
+  }, [courses, courseMode, statusFilter])
 
   const onAssign = async (courseId, teacherId) => {
     const nextId = teacherId || null
@@ -78,32 +82,39 @@ const AdminCourses = () => {
     }
   }
 
+  const createHref = `/admin/courses/new?mode=${courseMode}`
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
       <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900">Quản lý khóa học</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900">
+            {isZoom ? 'Khóa Zoom' : 'Khóa Video'}
+          </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Admin tạo khóa Video/Zoom · phân công GV · upload bài học/tài liệu.
+            {isZoom
+              ? 'Tạo khóa Zoom riêng · phân công GV · form tư vấn · xếp lớp.'
+              : 'Tạo khóa Video · phân công GV · SePay · bài học / tài liệu.'}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
-            to="/admin/courses/new"
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700"
+            to={createHref}
+            className={`rounded-lg px-4 py-2 text-sm font-bold text-white ${
+              isZoom ? 'bg-blue-600 hover:bg-blue-700' : 'bg-teal-700 hover:bg-teal-800'
+            }`}
           >
-            + Tạo khóa học
+            {isZoom ? '+ Tạo khóa Zoom' : '+ Tạo khóa Video'}
           </Link>
           <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
             className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
           >
-            <option value="all">Tất cả</option>
+            <option value="all">Tất cả trạng thái</option>
             <option value="pending">Chờ duyệt</option>
             <option value="approved">Đã duyệt</option>
-            <option value="purchase">Khóa video</option>
-            <option value="consultation">Khóa Zoom</option>
+            <option value="rejected">Từ chối</option>
           </select>
         </div>
       </header>
@@ -117,11 +128,11 @@ const AdminCourses = () => {
               <tr>
                 <th className="px-4 py-3">Khóa học</th>
                 <th className="px-4 py-3">Loại</th>
-                <th className="px-4 py-3">Giá</th>
+                <th className="px-4 py-3">{isZoom ? 'Học phí (tham khảo)' : 'Giá'}</th>
                 <th className="px-4 py-3">Thời lượng</th>
                 <th className="px-4 py-3">Giáo viên</th>
                 <th className="px-4 py-3">Trạng thái</th>
-                <th className="px-4 py-3">Nội dung</th>
+                <th className="px-4 py-3">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -132,7 +143,13 @@ const AdminCourses = () => {
                     <CourseModeBadge mode={c.enrollment_mode} variant="soft" size="md" />
                   </td>
                   <td className="px-4 py-3">
-                    {c.is_free ? 'Miễn phí' : `${Number(c.price || 0).toLocaleString('vi-VN')}đ`}
+                    {isZoom
+                      ? c.price > 0
+                        ? `${Number(c.price).toLocaleString('vi-VN')}đ`
+                        : 'Liên hệ'
+                      : c.is_free
+                        ? 'Miễn phí'
+                        : `${Number(c.price || 0).toLocaleString('vi-VN')}đ`}
                   </td>
                   <td className="px-4 py-3">
                     <input
@@ -171,24 +188,31 @@ const AdminCourses = () => {
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <Link
-                      to={`/admin/courses/${c.id}/edit`}
+                      to={`/admin/courses/${c.id}/edit?mode=${courseMode}`}
                       className="mr-3 text-indigo-600 hover:underline"
                     >
                       Sửa
                     </Link>
-                    <Link
-                      to={`/teacher/courses/${c.id}/lessons`}
-                      className="text-teal-700 hover:underline"
-                    >
-                      Video/Tài liệu
-                    </Link>
+                    {!isZoom && (
+                      <Link
+                        to={`/teacher/courses/${c.id}/lessons`}
+                        className="text-teal-700 hover:underline"
+                      >
+                        Video/Tài liệu
+                      </Link>
+                    )}
+                    {isZoom && (
+                      <Link to="/admin/classes" className="text-blue-700 hover:underline">
+                        Lớp Zoom
+                      </Link>
+                    )}
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
                 <tr>
                   <td colSpan="7" className="p-8 text-center text-slate-500">
-                    Không có khóa học.
+                    {isZoom ? 'Chưa có khóa Zoom.' : 'Chưa có khóa Video.'}
                   </td>
                 </tr>
               )}

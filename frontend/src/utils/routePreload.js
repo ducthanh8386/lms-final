@@ -25,6 +25,7 @@ const routeLoaders = {
   '/teacher/settings': () => import('../pages/teacher/TeacherSettings'),
   '/admin': () => import('../pages/admin/AdminDashboard'),
   '/admin/courses': () => import('../pages/admin/AdminCourses'),
+  '/admin/zoom-courses': () => import('../pages/admin/AdminCourses'),
   '/admin/payments': () => import('../pages/admin/AdminPayments'),
   '/admin/leads': () => import('../pages/admin/AdminLeads'),
   '/admin/classes': () => import('../pages/admin/AdminClasses'),

@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react'
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useNavigate, useParams, useLocation, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { courseService } from '../../services/courseService'
 import { adminService } from '../../services/adminService'
@@ -19,9 +19,14 @@ const CourseForm = () => {
   const isEdit = Boolean(id)
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
   const { user, profile } = useAuth()
   const toast = useToast()
   const isAdmin = profile?.role === 'admin' || location.pathname.startsWith('/admin')
+
+  const modeParam = searchParams.get('mode')
+  const lockedMode =
+    modeParam === 'consultation' || modeParam === 'purchase' ? modeParam : null
 
   const [categories, setCategories] = useState([])
   const [teachers, setTeachers] = useState([])
@@ -30,7 +35,7 @@ const CourseForm = () => {
     description: '',
     price: 0,
     is_free: false,
-    enrollment_mode: 'purchase',
+    enrollment_mode: lockedMode || 'purchase',
     duration_months: '',
     category_id: '',
     thumbnail: '',
@@ -46,6 +51,14 @@ const CourseForm = () => {
       navigate('/teacher/courses', { replace: true })
     }
   }, [isAdmin, isEdit, navigate])
+
+  // Tạo mới: khóa loại theo ?mode= (không cho đổi Video ↔ Zoom trên form)
+  useEffect(() => {
+    if (isEdit || !lockedMode) return
+    setFormData((prev) =>
+      prev.enrollment_mode === lockedMode ? prev : { ...prev, enrollment_mode: lockedMode }
+    )
+  }, [isEdit, lockedMode])
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -129,7 +142,11 @@ const CourseForm = () => {
     }
   }
 
-  const backPath = isAdmin ? '/admin/courses' : '/teacher/courses'
+  const backPath = isAdmin
+    ? formData.enrollment_mode === 'consultation'
+      ? '/admin/zoom-courses'
+      : '/admin/courses'
+    : '/teacher/courses'
 
   const handleSubmit = async (e) => {
     e?.preventDefault?.()
@@ -225,13 +242,21 @@ const CourseForm = () => {
     <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 lg:px-8 text-left">
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold text-slate-900">
-          {isEdit ? 'Sửa khóa học' : 'Tạo khóa học mới'}
+          {isEdit
+            ? formData.enrollment_mode === 'consultation'
+              ? 'Sửa khóa Zoom'
+              : 'Sửa khóa Video'
+            : formData.enrollment_mode === 'consultation'
+              ? 'Tạo khóa Zoom'
+              : 'Tạo khóa Video'}
         </h1>
         <CourseModeBadge mode={formData.enrollment_mode} size="md" />
       </div>
       {isAdmin && (
         <p className="mb-4 text-sm text-slate-500">
-          Admin tạo khóa Video/Zoom, upload nội dung, rồi phân công giáo viên phụ trách.
+          {formData.enrollment_mode === 'consultation'
+            ? 'Khóa Zoom tách riêng khỏi Video: form tư vấn → xếp lớp → lịch Zoom.'
+            : 'Khóa Video: học viên mua SePay, học bài / tài liệu theo tiến độ.'}
         </p>
       )}
 
@@ -326,14 +351,19 @@ const CourseForm = () => {
           <select
             id="enrollment_mode"
             name="enrollment_mode"
-            className="mt-1 block w-full rounded-md border p-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+            className="mt-1 block w-full rounded-md border p-2 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:bg-slate-100 disabled:text-slate-600"
             value={formData.enrollment_mode}
             onChange={handleChange}
-            disabled={!isAdmin && isEdit}
+            disabled={Boolean(lockedMode) || isEdit}
           >
             <option value="purchase">Khóa Video — mua online / SePay</option>
             <option value="consultation">Khóa Zoom — tư vấn · xếp lớp</option>
           </select>
+          {(lockedMode || isEdit) && (
+            <p className="mt-1 text-[11px] text-slate-500">
+              Loại khóa đã cố định — tạo Video và Zoom ở hai mục riêng trong Admin.
+            </p>
+          )}
           <p className="mt-2 text-xs font-semibold">
             {formData.enrollment_mode === 'consultation' ? (
               <span className="text-blue-800">Zoom live: form tư vấn → xếp lớp.</span>
