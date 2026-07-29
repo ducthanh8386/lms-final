@@ -92,9 +92,11 @@ export const PendingPaymentProvider = ({ children }) => {
     }
   }, [user, clearPending])
 
+  // Chỉ sync khi đổi user id — không refetch mỗi lần object user đổi (đổi tab)
   useEffect(() => {
     refreshPending()
-  }, [refreshPending])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: user?.id only
+  }, [user?.id])
 
   // Cập nhật đếm ngược hết hạn cục bộ
   useEffect(() => {

@@ -15,10 +15,11 @@ const NotificationBell = () => {
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef(null)
 
-  // Fetch initial notifications
+  // Fetch initial notifications — phụ thuộc user.id, không phụ thuộc object user (tránh refetch khi đổi tab)
   useEffect(() => {
-    if (!user) return
+    if (!user?.id) return
 
+    const uid = user.id
     const fetchNotifications = async () => {
       const { data: list } = await notificationService.getNotifications()
       if (list) setNotifications(list)
@@ -29,14 +30,13 @@ const NotificationBell = () => {
 
     fetchNotifications()
 
-    // Đăng ký Supabase Realtime
     const channel = supabase
-      .channel('notifications_realtime')
+      .channel(`notifications_realtime_${uid}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'notifications',
-        filter: `user_id=eq.${user.id}`
+        filter: `user_id=eq.${uid}`
       }, (payload) => {
         setNotifications(prev => [payload.new, ...prev])
         setUnreadCount(prev => prev + 1)
@@ -47,7 +47,7 @@ const NotificationBell = () => {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [user, toast])
+  }, [user?.id, toast])
 
   // Đóng dropdown khi bấm ra ngoài
   useEffect(() => {

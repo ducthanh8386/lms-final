@@ -14,6 +14,7 @@ import YoutubeLessonPlayer from '../../components/lesson/YoutubeLessonPlayer'
 const HEARTBEAT_MS = 30_000
 
 const qaStorageKey = (courseId) => `lms_qa_panel:${courseId}`
+const studyStorageKey = (courseId) => `lms_study_ui:${courseId}`
 
 function readQaStorage(courseId) {
   try {
@@ -30,6 +31,24 @@ function writeQaStorage(courseId, payload) {
     else sessionStorage.setItem(qaStorageKey(courseId), JSON.stringify(payload))
   } catch {
     /* ignore quota / private mode */
+  }
+}
+
+function readStudyStorage(courseId) {
+  try {
+    const raw = sessionStorage.getItem(studyStorageKey(courseId))
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+function writeStudyStorage(courseId, payload) {
+  try {
+    if (!payload) sessionStorage.removeItem(studyStorageKey(courseId))
+    else sessionStorage.setItem(studyStorageKey(courseId), JSON.stringify(payload))
+  } catch {
+    /* ignore */
   }
 }
 
@@ -152,11 +171,9 @@ const StudyLesson = () => {
       }
 
       const savedQa = readQaStorage(courseId)
+      const savedStudy = readStudyStorage(courseId)
       setActiveItem((prev) => {
-        if (savedQa?.lessonId && lData) {
-          const fromQa = lData.find((l) => l.id === savedQa.lessonId)
-          if (fromQa) return { type: 'lesson', data: fromQa }
-        }
+        // Prefer in-memory (tab still alive) → Q&A → study UI → last lesson
         if (prev?.type === 'lesson' && prev.data?.id && lData) {
           const still = lData.find((l) => l.id === prev.data.id)
           if (still) return { type: 'lesson', data: still }
@@ -164,6 +181,18 @@ const StudyLesson = () => {
         if (prev?.type === 'assignment' && prev.data?.id && aData) {
           const still = aData.find((a) => a.id === prev.data.id)
           if (still) return { type: 'assignment', data: still }
+        }
+        if (savedQa?.lessonId && lData) {
+          const fromQa = lData.find((l) => l.id === savedQa.lessonId)
+          if (fromQa) return { type: 'lesson', data: fromQa }
+        }
+        if (savedStudy?.type === 'lesson' && savedStudy?.id && lData) {
+          const fromStudy = lData.find((l) => l.id === savedStudy.id)
+          if (fromStudy) return { type: 'lesson', data: fromStudy }
+        }
+        if (savedStudy?.type === 'assignment' && savedStudy?.id && aData) {
+          const fromStudy = aData.find((a) => a.id === savedStudy.id)
+          if (fromStudy) return { type: 'assignment', data: fromStudy }
         }
         if (lData && lData.length > 0) {
           const resumeLesson = lastLessonId ? lData.find((l) => l.id === lastLessonId) : null
@@ -181,15 +210,21 @@ const StudyLesson = () => {
     fetchData()
   }, [courseId, user?.id])
 
+  // Persist bài đang học để quay lại tab / restore session không mất chỗ
   useEffect(() => {
-    if (activeItem.type === 'assignment' && activeItem.data && user) {
+    if (!courseId || !activeItem.data?.id) return
+    writeStudyStorage(courseId, { type: activeItem.type, id: activeItem.data.id })
+  }, [courseId, activeItem.type, activeItem.data?.id])
+
+  useEffect(() => {
+    if (activeItem.type === 'assignment' && activeItem.data && user?.id) {
       const fetchSub = async () => {
         const { data } = await assignmentService.getStudentSubmission(activeItem.data.id, user.id)
         setSubmission(data || null)
       }
       fetchSub()
     }
-  }, [activeItem, user])
+  }, [activeItem.type, activeItem.data?.id, user?.id])
 
   // Touch last lesson when opening a lesson
   useEffect(() => {

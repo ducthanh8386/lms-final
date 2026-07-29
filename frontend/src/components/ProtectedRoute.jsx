@@ -5,7 +5,8 @@ import { useAuth } from '../context/AuthContext'
 const ProtectedRoute = ({ allowedRoles }) => {
   const { user, profile, loading } = useAuth()
 
-  if (loading) {
+  // Chỉ hiện spinner lúc boot — tránh unmount cả cây khi auth re-check lúc đổi tab
+  if (loading && !user) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-accent border-t-transparent"></div>
