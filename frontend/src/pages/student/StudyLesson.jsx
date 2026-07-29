@@ -417,6 +417,7 @@ const StudyLesson = () => {
               lessonId={activeItem.data.id}
               courseId={courseId}
               lessonTitle={activeItem.data.title}
+              teacherId={course?.teacher_id || null}
             />
           </div>
         ) : activeItem.type === 'assignment' && activeItem.data ? (

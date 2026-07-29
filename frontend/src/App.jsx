@@ -27,6 +27,7 @@ const TeacherDashboard = lazy(() => import('./pages/teacher/TeacherDashboard'))
 const CourseManage = lazy(() => import('./pages/teacher/CourseManage'))
 const CourseForm = lazy(() => import('./pages/teacher/CourseForm'))
 const LessonManage = lazy(() => import('./pages/teacher/LessonManage'))
+const TeacherCourseQA = lazy(() => import('./pages/teacher/TeacherCourseQA'))
 const CourseLeads = lazy(() => import('./pages/teacher/CourseLeads'))
 const TeacherSettings = lazy(() => import('./pages/teacher/TeacherSettings'))
 const Students = lazy(() => import('./pages/teacher/Students'))
@@ -71,6 +72,7 @@ function App() {
           <Route path="/teacher/courses/new" element={<Navigate to="/teacher/courses" replace />} />
           <Route path="/teacher/courses/:id/edit" element={<Navigate to="/teacher/courses" replace />} />
           <Route path="/teacher/courses/:id/lessons" element={<LessonManage />} />
+          <Route path="/teacher/courses/:id/qa" element={<TeacherCourseQA />} />
           <Route path="/teacher/courses/:id/assignments" element={<AssignmentManage />} />
           <Route path="/teacher/assignments/:id/submissions" element={<GradingManage />} />
           <Route path="/teacher/orders" element={<Navigate to="/teacher" replace />} />

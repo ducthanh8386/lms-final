@@ -19,20 +19,27 @@ function CommentItem({
   comment,
   replies,
   currentUserId,
+  teacherId,
   onReply,
   onToggleLike,
   onDelete,
   depth = 0,
 }) {
+  const isTeacher = teacherId && comment.user_id === teacherId
   return (
     <div className={depth > 0 ? 'ml-10 mt-3' : 'mt-4'}>
       <div className="flex gap-3">
         <Avatar name={comment.author_name} avatar={comment.author_avatar} size="sm" />
         <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
+          <div className="flex flex-wrap items-baseline gap-2">
             <span className="text-[14px] font-semibold text-[#1473e6]">
               {comment.author_name || 'Người dùng'}
             </span>
+            {isTeacher && (
+              <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+                Giảng viên
+              </span>
+            )}
             <span className="text-[12px] text-[#999]">
               {lessonCommentService.relativeTime(comment.created_at)}
             </span>
@@ -75,6 +82,7 @@ function CommentItem({
           comment={r}
           replies={[]}
           currentUserId={currentUserId}
+          teacherId={teacherId}
           onReply={onReply}
           onToggleLike={onToggleLike}
           onDelete={onDelete}
@@ -85,7 +93,14 @@ function CommentItem({
   )
 }
 
-export default function LessonQAPanel({ open, onClose, lessonId, courseId, lessonTitle }) {
+export default function LessonQAPanel({
+  open,
+  onClose,
+  lessonId,
+  courseId,
+  lessonTitle,
+  teacherId = null,
+}) {
   const { user, profile } = useAuth()
   const toast = useToast()
   const [comments, setComments] = useState([])
@@ -299,6 +314,7 @@ export default function LessonQAPanel({ open, onClose, lessonId, courseId, lesso
                 comment={c}
                 replies={c.replies}
                 currentUserId={user?.id}
+                teacherId={teacherId}
                 onReply={(item) => {
                   setReplyTo(item)
                   setComposerOpen(true)

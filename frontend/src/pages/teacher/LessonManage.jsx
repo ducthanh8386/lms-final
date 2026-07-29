@@ -7,6 +7,9 @@ import { zodFirstMessage } from '../../utils/zodError'
 
 import { useToast } from '../../context/ToastContext'
 import { useConfirm } from '../../context/ConfirmContext'
+import LessonQAPanel from '../../components/lesson/LessonQAPanel'
+import { lessonCommentService } from '../../services/lessonCommentService'
+import { useAuth } from '../../context/AuthContext'
 
 const getYoutubeId = (url) => {
   if (!url) return null
@@ -19,11 +22,14 @@ const LessonManage = () => {
   const { id: courseId } = useParams()
   const toast = useToast()
   const { confirm } = useConfirm()
+  const { user } = useAuth()
   const [course, setCourse] = useState(null)
   const [lessons, setLessons] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingLessonId, setEditingLessonId] = useState(null)
+  const [qaLesson, setQaLesson] = useState(null)
+  const [qaCounts, setQaCounts] = useState({})
   const [formData, setFormData] = useState({
     title: '',
     content_type: 'video',
@@ -38,7 +44,14 @@ const LessonManage = () => {
 
       const { data: lData } = await courseService.getCourseLessons(courseId)
       if (lData) setLessons(lData)
-      
+
+      const { data: comments } = await lessonCommentService.listByCourse(courseId)
+      const counts = {}
+      for (const c of comments || []) {
+        counts[c.lesson_id] = (counts[c.lesson_id] || 0) + 1
+      }
+      setQaCounts(counts)
+
       setLoading(false)
     }
     fetchData()
@@ -121,7 +134,13 @@ const LessonManage = () => {
           </h1>
           <p className="text-slate-500">Quản lý nội dung bài học trong khóa này.</p>
         </div>
-        <div className="flex gap-2 self-start sm:self-auto">
+        <div className="flex flex-wrap gap-2 self-start sm:self-auto">
+          <Link
+            to={`/teacher/courses/${courseId}/qa`}
+            className="rounded-md border border-slate-200 bg-white px-4 py-2 font-medium text-slate-700 hover:bg-slate-50 text-center text-sm"
+          >
+            Hỏi đáp
+          </Link>
           <Link 
             to={`/teacher/courses/${courseId}/quizzes`}
             className="rounded-md border border-slate-200 bg-white px-4 py-2 font-medium text-slate-700 hover:bg-slate-50 text-center text-sm"
@@ -237,7 +256,14 @@ const LessonManage = () => {
                   <p className="text-xs text-slate-500 uppercase">{lesson.content_type}</p>
                 </div>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setQaLesson(lesson)}
+                  className="text-sm font-medium text-primary hover:text-brand-orangeHover"
+                >
+                  Hỏi đáp{qaCounts[lesson.id] ? ` (${qaCounts[lesson.id]})` : ''}
+                </button>
                 <button 
                   onClick={() => handleEditLesson(lesson)}
                   className="text-sm font-medium text-blue-600 hover:text-blue-800"
@@ -256,6 +282,26 @@ const LessonManage = () => {
         </div>
       ) : (
         <p className="text-slate-500">Chưa có bài học nào trong khóa này.</p>
+      )}
+
+      {qaLesson && (
+        <LessonQAPanel
+          open={Boolean(qaLesson)}
+          onClose={() => {
+            setQaLesson(null)
+            lessonCommentService.listByCourse(courseId).then(({ data }) => {
+              const counts = {}
+              for (const c of data || []) {
+                counts[c.lesson_id] = (counts[c.lesson_id] || 0) + 1
+              }
+              setQaCounts(counts)
+            })
+          }}
+          lessonId={qaLesson.id}
+          courseId={courseId}
+          lessonTitle={qaLesson.title}
+          teacherId={course?.teacher_id || user?.id}
+        />
       )}
     </div>
   )

@@ -26,6 +26,13 @@ export const lessonCommentService = {
     return { data: data || [], error }
   },
 
+  async listByCourse(courseId) {
+    const { data, error } = await supabase.rpc('get_course_lesson_comments', {
+      p_course_id: courseId,
+    })
+    return { data: data || [], error }
+  },
+
   async create({ lessonId, courseId, userId, body, parentId = null }) {
     const trimmed = String(body || '').trim()
     if (!trimmed) {
