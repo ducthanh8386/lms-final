@@ -30,7 +30,6 @@ const ConsultationLeadForm = ({ courseId, courseTitle, open, onClose }) => {
     setSubmitting(true)
     const { error } = await leadService.submitLead({
       courseId,
-      userId: user?.id,
       fullName: form.fullName,
       phone: form.phone,
       email: form.email,
@@ -41,7 +40,12 @@ const ConsultationLeadForm = ({ courseId, courseTitle, open, onClose }) => {
     })
     setSubmitting(false)
     if (error) {
-      toast.error(error.message || 'Gửi thông tin thất bại')
+      const msg = error.message || 'Gửi thông tin thất bại'
+      toast.error(
+        msg.includes('không nhận đăng ký')
+          ? 'Khóa học chưa được duyệt hoặc không phải khóa Zoom tư vấn.'
+          : msg
+      )
       return
     }
     toast.success('Đã gửi thông tin. Trung tâm sẽ liên hệ tư vấn sớm.')

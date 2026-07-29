@@ -26,23 +26,17 @@ export const GOAL_OPTIONS = [
 
 export const leadService = {
   async submitLead(payload) {
-    const { data, error } = await supabase
-      .from('course_leads')
-      .insert([
-        {
-          course_id: payload.courseId,
-          user_id: payload.userId || null,
-          full_name: payload.fullName.trim(),
-          phone: payload.phone.trim(),
-          email: payload.email?.trim() || null,
-          current_status: payload.currentStatus,
-          learning_goal: payload.learningGoal,
-          preferred_schedule: payload.preferredSchedule?.trim() || null,
-          notes: payload.notes?.trim() || null,
-        },
-      ])
-      .select()
-      .single()
+    // RPC SECURITY DEFINER — tránh lỗi RLS khi insert().select() (HV/anon không SELECT được lead)
+    const { data, error } = await supabase.rpc('submit_course_lead', {
+      p_course_id: payload.courseId,
+      p_full_name: payload.fullName?.trim() || '',
+      p_phone: payload.phone?.trim() || '',
+      p_email: payload.email?.trim() || null,
+      p_current_status: payload.currentStatus,
+      p_learning_goal: payload.learningGoal,
+      p_preferred_schedule: payload.preferredSchedule?.trim() || null,
+      p_notes: payload.notes?.trim() || null,
+    })
     return { data, error }
   },
 
