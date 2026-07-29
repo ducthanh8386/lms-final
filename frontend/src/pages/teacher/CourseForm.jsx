@@ -25,8 +25,16 @@ const CourseForm = () => {
   const isAdmin = profile?.role === 'admin' || location.pathname.startsWith('/admin')
 
   const modeParam = searchParams.get('mode')
-  const lockedMode =
-    modeParam === 'consultation' || modeParam === 'purchase' ? modeParam : null
+  const pathIsZoom =
+    location.pathname.startsWith('/admin/zoom-courses') ||
+    location.pathname.includes('/zoom-courses/')
+  const lockedMode = pathIsZoom
+    ? 'consultation'
+    : modeParam === 'consultation' || modeParam === 'purchase'
+      ? modeParam
+      : location.pathname.startsWith('/admin/courses') && !isEdit
+        ? 'purchase'
+        : null
 
   const [categories, setCategories] = useState([])
   const [teachers, setTeachers] = useState([])
@@ -180,12 +188,14 @@ const CourseForm = () => {
 
       const teacherId = isAdmin ? formData.teacher_id || null : user.id
 
+      const resolvedMode = lockedMode || formData.enrollment_mode || 'purchase'
+
       const payload = {
         title: formData.title,
         description: formData.description,
         price: formData.is_free ? 0 : parseFloat(formData.price) || 0,
-        is_free: formData.enrollment_mode === 'consultation' ? false : formData.is_free,
-        enrollment_mode: formData.enrollment_mode,
+        is_free: resolvedMode === 'consultation' ? false : formData.is_free,
+        enrollment_mode: resolvedMode,
         duration_months:
           formData.duration_months === '' || formData.duration_months == null
             ? null

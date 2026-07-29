@@ -82,7 +82,7 @@ const AdminCourses = ({ courseMode = 'purchase' }) => {
     }
   }
 
-  const createHref = `/admin/courses/new?mode=${courseMode}`
+  const createHref = isZoom ? '/admin/zoom-courses/new' : '/admin/courses/new'
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
@@ -188,7 +188,11 @@ const AdminCourses = ({ courseMode = 'purchase' }) => {
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <Link
-                      to={`/admin/courses/${c.id}/edit?mode=${courseMode}`}
+                      to={
+                        isZoom
+                          ? `/admin/zoom-courses/${c.id}/edit`
+                          : `/admin/courses/${c.id}/edit`
+                      }
                       className="mr-3 text-indigo-600 hover:underline"
                     >
                       Sửa

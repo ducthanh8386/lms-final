@@ -94,9 +94,11 @@ function App() {
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/courses" element={<AdminCourses courseMode="purchase" />} />
+          <Route path="/admin/courses/new" element={<CourseForm key="video-new" />} />
+          <Route path="/admin/courses/:id/edit" element={<CourseForm key="video-edit" />} />
           <Route path="/admin/zoom-courses" element={<AdminCourses courseMode="consultation" />} />
-          <Route path="/admin/courses/new" element={<CourseForm />} />
-          <Route path="/admin/courses/:id/edit" element={<CourseForm />} />
+          <Route path="/admin/zoom-courses/new" element={<CourseForm key="zoom-new" />} />
+          <Route path="/admin/zoom-courses/:id/edit" element={<CourseForm key="zoom-edit" />} />
           <Route path="/admin/courses/approval" element={<CourseApproval />} />
           <Route path="/admin/payments" element={<AdminPayments />} />
           <Route path="/admin/teachers" element={<AdminUserList role="teacher" />} />
