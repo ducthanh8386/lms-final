@@ -68,7 +68,9 @@ const AdminClasses = () => {
                   </td>
                   <td className="px-4 py-3">{c.courses?.title || '—'}</td>
                   <td className="px-4 py-3">{c.schedule_label || '—'}</td>
-                  <td className="px-4 py-3">{c.profiles?.name || '—'}</td>
+                  <td className="px-4 py-3">
+                    {c.profiles?.name || c.course_teacher_name || '—'}
+                  </td>
                   <td className="px-4 py-3">
                     {c.student_count}/{c.max_students}
                   </td>

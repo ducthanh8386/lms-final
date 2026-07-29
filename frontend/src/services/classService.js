@@ -3,43 +3,84 @@ import { supabase } from '../lib/supabaseClient'
 export const classService = {
   // === CHO GIÁO VIÊN ===
 
-  // Tạo lớp học mới
+  // Tạo lớp Zoom — GV quản lý = GV được gán trên khóa Zoom (không phải người bấm tạo)
   async createClass(classData) {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: { message: "Chưa đăng nhập" } }
+    if (!user) return { error: { message: 'Chưa đăng nhập' } }
+
+    let teacherId = user.id
+    if (classData.course_id) {
+      const { data: course } = await supabase
+        .from('courses')
+        .select('teacher_id, enrollment_mode')
+        .eq('id', classData.course_id)
+        .single()
+      if (course?.enrollment_mode && course.enrollment_mode !== 'consultation') {
+        return { error: { message: 'Chỉ tạo lớp cho khóa Zoom' } }
+      }
+      if (course?.teacher_id) teacherId = course.teacher_id
+    }
 
     const { data, error } = await supabase
       .from('classes')
-      .insert([{ 
-        ...classData, 
-        teacher_id: user.id 
-      }])
-      .select()
+      .insert([
+        {
+          ...classData,
+          teacher_id: teacherId,
+        },
+      ])
+      .select(
+        '*, courses:course_id(id, title), profiles:teacher_id(id, name, email), class_members(id, status)'
+      )
       .single()
 
     return { data, error }
   },
 
-  // Lấy các lớp do giáo viên hiện tại quản lý
+  // Lấy lớp Zoom: GV thấy lớp mình quản lý; Admin thấy tất cả
   async getTeacherClasses() {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: { message: "Chưa đăng nhập" } }
+    if (!user) return { error: { message: 'Chưa đăng nhập' } }
 
-    // Query kèm theo đếm học viên đang học trong mỗi lớp
-    const { data, error } = await supabase
+    const role = user.app_metadata?.userrole
+    let query = supabase
       .from('classes')
-      .select('*, class_members(id, status)')
-      .eq('teacher_id', user.id)
+      .select(
+        '*, courses:course_id(id, title), profiles:teacher_id(id, name, email), class_members(id, status)'
+      )
       .order('created_at', { ascending: false })
 
+    if (role !== 'admin') {
+      query = query.eq('teacher_id', user.id)
+    }
+
+    const { data, error } = await query
     if (error) return { error }
 
-    // Map thêm sĩ số (chỉ đếm status = active)
-    const formattedData = data.map(c => {
-      const activeMembers = c.class_members?.filter(m => m.status === 'active') || []
+    // Bổ sung tên GV nếu embed profiles bị RLS (dùng profiles_public)
+    const rows = data || []
+    const missing = rows.filter((c) => c.teacher_id && !c.profiles?.name).map((c) => c.teacher_id)
+    let nameById = {}
+    if (missing.length) {
+      const { data: pubs } = await supabase
+        .from('profiles_public')
+        .select('id, name')
+        .in('id', [...new Set(missing)])
+      nameById = Object.fromEntries((pubs || []).map((p) => [p.id, p.name]))
+    }
+
+    const formattedData = rows.map((c) => {
+      const activeMembers = c.class_members?.filter((m) => m.status === 'active') || []
+      const profile =
+        c.profiles?.name
+          ? c.profiles
+          : c.teacher_id
+            ? { id: c.teacher_id, name: nameById[c.teacher_id] || null, email: c.profiles?.email }
+            : null
       return {
         ...c,
-        student_count: activeMembers.length
+        profiles: profile,
+        student_count: activeMembers.length,
       }
     })
 
@@ -48,16 +89,26 @@ export const classService = {
 
   // Lấy chi tiết lớp + danh sách học viên
   async getClassDetails(classId) {
-    // Lấy thông tin lớp
     const { data: classObj, error: classErr } = await supabase
       .from('classes')
-      .select('*, courses(title)')
+      .select('*, courses:course_id(id, title, teacher_id)')
       .eq('id', classId)
       .single()
 
     if (classErr) return { error: classErr }
 
-    // Lấy danh sách học viên của lớp
+    let teacher = null
+    if (classObj.teacher_id) {
+      const { data: pub } = await supabase
+        .from('profiles_public')
+        .select('id, name')
+        .eq('id', classObj.teacher_id)
+        .maybeSingle()
+      teacher = pub
+        ? { id: pub.id, name: pub.name }
+        : { id: classObj.teacher_id, name: null }
+    }
+
     const { data: members, error: membersErr } = await supabase
       .from('class_members')
       .select('*, profiles:student_id(name, email, avatar)')
@@ -70,8 +121,9 @@ export const classService = {
     return {
       data: {
         ...classObj,
-        members: members || []
-      }
+        profiles: teacher,
+        members: members || [],
+      },
     }
   },
 

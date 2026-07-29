@@ -116,7 +116,16 @@ const ClassDetail = () => {
         <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">{classObj.name}</h1>
-            {classObj.courses && <p className="text-sm text-slate-500 font-semibold mt-1">Khóa học liên kết: {classObj.courses.title}</p>}
+            {classObj.courses && (
+              <p className="mt-1 text-sm font-semibold text-slate-500">
+                Khóa Zoom: {classObj.courses.title}
+              </p>
+            )}
+            {classObj.profiles?.name && (
+              <p className="mt-0.5 text-sm text-slate-500">
+                GV quản lý: <strong className="text-slate-800">{classObj.profiles.name}</strong>
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             <button

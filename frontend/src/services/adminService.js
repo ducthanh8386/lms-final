@@ -199,9 +199,42 @@ export const adminService = {
   async getAllClasses() {
     const { data, error } = await supabase
       .from('classes')
-      .select('*, courses(title), profiles:teacher_id(name), class_members(id, status)')
+      .select(
+        '*, courses(id, title, teacher_id), class_members(id, status)'
+      )
       .order('created_at', { ascending: false })
-    return { data, error }
+
+    if (error) return { data: null, error }
+    if (!data?.length) return { data: [], error: null }
+
+    // Đọc tên GV qua profiles_public (tránh RLS profiles chặn embed)
+    const teacherIds = [
+      ...new Set(
+        data
+          .flatMap((c) => [c.teacher_id, c.courses?.teacher_id])
+          .filter(Boolean)
+      ),
+    ]
+    let nameById = {}
+    if (teacherIds.length) {
+      const { data: pubs } = await supabase
+        .from('profiles_public')
+        .select('id, name')
+        .in('id', teacherIds)
+      nameById = Object.fromEntries((pubs || []).map((p) => [p.id, p.name]))
+    }
+
+    const enriched = data.map((c) => ({
+      ...c,
+      profiles: c.teacher_id
+        ? { id: c.teacher_id, name: nameById[c.teacher_id] || null }
+        : null,
+      course_teacher_name: c.courses?.teacher_id
+        ? nameById[c.courses.teacher_id] || null
+        : null,
+    }))
+
+    return { data: enriched, error: null }
   },
 }
 

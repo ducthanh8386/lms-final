@@ -159,6 +159,17 @@ const ClassManage = () => {
                     Sĩ số: {c.student_count} / {c.max_students}
                     {c.schedule_label ? ` · ${c.schedule_label}` : ''}
                   </p>
+                  {c.courses?.title && (
+                    <p className="mt-1 text-[11px] text-slate-500">
+                      Khóa: <strong className="text-slate-700">{c.courses.title}</strong>
+                    </p>
+                  )}
+                  {c.profiles?.name && (
+                    <p className="mt-0.5 text-[11px] text-slate-500">
+                      GV quản lý: <strong className="text-slate-700">{c.profiles.name}</strong>
+                      {c.profiles.email ? ` · ${c.profiles.email}` : ''}
+                    </p>
+                  )}
                   {c.status && (
                     <p className="mt-1 text-[11px] font-semibold text-slate-500">
                       {c.status === 'recruiting' && 'Đang tuyển sinh'}
