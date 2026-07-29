@@ -7,6 +7,8 @@ import { quizService } from '../../services/quizService'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import DOMPurify from 'dompurify'
+import LessonQAPanel, { LessonQAButton } from '../../components/lesson/LessonQAPanel'
+import { lessonCommentService } from '../../services/lessonCommentService'
 
 const HEARTBEAT_MS = 30_000
 
@@ -29,9 +31,28 @@ const StudyLesson = () => {
   const [submission, setSubmission] = useState(null)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef(null)
+  const [qaOpen, setQaOpen] = useState(false)
+  const [qaCount, setQaCount] = useState(0)
 
   useEffect(() => {
     setSidebarOpen(false)
+    setQaOpen(false)
+  }, [activeItem])
+
+  useEffect(() => {
+    const lessonId = activeItem.type === 'lesson' ? activeItem.data?.id : null
+    if (!lessonId) {
+      setQaCount(0)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      const { data } = await lessonCommentService.listByLesson(lessonId)
+      if (!cancelled) setQaCount((data || []).length)
+    })()
+    return () => {
+      cancelled = true
+    }
   }, [activeItem])
 
   useEffect(() => {
@@ -382,6 +403,21 @@ const StudyLesson = () => {
                 )}
               </div>
             </div>
+
+            <LessonQAButton count={qaCount} onClick={() => setQaOpen(true)} />
+            <LessonQAPanel
+              open={qaOpen}
+              onClose={() => {
+                setQaOpen(false)
+                // refresh count after closing
+                lessonCommentService.listByLesson(activeItem.data.id).then(({ data }) => {
+                  setQaCount((data || []).length)
+                })
+              }}
+              lessonId={activeItem.data.id}
+              courseId={courseId}
+              lessonTitle={activeItem.data.title}
+            />
           </div>
         ) : activeItem.type === 'assignment' && activeItem.data ? (
           <div className="mx-auto max-w-3xl">
