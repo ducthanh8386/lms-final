@@ -66,15 +66,19 @@ export const assignmentService = {
     return { data: data.path }
   },
 
-  // Lấy object URL từ private bucket
+  // Lấy signed URL từ private bucket (tránh memory leak của Blob ObjectURL)
   async downloadFile(bucket, path) {
     const { data, error } = await supabase.storage
       .from(bucket)
-      .download(path)
+      .createSignedUrl(path, 60 * 60) // 1 hour valid link
       
-    if (error) return { error }
-    const url = URL.createObjectURL(data)
-    return { data: url }
+    if (error || !data?.signedUrl) {
+      // Fallback to blob if signedUrl fails
+      const { data: blob, error: blobError } = await supabase.storage.from(bucket).download(path)
+      if (blobError) return { error: blobError }
+      return { data: URL.createObjectURL(blob) }
+    }
+    return { data: data.signedUrl }
   },
 
   // Nộp bài

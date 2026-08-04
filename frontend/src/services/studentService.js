@@ -89,16 +89,20 @@ export const studentService = {
 
     if (uploadError) return { error: uploadError }
 
-    const { data } = supabase.storage.from('receipts').getPublicUrl(filePath)
-    
+    const { data: signedData, error: urlError } = await supabase.storage
+      .from('receipts')
+      .createSignedUrl(filePath, 60 * 60 * 24 * 365) // 1 year expiration
+
+    const receiptUrl = signedData?.signedUrl || filePath
+
     // Update order with receipt_url
     const { error: updateError } = await supabase
       .from('orders')
-      .update({ receipt_url: data.publicUrl })
+      .update({ receipt_url: receiptUrl })
       .eq('id', orderId)
 
     if (updateError) return { error: updateError }
 
-    return { data: data.publicUrl }
+    return { data: receiptUrl }
   }
 }

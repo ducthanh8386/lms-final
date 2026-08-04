@@ -149,9 +149,13 @@ export const classService = {
     return { data, error }
   },
 
-  // Tạo lại mã mời
+  // Tạo lại mã mời (Đảm bảo 6 ký tự viết hoa)
   async regenerateInviteCode(classId) {
-    const newCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+    let newCode = ''
+    for (let i = 0; i < 6; i++) {
+      newCode += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
     const { data, error } = await supabase
       .from('classes')
       .update({ invite_code: newCode })

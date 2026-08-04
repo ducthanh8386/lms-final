@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { paymentService } from '../../services/paymentService'
 import { useToast } from '../../context/ToastContext'
@@ -70,7 +70,7 @@ const CheckoutDetail = () => {
       }
       setLoading(false)
     }
-  }, [])
+  }, [session, paymentCodeFromUrl, searchParams, toast, navigate, loadSession, setPendingFromSession, status])
 
   const syncOnce = useCallback(async () => {
     if (!paymentCodeFromUrl || status === 'succeeded' || status === 'cancelled') return

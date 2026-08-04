@@ -273,91 +273,14 @@ export const quizService = {
     return { data, error }
   },
 
-  // Chấm điểm lượt thi
+  // Chấm điểm lượt thi (Bảo mật qua RPC Database)
   async submitAttempt(attemptId, answers) {
     // answers: [{ questionId, selectedOptionIds: [] }]
-    
-    // 1. Lấy thông tin lượt thi
-    const { data: attempt, error: attemptErr } = await supabase
-      .from('quiz_attempts')
-      .select('*, quizzes(*)')
-      .eq('id', attemptId)
-      .single()
-
-    if (attemptErr) return { error: attemptErr }
-
-    const quizId = attempt.quiz_id
-
-    // 2. Lấy danh sách câu hỏi và đáp án từ DB để chấm điểm trực tiếp
-    const { data: questions, error: qErr } = await supabase
-      .from('quiz_questions')
-      .select('*, quiz_options(*)')
-      .eq('quiz_id', quizId)
-
-    if (qErr) return { error: qErr }
-
-    let totalPoints = 0
-    let earnedPoints = 0
-    const answerRecords = []
-
-    // Chấm từng câu hỏi
-    for (const question of questions) {
-      const qPoints = Number(question.points || 0)
-      totalPoints += qPoints
-
-      const studentAnswer = answers.find(ans => ans.questionId === question.id)
-      const selectedOptionIds = studentAnswer?.selectedOptionIds || []
-
-      // Tìm các đáp án đúng của câu này từ DB
-      const correctOptionIds = question.quiz_options
-        .filter(opt => opt.is_correct)
-        .map(opt => opt.id)
-
-      // So sánh
-      let isCorrect = false
-      if (selectedOptionIds.length > 0 && selectedOptionIds.length === correctOptionIds.length) {
-        isCorrect = selectedOptionIds.every(id => correctOptionIds.includes(id))
-      } else if (selectedOptionIds.length === 0 && correctOptionIds.length === 0) {
-        isCorrect = true
-      }
-
-      const pointsEarned = isCorrect ? qPoints : 0
-      earnedPoints += pointsEarned
-
-      answerRecords.push({
-        attempt_id: attemptId,
-        question_id: question.id,
-        selected_option_ids: selectedOptionIds,
-        is_correct: isCorrect,
-        points_earned: pointsEarned
-      })
-    }
-
-    // 3. Lưu toàn bộ đáp án trả lời chi tiết
-    const { error: ansErr } = await supabase
-      .from('quiz_answers')
-      .insert(answerRecords)
-
-    if (ansErr) return { error: ansErr }
-
-    // 4. Tính toán kết quả tổng kết điểm và thời gian làm bài
-    const score = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100 * 100) / 100 : 0
-    const submittedAt = new Date().toISOString()
-    const timeTakenSeconds = Math.round((new Date(submittedAt).getTime() - new Date(attempt.started_at).getTime()) / 1000)
-
-    // 5. Cập nhật lượt thi hoàn tất
-    const { data: updatedAttempt, error: updateErr } = await supabase
-      .from('quiz_attempts')
-      .update({
-        score,
-        submitted_at: submittedAt,
-        time_taken_seconds: timeTakenSeconds
-      })
-      .eq('id', attemptId)
-      .select()
-      .single()
-
-    return { data: updatedAttempt, error: updateErr }
+    const { data, error } = await supabase.rpc('submit_quiz_attempt', {
+      p_attempt_id: attemptId,
+      p_answers: answers,
+    })
+    return { data, error }
   },
 
   // Xem kết quả lượt thi chi tiết

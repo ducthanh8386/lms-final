@@ -55,7 +55,7 @@ serve(async (req) => {
 
       if (createError) throw createError
 
-      // Update role (vì trigger tự tạo profile với role = student)
+      // Update role & sync app_metadata (vì trigger tự tạo profile với role = student)
       if (role && role !== 'student' && newUser.user) {
         const { error: updateRoleError } = await supabaseClient
           .from('profiles')
@@ -63,6 +63,10 @@ serve(async (req) => {
           .eq('id', newUser.user.id)
 
         if (updateRoleError) console.error("Error updating role:", updateRoleError)
+
+        await supabaseClient.auth.admin.updateUserById(newUser.user.id, {
+          app_metadata: { userrole: role }
+        })
       }
 
       return new Response(JSON.stringify({ success: true, user: newUser.user }), {

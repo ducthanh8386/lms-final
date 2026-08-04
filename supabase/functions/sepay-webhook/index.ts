@@ -15,8 +15,11 @@ async function verifyWebhookAuth(req: Request, rawBody: string): Promise<boolean
   const auth = req.headers.get('Authorization') || ''
   const signature = req.headers.get('X-SePay-Signature') || ''
 
-  // No auth headers sent by SePay → skip verification
-  if (!xSecret && !auth && !signature) return true
+  // If secrets are configured but no auth headers sent → reject immediately
+  if (!xSecret && !auth && !signature) {
+    if (ipnSecret || hmacSecret) return false
+    return true
+  }
 
   // Both secrets blank → allow
   if (!ipnSecret && !hmacSecret) return true

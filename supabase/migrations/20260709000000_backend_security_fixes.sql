@@ -157,7 +157,9 @@ CREATE POLICY "Teacher can view own students profiles" ON public.profiles
   );
 
 -- Public view excluding sensitive details (email, bank_info, payment_qr_url)
-CREATE OR REPLACE VIEW public.profiles_public AS
+CREATE OR REPLACE VIEW public.profiles_public
+WITH (security_invoker = true)
+AS
 SELECT id, name, avatar, role FROM public.profiles;
 
 GRANT SELECT ON public.profiles_public TO anon, authenticated;
@@ -182,7 +184,9 @@ GRANT EXECUTE ON FUNCTION public.get_teacher_payment_info(uuid[]) TO authenticat
 DROP POLICY IF EXISTS "Student reads quiz options" ON public.quiz_options;
 
 -- View excluding is_correct column for student
-CREATE OR REPLACE VIEW public.quiz_options_student AS
+CREATE OR REPLACE VIEW public.quiz_options_student
+WITH (security_invoker = true)
+AS
 SELECT id, question_id, option_text, order_index
 FROM public.quiz_options;
 
@@ -472,7 +476,9 @@ CREATE POLICY "Student confirms own attendance" ON public.schedule_participants
 -- 12. PUBLIC COURSES SEARCH VIEW
 -- =====================================================================
 
-CREATE OR REPLACE VIEW public.courses_public AS
+CREATE OR REPLACE VIEW public.courses_public
+WITH (security_invoker = true)
+AS
 SELECT 
   c.*,
   p.name AS teacher_name,
